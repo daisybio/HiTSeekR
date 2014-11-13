@@ -9,7 +9,7 @@ my.outliers <- function(plates, method, margin=2, withControls=F)
   }
   else
   {
-    data <- subset(plates, column < 12)
+    data <- subset(plates, Column < 12)
   }
   
   if(method=="SD")
@@ -41,14 +41,14 @@ my.outliers <- function(plates, method, margin=2, withControls=F)
 }
 
 #heatmap
-my.heatmap <- function(plates, signalType, margin, method, outliers, ncol=3, title="", colorA="red", colorB="yellow")
+my.heatmap <- function(plates, signalType, margin, method, outliers, ncol=3, title="", colorA="red", colorB="yellow", showSampleLabels=T)
 {
   kIn1.outliers <- outliers
   
   require(ggplot2)
   require(grid)
   title <- paste(title, signalType ,": Heatmaps (labels for +-", margin, method, ")")
-  p2 <- qplot(column, row, data=plates, main=title, xlab="column", ylab="row")
+  p2 <- qplot(Column, Row, data=plates, main=title, xlab="Column", ylab="Row")
   p2 <- p2 + geom_tile(line=0, aes(fill = signal));
   #p2 <- p2 + scale_fill_gradient2(midpoint=mean(kIn$log10, na.rm=T));
   p2 <- p2 + scale_fill_gradient(low = colorA, high = colorB, name=paste(signalType));
@@ -56,39 +56,47 @@ my.heatmap <- function(plates, signalType, margin, method, outliers, ncol=3, tit
   
   if(dim(kIn1.outliers)[1] > 0)
   {
-    bottomRight <- subset(kIn1.outliers,row>1 & column > 1)
+    bottomRight <- subset(kIn1.outliers,Row>1 & Column > 1)
     
     if(dim(bottomRight)[1] > 0)
     {
-      p2 <- p2 + geom_text(data=bottomRight, aes(label=Sample), vjust=-1.5, hjust=.7)
-      p2 <- p2 + geom_segment(data=bottomRight, aes(x=column-0.5, y=row-0.5, xend=column, yend=row), colour=I("black"), arrow=arrow(angle=45, length=unit(0.2, "cm")))
+      if(showSampleLabels){
+        p2 <- p2 + geom_text(data=bottomRight, aes(label=Sample), vjust=-1.5, hjust=.7)
+      }
+      p2 <- p2 + geom_segment(data=bottomRight, aes(x=Column-0.5, y=Row-0.5, xend=Column, yend=Row), colour=I("black"), arrow=arrow(angle=45, length=unit(0.2, "cm")))
     }
     
-    firstRow <- subset(kIn1.outliers, row==1)
+    firstRow <- subset(kIn1.outliers, Row==1)
     
     if(dim(firstRow)[1] > 0)
     {
-      evenColumns <- subset(firstRow, (column %% 2) == 0)
+      evenColumns <- subset(firstRow, (Column %% 2) == 0)
       if(dim(evenColumns)[1] > 0 )
       {
-        p2 <- p2 + geom_text(data=evenColumns, aes(label=Sample), vjust=2.0, hjust=0)
-        p2 <- p2 + geom_segment(data=evenColumns, aes(x=column+0.5, y=row+0.5, xend=column, yend=row), colour=I("black"), arrow=arrow(angle=45, length=unit(0.2, "cm")))
+        if(showSampleLabels){
+          p2 <- p2 + geom_text(data=evenColumns, aes(label=Sample), vjust=2.0, hjust=0)
+        }
+        p2 <- p2 + geom_segment(data=evenColumns, aes(x=Column+0.5, y=Row+0.5, xend=Column, yend=Row), colour=I("black"), arrow=arrow(angle=45, length=unit(0.2, "cm")))
       }
       
-      unevenColumns <- subset(firstRow, (column %% 2) == 1)
+      unevenColumns <- subset(firstRow, (Column %% 2) == 1)
       if(dim(unevenColumns)[1] > 0)
       {
-        p2 <- p2 + geom_text(data=unevenColumns, aes(label=Sample), vjust=3.0, hjust=0)
-        p2 <- p2 + geom_segment(data=unevenColumns, aes(x=column+1.0, y=row+1.0, xend=column, yend=row), colour=I("black"), arrow=arrow(angle=45, length=unit(0.2, "cm")))
+        if(showSampleLabels){
+          p2 <- p2 + geom_text(data=unevenColumns, aes(label=Sample), vjust=3.0, hjust=0)
+        }
+        p2 <- p2 + geom_segment(data=unevenColumns, aes(x=Column+1.0, y=Row+1.0, xend=Column, yend=Row), colour=I("black"), arrow=arrow(angle=45, length=unit(0.2, "cm")))
       }
     }
     
-    firstColumn <- subset(kIn1.outliers, row>1 & column == 1)
+    firstColumn <- subset(kIn1.outliers, Row>1 & Column == 1)
     
     if(dim(firstColumn)[1] >0 )
     {
-      p2 <- p2 + geom_text(data=firstColumn, aes(label=Sample), vjust=-1.5, hjust=0.3)
-      p2 <- p2 + geom_segment(data=firstColumn, aes(x=column+0.5, y=row-0.5, xend=column, yend=row), colour=I("black"), arrow=arrow(angle=45, length=unit(0.2, "cm")))
+      if(showSampleLabels){
+        p2 <- p2 + geom_text(data=firstColumn, aes(label=Sample), vjust=-1.5, hjust=0.3)
+      }
+      p2 <- p2 + geom_segment(data=firstColumn, aes(x=Column+0.5, y=Row-0.5, xend=Column, yend=Row), colour=I("black"), arrow=arrow(angle=45, length=unit(0.2, "cm")))
     }
   }
   
