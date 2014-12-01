@@ -5,7 +5,7 @@ getTargets <- function(outliers, hits.min=1, at.least=2,
                        get.gene.symbols=T, databases=NA)
 {
   library(dplyr)
-  outliers$mature_acc <- sub("mir", "miR", outliers$miRBase.ID.miRPlus.ID)
+  outliers$mature_acc <- sub("mir", "miR", outliers$Sample)
   
   targets <- semi_join(microT.hsa.processed, outliers, by="mature_acc")
   

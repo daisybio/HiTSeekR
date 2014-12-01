@@ -3,3 +3,4 @@
 .RData
 data
 raw_data
+packrat/lib*/

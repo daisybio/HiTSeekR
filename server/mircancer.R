@@ -7,7 +7,7 @@ mircancer.database <- reactive({
 outliers.mircancer <- reactive({
   outliers <- outliers()
   mirdb <- mircancer.database()
-  outliers$miRBase.ID.miRPlus.ID <- sub("hsa-miR", "hsa-mir", outliers$miRBase.ID.miRPlus.ID)
-  outliers <- outliers[-grep(".*>NA</a>", outliers$miRBase.accession),]
-  merge(outliers[,c("miRBase.ID.miRPlus.ID", "miRBase.accession")], mirdb, by.x="miRBase.ID.miRPlus.ID", by.y="mirId", all.x=T)
+  outliers$Sample <- sub("hsa-miR", "hsa-mir", outliers$Sample)
+  outliers <- outliers[-grep(".*>NA</a>", outliers$Accession),]
+  merge(outliers[,c("Sample", "Accession")], mirdb, by.x="Sample", by.y="mirId", all.x=T)
 })

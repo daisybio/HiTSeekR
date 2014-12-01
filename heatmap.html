@@ -1,0 +1,785 @@
+<!doctype HTML>
+<meta charset = 'utf-8'>
+<html>
+  <head>
+    
+    <script src='/home/markus/R/x86_64-unknown-linux-gnu-library/3.1/rCharts/libraries/highcharts/js/jquery-1.9.1.min.js' type='text/javascript'></script>
+    <script src='/home/markus/R/x86_64-unknown-linux-gnu-library/3.1/rCharts/libraries/highcharts/js/highcharts.js' type='text/javascript'></script>
+    <script src='/home/markus/R/x86_64-unknown-linux-gnu-library/3.1/rCharts/libraries/highcharts/js/highcharts-more.js' type='text/javascript'></script>
+    <script src='/home/markus/R/x86_64-unknown-linux-gnu-library/3.1/rCharts/libraries/highcharts/js/exporting.js' type='text/javascript'></script>
+    
+    <style>
+    .rChart {
+      display: block;
+      margin-left: auto; 
+      margin-right: auto;
+      width: 800px;
+      height: 400px;
+    }  
+    </style>
+    
+  </head>
+  <body >
+    
+    <div id = 'intHeatmapPlot' class = 'rChart highcharts'></div>    
+    <script type='text/javascript'>
+    (function($){
+        $(function () {
+            var chart = new Highcharts.Chart({
+ "dom": "intHeatmapPlot",
+"width":            800,
+"height":            400,
+"credits": {
+ "href": null,
+"text": null 
+},
+"exporting": {
+ "enabled": false 
+},
+"title": {
+ "text": null 
+},
+"yAxis": [
+ {
+ "min":              1,
+"max": 8,
+"reversed": true 
+} 
+],
+"chart": {
+ "zoomType": "xy",
+"type": "heatmap",
+"renderTo": "intHeatmapPlot" 
+},
+"xAxis": [
+ {
+ "min":              1,
+"max": 12 
+} 
+],
+"series": [
+ {
+ "name": "Heatmap",
+"data": [
+ {
+ "x": 1,
+"y": 1,
+"value": 1148,
+"Sample": "hsa-mir-384",
+"Accession": "MIMAT0001075" 
+},
+{
+ "x": 1,
+"y": 2,
+"value": 917,
+"Sample": "hsa-mir-105*",
+"Accession": "MIMAT0004516" 
+},
+{
+ "x": 1,
+"y": 3,
+"value": 517,
+"Sample": "hsa-mir-143*",
+"Accession": "MIMAT0004599" 
+},
+{
+ "x": 1,
+"y": 4,
+"value": 896,
+"Sample": "hsa-mir-155*",
+"Accession": "MIMAT0004658" 
+},
+{
+ "x": 1,
+"y": 5,
+"value": 836,
+"Sample": "hsa-mir-18b",
+"Accession": "MIMAT0001412" 
+},
+{
+ "x": 1,
+"y": 6,
+"value": 984,
+"Sample": "hsa-mir-19b-1*",
+"Accession": "MIMAT0004491" 
+},
+{
+ "x": 1,
+"y": 7,
+"value": 907,
+"Sample": "hsa-mir-219-2-3p",
+"Accession": "MIMAT0004675" 
+},
+{
+ "x": 1,
+"y": 8,
+"value": 826,
+"Sample": "hsa-mir-26a-1*",
+"Accession": "MIMAT0004499" 
+},
+{
+ "x": 2,
+"y": 1,
+"value": 1184,
+"Sample": "hsa-mir-515-5p",
+"Accession": "MIMAT0002826" 
+},
+{
+ "x": 2,
+"y": 2,
+"value": 887,
+"Sample": "hsa-mir-106a*",
+"Accession": "MIMAT0004517" 
+},
+{
+ "x": 2,
+"y": 3,
+"value": 810,
+"Sample": "hsa-mir-144*",
+"Accession": "MIMAT0004600" 
+},
+{
+ "x": 2,
+"y": 4,
+"value": 844,
+"Sample": "hsa-mir-15a*",
+"Accession": "MIMAT0004488" 
+},
+{
+ "x": 2,
+"y": 5,
+"value": 638,
+"Sample": "hsa-mir-18b*",
+"Accession": "MIMAT0004751" 
+},
+{
+ "x": 2,
+"y": 6,
+"value": 964,
+"Sample": "hsa-mir-19b-2*",
+"Accession": "MIMAT0004492" 
+},
+{
+ "x": 2,
+"y": 7,
+"value": 884,
+"Sample": "hsa-mir-220a",
+"Accession": "MIMAT0000277" 
+},
+{
+ "x": 2,
+"y": 8,
+"value": 898,
+"Sample": "hsa-mir-26a-2*",
+"Accession": "MIMAT0004681" 
+},
+{
+ "x": 3,
+"y": 1,
+"value": 1163,
+"Sample": "hsa-mir-518c",
+"Accession": "MIMAT0002848" 
+},
+{
+ "x": 3,
+"y": 2,
+"value": 854,
+"Sample": "hsa-mir-122*",
+"Accession": "MIMAT0004590" 
+},
+{
+ "x": 3,
+"y": 3,
+"value": 799,
+"Sample": "hsa-mir-145*",
+"Accession": "MIMAT0004601" 
+},
+{
+ "x": 3,
+"y": 4,
+"value": 980,
+"Sample": "hsa-mir-16-1*",
+"Accession": "MIMAT0004489" 
+},
+{
+ "x": 3,
+"y": 5,
+"value": 600,
+"Sample": "hsa-mir-191*",
+"Accession": "MIMAT0001618" 
+},
+{
+ "x": 3,
+"y": 6,
+"value": 805,
+"Sample": "hsa-mir-202",
+"Accession": "MIMAT0002811" 
+},
+{
+ "x": 3,
+"y": 7,
+"value": 667,
+"Sample": "hsa-mir-220b",
+"Accession": "MIMAT0004908" 
+},
+{
+ "x": 3,
+"y": 8,
+"value": 663,
+"Sample": "hsa-mir-28-3p",
+"Accession": "MIMAT0004502" 
+},
+{
+ "x": 4,
+"y": 1,
+"value": 953,
+"Sample": "hsa-mir-548c-3p",
+"Accession": "MIMAT0003285" 
+},
+{
+ "x": 4,
+"y": 2,
+"value": 788,
+"Sample": "hsa-mir-125b-2*",
+"Accession": "MIMAT0004603" 
+},
+{
+ "x": 4,
+"y": 3,
+"value": 738,
+"Sample": "hsa-mir-146a*",
+"Accession": "MIMAT0004608" 
+},
+{
+ "x": 4,
+"y": 4,
+"value": 803,
+"Sample": "hsa-mir-16-2*",
+"Accession": "MIMAT0004518" 
+},
+{
+ "x": 4,
+"y": 5,
+"value": 651,
+"Sample": "hsa-mir-192*",
+"Accession": "MIMAT0004543" 
+},
+{
+ "x": 4,
+"y": 6,
+"value": 777,
+"Sample": "hsa-mir-20a*",
+"Accession": "MIMAT0004493" 
+},
+{
+ "x": 4,
+"y": 7,
+"value": 755,
+"Sample": "hsa-mir-220c",
+"Accession": "MIMAT0004915" 
+},
+{
+ "x": 4,
+"y": 8,
+"value": 751,
+"Sample": "hsa-mir-298",
+"Accession": "MIMAT0004901" 
+},
+{
+ "x": 5,
+"y": 1,
+"value": 1047,
+"Sample": "hsa-mir-548d-3p",
+"Accession": "MIMAT0003323" 
+},
+{
+ "x": 5,
+"y": 2,
+"value": 733,
+"Sample": "hsa-mir-129*",
+"Accession": "MIMAT0004548" 
+},
+{
+ "x": 5,
+"y": 3,
+"value": 788,
+"Sample": "hsa-mir-146b-3p",
+"Accession": "MIMAT0004766" 
+},
+{
+ "x": 5,
+"y": 4,
+"value": 801,
+"Sample": "hsa-mir-17*",
+"Accession": "MIMAT0000071" 
+},
+{
+ "x": 5,
+"y": 5,
+"value": 1010,
+"Sample": "hsa-mir-193a-5p",
+"Accession": "MIMAT0004614" 
+},
+{
+ "x": 5,
+"y": 6,
+"value": 1014,
+"Sample": "hsa-mir-20b*",
+"Accession": "MIMAT0004752" 
+},
+{
+ "x": 5,
+"y": 7,
+"value": 746,
+"Sample": "hsa-mir-221*",
+"Accession": "MIMAT0004568" 
+},
+{
+ "x": 5,
+"y": 8,
+"value": 1042,
+"Sample": "hsa-mir-299-3p",
+"Accession": "MIMAT0000687" 
+},
+{
+ "x": 6,
+"y": 1,
+"value": 1281,
+"Sample": "hsa-miRPlus-B1114",
+"Accession": null 
+},
+{
+ "x": 6,
+"y": 2,
+"value": 901,
+"Sample": "hsa-mir-130a*",
+"Accession": "MIMAT0004593" 
+},
+{
+ "x": 6,
+"y": 3,
+"value": 1080,
+"Sample": "hsa-mir-147",
+"Accession": "MIMAT0000251" 
+},
+{
+ "x": 6,
+"y": 4,
+"value": 737,
+"Sample": "hsa-mir-181a-2*",
+"Accession": "MIMAT0004558" 
+},
+{
+ "x": 6,
+"y": 5,
+"value": 637,
+"Sample": "hsa-mir-193b",
+"Accession": "MIMAT0002819" 
+},
+{
+ "x": 6,
+"y": 6,
+"value": 875,
+"Sample": "hsa-mir-21*",
+"Accession": "MIMAT0004494" 
+},
+{
+ "x": 6,
+"y": 7,
+"value": 959,
+"Sample": "hsa-mir-222*",
+"Accession": "MIMAT0004569" 
+},
+{
+ "x": 6,
+"y": 8,
+"value": 1000,
+"Sample": "hsa-mir-29b-1*",
+"Accession": "MIMAT0004514" 
+},
+{
+ "x": 7,
+"y": 1,
+"value": 941,
+"Sample": "hsa-let-7c*",
+"Accession": "MIMAT0004483" 
+},
+{
+ "x": 7,
+"y": 2,
+"value": 851,
+"Sample": "hsa-mir-132*",
+"Accession": "MIMAT0004594" 
+},
+{
+ "x": 7,
+"y": 3,
+"value": 976,
+"Sample": "hsa-mir-148b*",
+"Accession": "MIMAT0004699" 
+},
+{
+ "x": 7,
+"y": 4,
+"value": 850,
+"Sample": "hsa-mir-181c*",
+"Accession": "MIMAT0004559" 
+},
+{
+ "x": 7,
+"y": 5,
+"value": 878,
+"Sample": "hsa-mir-193b*",
+"Accession": "MIMAT0004767" 
+},
+{
+ "x": 7,
+"y": 6,
+"value": 665,
+"Sample": "hsa-mir-211",
+"Accession": "MIMAT0000268" 
+},
+{
+ "x": 7,
+"y": 7,
+"value": 981,
+"Sample": "hsa-mir-223*",
+"Accession": "MIMAT0004570" 
+},
+{
+ "x": 7,
+"y": 8,
+"value": 878,
+"Sample": "hsa-mir-29b-2*",
+"Accession": "MIMAT0004515" 
+},
+{
+ "x": 8,
+"y": 1,
+"value": 1043,
+"Sample": "hsa-let-7e*",
+"Accession": "MIMAT0004485" 
+},
+{
+ "x": 8,
+"y": 2,
+"value": 719,
+"Sample": "hsa-mir-135b*",
+"Accession": "MIMAT0004698" 
+},
+{
+ "x": 8,
+"y": 3,
+"value": 983,
+"Sample": "hsa-mir-149*",
+"Accession": "MIMAT0004609" 
+},
+{
+ "x": 8,
+"y": 4,
+"value": 830,
+"Sample": "hsa-mir-182*",
+"Accession": "MIMAT0000260" 
+},
+{
+ "x": 8,
+"y": 5,
+"value": 882,
+"Sample": "hsa-mir-194*",
+"Accession": "MIMAT0004671" 
+},
+{
+ "x": 8,
+"y": 6,
+"value": 803,
+"Sample": "hsa-mir-215",
+"Accession": "MIMAT0000272" 
+},
+{
+ "x": 8,
+"y": 7,
+"value": 1016,
+"Sample": "hsa-mir-23a*",
+"Accession": "MIMAT0004496" 
+},
+{
+ "x": 8,
+"y": 8,
+"value": 902,
+"Sample": "hsa-mir-300",
+"Accession": "MIMAT0004903" 
+},
+{
+ "x": 9,
+"y": 1,
+"value": 1099,
+"Sample": "hsa-let-7f-2*",
+"Accession": "MIMAT0004487" 
+},
+{
+ "x": 9,
+"y": 2,
+"value": 557,
+"Sample": "hsa-mir-138-1*",
+"Accession": "MIMAT0004607" 
+},
+{
+ "x": 9,
+"y": 3,
+"value": 510,
+"Sample": "hsa-mir-150*",
+"Accession": "MIMAT0004610" 
+},
+{
+ "x": 9,
+"y": 4,
+"value": 734,
+"Sample": "hsa-mir-185*",
+"Accession": "MIMAT0004611" 
+},
+{
+ "x": 9,
+"y": 5,
+"value": 795,
+"Sample": "hsa-mir-195*",
+"Accession": "MIMAT0004615" 
+},
+{
+ "x": 9,
+"y": 6,
+"value": 821,
+"Sample": "hsa-mir-217",
+"Accession": "MIMAT0000274" 
+},
+{
+ "x": 9,
+"y": 7,
+"value": 571,
+"Sample": "hsa-mir-23b*",
+"Accession": "MIMAT0004587" 
+},
+{
+ "x": 9,
+"y": 8,
+"value": 946,
+"Sample": "hsa-mir-301b",
+"Accession": "MIMAT0004958" 
+},
+{
+ "x": 10,
+"y": 1,
+"value": 1073,
+"Sample": "hsa-mir-100*",
+"Accession": "MIMAT0004512" 
+},
+{
+ "x": 10,
+"y": 2,
+"value": 825,
+"Sample": "hsa-mir-138-2*",
+"Accession": "MIMAT0004596" 
+},
+{
+ "x": 10,
+"y": 3,
+"value": 842,
+"Sample": "hsa-mir-151-3p",
+"Accession": "MIMAT0000757" 
+},
+{
+ "x": 10,
+"y": 4,
+"value": 987,
+"Sample": "hsa-mir-186*",
+"Accession": "MIMAT0004612" 
+},
+{
+ "x": 10,
+"y": 5,
+"value": 948,
+"Sample": "hsa-mir-198",
+"Accession": "MIMAT0000228" 
+},
+{
+ "x": 10,
+"y": 6,
+"value": 834,
+"Sample": "hsa-mir-218-1*",
+"Accession": "MIMAT0004565" 
+},
+{
+ "x": 10,
+"y": 7,
+"value": 794,
+"Sample": "hsa-mir-24-2*",
+"Accession": "MIMAT0004497" 
+},
+{
+ "x": 10,
+"y": 8,
+"value": 661,
+"Sample": "hsa-mir-302a*",
+"Accession": "MIMAT0000683" 
+},
+{
+ "x": 11,
+"y": 1,
+"value": 1033,
+"Sample": "hsa-mir-105",
+"Accession": "MIMAT0000102" 
+},
+{
+ "x": 11,
+"y": 2,
+"value": 904,
+"Sample": "hsa-mir-141*",
+"Accession": "MIMAT0004598" 
+},
+{
+ "x": 11,
+"y": 3,
+"value": 917,
+"Sample": "hsa-mir-155",
+"Accession": "MIMAT0000646" 
+},
+{
+ "x": 11,
+"y": 4,
+"value": 832,
+"Sample": "hsa-mir-187*",
+"Accession": "MIMAT0004561" 
+},
+{
+ "x": 11,
+"y": 5,
+"value": 753,
+"Sample": "hsa-mir-199b-5p",
+"Accession": "MIMAT0000263" 
+},
+{
+ "x": 11,
+"y": 6,
+"value": 944,
+"Sample": "hsa-mir-219-1-3p",
+"Accession": "MIMAT0004567" 
+},
+{
+ "x": 11,
+"y": 7,
+"value": 734,
+"Sample": "hsa-mir-25*",
+"Accession": "MIMAT0004498" 
+},
+{
+ "x": 11,
+"y": 8,
+"value": 888,
+"Sample": "hsa-mir-302b*",
+"Accession": "MIMAT0000714" 
+},
+{
+ "x": 12,
+"y": 1,
+"value": 836,
+"Sample": "XCA",
+"Accession": null 
+},
+{
+ "x": 12,
+"y": 2,
+"value": 998,
+"Sample": "XCB",
+"Accession": null 
+},
+{
+ "x": 12,
+"y": 3,
+"value": 505,
+"Sample": "X214",
+"Accession": null 
+},
+{
+ "x": 12,
+"y": 4,
+"value": 840,
+"Sample": "GAPDH",
+"Accession": null 
+},
+{
+ "x": 12,
+"y": 5,
+"value": 942,
+"Sample": "XCA",
+"Accession": null 
+},
+{
+ "x": 12,
+"y": 6,
+"value": 871,
+"Sample": "XCB",
+"Accession": null 
+},
+{
+ "x": 12,
+"y": 7,
+"value": 577,
+"Sample": "X214",
+"Accession": null 
+},
+{
+ "x": 12,
+"y": 8,
+"value": 778,
+"Sample": "GAPDH",
+"Accession": null 
+} 
+],
+"color": "#cccccc",
+"tooltip": {
+ "headerFormat": "",
+"pointFormat": "{point.Sample} {point.accession}" 
+},
+"dataLabels": {
+ "enabled": true,
+"color": "black",
+"style": {
+ "textShadow": "none",
+"HcTextStroke": null 
+} 
+} 
+} 
+],
+"colorAxis": {
+ "min":              0,
+"stops": [
+ [
+            0.2,
+"#c4463a" 
+],
+[
+            0.6,
+"#fffbbc" 
+],
+[
+            1.2,
+"#3060cf" 
+] 
+] 
+},
+"legend": {
+ "align": "right",
+"layout": "vertical",
+"margin":              0,
+"verticalAlign": "top",
+"y":             25,
+"symbolHeight":            320 
+},
+"id": "intHeatmapPlot" 
+});
+        });
+    })(jQuery);
+</script>
+    
+    <script></script>    
+  </body>
+</html>

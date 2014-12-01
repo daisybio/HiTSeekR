@@ -7,8 +7,8 @@ rawData <- reactive({
     else if(input$dataset == "MTS data"){
       data <- read.table("data/jos_processed.txt", header=T, sep="\t")
       #data$Control <- NA
-      #data$miRBase.ID.miRPlus.ID <- NA
-      #data$miRBase.accession <- NA
+      #data$Sample <- NA
+      #data$Accession <- NA
     }
   }
   else{

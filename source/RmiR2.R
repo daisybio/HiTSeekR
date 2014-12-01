@@ -5,7 +5,7 @@ library(foreach)
 
 getTargets <- function(outliers, group.miRNAs=T, group.miRNAs.threshold=2, get.gene.symbols=T, databases=NA){
   #repair ids
-  outliers <- sub("mir", "miR", outliers$miRBase.ID.miRPlus.ID)
+  outliers <- sub("mir", "miR", outliers$Sample)
   miRNA.db <- src_sqlite(RmiR.Hs.miRNA_dbfile())
   
   query.result <- foreach(db=databases, .combine=rbind) %do% {

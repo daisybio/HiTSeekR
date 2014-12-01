@@ -6,16 +6,19 @@ require(gridExtra)
 require(scales)
 require(RmiR)
 
-shinyUI(navbarPage(
+shinyUI(fluidPage(
+ navbarPage(
   HTML('<img src="RNAice.png"/>'),
-  windowTitle="RNAice",
-  tabPanel("Data",
+  id="mainNavbar",
+  tabPanel("Data",wellPanel(fluidRow(column(4,
            conditionalPanel(condition="input.file==null",
              selectInput("dataset", "Select a demo dataset or...", choices = c("BCSC/MaSC miRNA inhibitors" = "BCSC", "MTS data" = "MTS data"))
-           ),
-    fileInput("file", "Upload a new data set", multiple=FALSE),
-    selectInput("fileSeparator", "Column separator", c("tab"= "\t", "comma"= ",", "semicolon"=";")),                     
-    uiOutput("uiOutput_data_options"),
+           )), column(4,
+    fileInput("file", "Upload a new data set", multiple=FALSE)), column(4,
+    selectInput("fileSeparator", "Column separator", c("tab"= "\t", "comma"= ",", "semicolon"=";"))))),                     
+    checkboxInput("showColOptions", "Show file input options", FALSE),
+    hr(),
+    conditionalPanel(condition="input.showColOptions", wellPanel(uiOutput("uiOutput_data_options"))),
     uiOutput("uiOutput_data")
   ),           
   tabPanel("Hits", uiOutput("uiOutput_hits_options"), mainPanel(uiOutput("uiOutput_hits"))),        
@@ -25,4 +28,4 @@ shinyUI(navbarPage(
   tabPanel("Controls", plotOutput("controlPlot", height=800), plotOutput("rowAndColumn", height=800)),
   tabPanel("miRcancer DB", uiOutput("uiOutput_mircancer")),
   tabPanel("Gene Ontology", uiOutput("uiOutput_geneOntology"))
-))
+)))

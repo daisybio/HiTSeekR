@@ -1,3 +1,11 @@
+#format integers for plots
+formatIntegerForPlot <- function(data, columnToFormat){    
+    maxNumber <- max(as.integer(data[,columnToFormat]))
+    data[,columnToFormat] <- sprintf(paste("%0", nchar(maxNumber), "d", sep=""),as.integer(data$Plate))
+    data[,columnToFormat] <- as.factor(data[,columnToFormat])
+    return(data)
+}
+
 # bar chart to visualize how many normalizations report a given hit #
 output$normcomparison <- renderChart({
   data <- outliers.all()
@@ -24,9 +32,21 @@ output$consensusVennDiagram <- renderPlot({
 })
 
 # Heatmap #
-output$heatmapPlot <- renderPlot({
-  input$updateNormalization
-  isolate(my.heatmap(data(), input$normalization, input$margin, input$method, outliers(), colorA=input$colorA, colorB=input$colorB, showSampleLabels=input$showLabelsOnHeatmap))
+output$heatmapPlot <- renderPlot({  
+  plot.data <- data()
+  hits <- outliers()
+  my.heatmap(plot.data, input$normalization, input$margin, input$method, hits, showSampleLabels=input$showLabelsOnHeatmap, signalColumn=input$normalization)
+})
+
+output$intHeatmapPlot <- renderChart2({
+  plot.data <- processedData()
+  plot.data <- subset(plot.data, Plate == input$plateSelected & Experiment == input$experimentSelected  & Replicate == input$replicateSelected)
+  plot.data <- plot.data[,c("Column", "Row", input$normalization, "Sample", "Accession")]
+  colnames(plot.data)[1:3] <- c("x", "y", "value")
+  plot.data <- arrange(plot.data, x, y)
+  p <- highcharts.heatmap(as.data.frame(plot.data), input$normalization, useWithShiny = T)  
+  
+  return(p)
 })
 
 # Interactive plots for screen hits #
@@ -39,21 +59,52 @@ output$scatterPlotHits <- renderChart({
   return(p1)
 })
 
-# Plate viewer interactive scatter plot #
-output$scatterPlotI <- renderChart({
-  data <- subset(data(), Plate==input$plateSelected)
-  p2 <- dPlot(y=input$normalization, x=c("Sample", "Well.position"), z=paste(input$normalization, ".sem", sep=""), data=data, type="bubble", groups="Control", width=1000, height=600)
-  p2$xAxis(type="addCategoryAxis", orderRule="wellCount")
-  #p2$yAxis(type="addMeasureAxis")
-  p2$addParams(dom='scatterPlotI')
-  if(input$showSEM) p2$zAxis(type="addMeasureAxis", overrideMax = 2*max(data[[paste(input$normalization, ".sem", sep="")]]))
-  return(p2)
+output$intPlateScatterPlot <- renderChart2({
+  plot.data <- data()
+  plot.data <- subset(plot.data, Plate==input$plateSelected & Experiment == input$experimentSelected)
+  levels(plot.data$Control) <- c(levels(plot.data$Control), "Sample")
+  plot.data[is.na(plot.data$Control), "Control"] <- "Sample"
+  
+  plot.data <- as.data.frame(plot.data)
+  plot.data$Well.index <- seq(1, nrow(plot.data))
+  plot.data <- plot.data[,c("Well.index", input$normalization, paste(input$normalization, ".sem", sep=""), "Control", "Accession", "Sample")]
+  
+  p <- highcharts.scatterplot.plate(plot.data, show.error=input$showSEM)
+  p$exporting(enabled=TRUE)
+  #p$set(dom='intPlateScatterPlot')
+  return(p)
+})
+
+observe({
+  if(!identical(input$mainNavbar, "Hits")) return(NULL)
+  exp.data <- processedData()
+  if(is.null(exp.data)) return(NULL)
+  for(experiment in unique(exp.data$Experiment))
+  {
+    local({
+      plotData <- subset(exp.data, Experiment == experiment)
+      plotName <- paste(experiment, "IntScatterPlot", sep="")
+      output[[plotName]] <- renderChart({
+        p <- hPlot(Raw ~ wellCount, data = formatIntegerForPlot(plotData, "Plate"), type = "scatter", group = "Plate")
+        p$addParams(dom=plotName)      
+        return(p)
+      })
+    })
+  }
+})
+
+output$intScatterPlot <- renderChart({
+  p <- hPlot(Raw ~ wellCount, data = processedData(), type = "scatter", group = "Plate")
+  p$addParams(dom='intScatterPlot')
+  return(p)
 })
 
 # Whole screen scatter plot #
 output$scatterPlot <- renderPlot({
   data <- processedData()
-  q <- ggplot(data, aes_string(x="wellCount", y=input$normalization, color="Plate", shape="Replicate")) + geom_point() + geom_line(stat="hline", yintercept="mean", color="black", aes(group=interaction(Plate, Replicate)))
+  q <- ggplot(data, aes_string(x="wellCount", y=input$normalization, color="Plate", shape="Replicate")) + geom_point() + geom_line(stat="hline", yintercept="mean", color="black", aes(group=interaction(Plate, Replicate))) 
+  q <- q + theme_bw()
+  if("Experiment" %in% colnames(data)) q <- q + facet_wrap(~Experiment, ncol=1, scales="free")
   print(q)
 })
 
@@ -76,6 +127,6 @@ output$rowAndColumn <- renderPlot({
 output$normalizationComparison <- renderPlot({
   data <- processedData()
   data$signal <- NULL
-  p2 <- qplot(x=wellCount, y=value, data=melt(subset(data, Plate==input$plateSelected), id.vars=c("Plate", "Well.position", "wellCount", "Replicate", "miRBase.ID.miRPlus.ID", "miRBase.accession", "Sample", "Control", "Row", "Column")), color=Replicate, main="Comparison of different normalization methods") + facet_wrap(~variable, scales="free", ncol=3) + geom_smooth(method="loess")
+  p2 <- qplot(x=wellCount, y=value, data=melt(subset(data, Plate==input$plateSelected), id.vars=c("Plate", "Well.position", "wellCount", "Replicate", "Sample", "Accession", "Sample", "Control", "Row", "Column")), color=Replicate, main="Comparison of different normalization methods") + facet_wrap(~variable, scales="free", ncol=3) + geom_smooth(method="loess")
   print(p2)
 })

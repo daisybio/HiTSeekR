@@ -3,8 +3,8 @@ output$downloadHits <- downloadHandler(
   filename = function() { paste('hits', input$normalization, input$margin, input$method, '.csv', sep='_') },
   content = function(file) {
     data <- outliers()
-    data$miRBase.url <- gsub("'", "", str_extract(data$miRBase.accession, "'http://.*?'"))
-    data$miRBase.accession <- gsub("<|>", "", str_extract(data$miRBase.accession, ">.*?<"))
+    data$miRBase.url <- gsub("'", "", str_extract(data$Accession, "'http://.*?'"))
+    data$Accession <- gsub("<|>", "", str_extract(data$Accession, ">.*?<"))
     data$signal <- NULL
     data$signal.sem <- NULL
     write.table(data, file, row.names=F, sep=",", quote=F)
@@ -16,8 +16,8 @@ output$downloadConsensusHits <- downloadHandler(
   filename = function() { paste('consensus', 'hits', input$margin, input$method, '.csv', sep='_') },
   content = function(file) {
     data <- consensusHitList()
-    data$miRBase.url <- gsub("'", "", str_extract(data$miRBase.accession, "'http://.*?'"))
-    data$miRBase.accession <- gsub("<|>", "", str_extract(data$miRBase.accession, ">.*?<"))
+    data$miRBase.url <- gsub("'", "", str_extract(data$Accession, "'http://.*?'"))
+    data$Accession <- gsub("<|>", "", str_extract(data$Accession, ">.*?<"))
     data$signal <- NULL
     data$signal.sem <- NULL
     write.table(data, file, row.names=F, sep=",", quote=F)

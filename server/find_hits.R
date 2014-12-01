@@ -6,15 +6,16 @@ outliers <- reactive({
   input$updateExclusion
   
   outl <- isolate({
-    outl <- my.outliers(data(), input$method, input$margin)
+    exp.data <- data()
     
-    data <- data()
-    outl[outl[[input$normalization]] > mean(data[[input$normalization]], na.rm=T),"category"] <- "promotor"
-    outl[outl[[input$normalization]] < mean(data[[input$normalization]], na.rm=T),"category"] <- "suppressor"
+    outl <- my.outliers(exp.data, input$method, input$margin, signalColumn=input$normalization)    
+    if(nrow(outl) == 0) return(outl)
+    outl[which(outl[,input$normalization] > mean(exp.data[,input$normalization], na.rm=T)),"category"] <- "promotor"
+    outl[which(outl[,input$normalization] < mean(exp.data[,input$normalization], na.rm=T)),"category"] <- "suppressor"
     
     if(input$updateInclusion != 0 && nchar(input$include) > 0){
-      if(length(grep(input$include, data$miRBase.ID.miRPlus.ID)) > 0){
-        extra <- data[grep(input$include, data$miRBase.ID.miRPlus.ID),]
+      if(length(grep(input$include, data$Sample)) > 0){
+        extra <- data[grep(input$include, data$Sample),]
         extra$category <- "included"
         outl <- rbind(outl, extra)
       }

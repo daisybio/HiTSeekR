@@ -22,11 +22,11 @@ normalizeRawData <- function(plates, control.based=F, pos.ctrl=NULL, neg.ctrl=NU
   #plates.norm <- ddply(plates.norm, .(Plate, Replicate), Bscore)
   #plates.norm <- posEffectNorm(plates.norm)
   #plate comparison
+  #sort
+  plates.norm <- plates.norm %>% arrange(Experiment, Plate, Row, Column, Replicate) 
+  
   plates.norm$wellCount <- as.integer(row.names(plates.norm))
   plates.norm$Replicate <- as.factor(plates.norm$Replicate)
   plates.norm$Plate <- as.factor(plates.norm$Plate)
-  
-  #sort
-  plates.norm <- plates.norm %>% arrange(Experiment, Plate, Row, Column, Replicate) 
   return(plates.norm)
 }

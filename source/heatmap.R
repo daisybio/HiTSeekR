@@ -1,6 +1,8 @@
 #outlier detection
-my.outliers <- function(plates, method, margin=2, withControls=F)
+my.outliers <- function(plates, method, margin=2, withControls=F, signalColumn="Raw")
 { 
+  library(dplyr)
+  
   upper_margin <- margin
   
   if(withControls)
@@ -9,49 +11,50 @@ my.outliers <- function(plates, method, margin=2, withControls=F)
   }
   else
   {
-    data <- subset(plates, Column < 12)
+    data <- filter(plates, is.na(Control))
   }
-  
   if(method=="SD")
   {
-    kIn1.mean <- mean(plates$signal, na.rm=T)
-    kIn1.sd <- sd(plates$signal, na.rm=T)
-    kIn1.outliers <-  subset(data,((signal > (kIn1.mean + (upper_margin * kIn1.sd))) 
-                                   | (signal < (kIn1.mean - (margin * kIn1.sd))))) 
+    kIn1.mean <- mean(data[,signalColumn], na.rm=T)
+    kIn1.sd <- sd(data[,signalColumn], na.rm=T)
+    upper_limit <- kIn1.mean + (upper_margin * kIn1.sd)
+    lower_limit <- kIn1.mean - (margin * kIn1.sd)
   }
   else if(method=="MAD")
   {
-    kIn1.median <- median(plates$signal, na.rm=T)
-    kIn1.mad <- mad(plates$signal, na.rm=T)
-    kIn1.outliers <- subset(data,((signal > (kIn1.median + (upper_margin * kIn1.mad)))
-                                  | (signal < (kIn1.median - (margin * kIn1.mad)))))
+    kIn1.median <- median(data[,signalColumn], na.rm=T)
+    kIn1.mad <- mad(data[,signalColumn], na.rm=T)
+    upper_limit <- kIn1.median + (upper_margin * kIn1.mad)
+    lower_limit <- kIn1.median - (margin * kIn1.mad)
   }
   
   else if(method=="quartile")
   {
-    kIn1.quantiles <- quantile(plates$signal, na.rm=T)
+    kIn1.quantiles <- quantile(data[,signalColumn], na.rm=T)
     kIn1.IQR <- kIn1.quantiles[4] - kIn1.quantiles[2]
-    kIn1.outliers <- subset(data, ((signal > (kIn1.quantiles[4] + (upper_margin * kIn1.IQR))) 
-                                   | (signal < (kIn1.quantiles[2] - (margin * kIn1.IQR)))))
+    upper_limit <- kIn1.quantiles[3] + (upper_margin * kIn1.IQR)
+    lower_limit <- kIn1.quantiles[3] - (margin * kIn1.IQR)    
   }
 
-  else kIn1.outliers <- plates
+  else return(plates)
   
-  return(kIn1.outliers)
+  result <- data %>% filter(get(signalColumn, envir=as.environment(data)) > upper_limit 
+                            | get(signalColumn, envir=as.environment(data)) < lower_limit)
+  return(result)
 }
 
 #heatmap
-my.heatmap <- function(plates, signalType, margin, method, outliers, ncol=3, title="", colorA="red", colorB="yellow", showSampleLabels=T)
+my.heatmap <- function(plates, signalType, margin, method, outliers, ncol=3, title="", showSampleLabels=T, signalColumn="Raw")
 {
   kIn1.outliers <- outliers
   
   require(ggplot2)
   require(grid)
-  title <- paste(title, signalType ,": Heatmaps (labels for +-", margin, method, ")")
-  p2 <- qplot(Column, Row, data=plates, main=title, xlab="Column", ylab="Row")
-  p2 <- p2 + geom_tile(line=0, aes(fill = signal));
-  #p2 <- p2 + scale_fill_gradient2(midpoint=mean(kIn$log10, na.rm=T));
-  p2 <- p2 + scale_fill_gradient(low = colorA, high = colorB, name=paste(signalType));
+  #title <- paste(title, signalType ,": Heatmaps (labels for +-", margin, method, ")")
+  p2 <- qplot(Column, Row, data=plates, xlab="Column", ylab="Row")
+  p2 <- p2 + geom_tile(line=0, aes_string(fill = signalColumn));
+  p2 <- p2 + scale_fill_gradient2(midpoint=mean(plates[,signalColumn], na.rm=T), mid="#FFFFCC")
+  #p2 <- p2 + scale_fill_gradient(low = colorA, high = colorB, name=paste(signalType));
   p2 <- p2 + facet_wrap(~Plate, ncol=ncol);
   
   if(dim(kIn1.outliers)[1] > 0)

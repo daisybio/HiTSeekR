@@ -29,8 +29,8 @@ targetsForInteractionGraph <- reactive({
 #       colnames(temp.result) <- c("gene_symbol", "miRNA")
 #       result <- rbind(result, temp.result)
 #     }
-#     data$miRBase.ID.miRPlus.ID <- sub("mir", "miR", data$miRBase.ID.miRPlus.ID)
-#     result <- merge(result, unique(data[,c("miRBase.ID.miRPlus.ID", "category")]), by.x="miRNA", by.y="miRBase.ID.miRPlus.ID", all.x=T, all.y=F)
+#     data$Sample <- sub("mir", "miR", data$Sample)
+#     result <- merge(result, unique(data[,c("Sample", "category")]), by.x="miRNA", by.y="Sample", all.x=T, all.y=F)
 #     result[,1] <- gsub("hsa-", "", result[,1])
     #print(result)
     return(grouped.targets)
@@ -54,12 +54,12 @@ mirna.targets <- reactive({
     if(nrow(result) == 0) return (data.frame(error="No target has been found. reduce stringency or increase number of hits."))
     if(input$group.miRNAs)
     {
-      data$miRBase.ID.miRPlus.ID <- sub("mir", "miR", data$miRBase.ID.miRPlus.ID)
+      data$Sample <- sub("mir", "miR", data$Sample)
       result$miRNA_list <- as.character(lapply(lapply(str_split(result$miRNA_list, "/"), function(x){
         temp.result <- ""
         for(miR in x){
           if(input$colorizeInTargetList){
-            cat.color <- switch(unique(subset(data, miRBase.ID.miRPlus.ID == miR)$category),
+            cat.color <- switch(unique(subset(data, Sample == miR)$category),
                                 "included" = "yellow",
                                 "suppressor" = "red",
                                 "promotor" = "blue") 

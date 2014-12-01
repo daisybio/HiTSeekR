@@ -20,10 +20,12 @@ source("source/Bscore.R")
 source("source/posEffectNorm.R")
 source("source/normalize.raw.data.R")
 source("source/call_KPM.R")
+source("source/highcharts_heatmap.R")
+source("source/highcharts_scatterplot.R")
 
 options(shiny.maxRequestSize=30*1024^2)
 
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
   
   ### DATA PROCESSING ###
   
@@ -79,11 +81,13 @@ shinyServer(function(input, output) {
     
     if(input$hasControls && !(is.null(input$controlCol)))
     {
-      normalizeRawData(processedData, control.based=T, pos.ctrl=input$posCtrl, neg.ctrl=input$negCtrl)
+      result <- normalizeRawData(processedData, control.based=T, pos.ctrl=input$posCtrl, neg.ctrl=input$negCtrl)
     }
     else{
-      normalizeRawData(processedData, control.based=F)    
-    }    
+      result <- normalizeRawData(processedData, control.based=F)    
+    }
+    
+    return(as.data.frame(result))
   })
   
   #identifier column types
@@ -94,23 +98,26 @@ shinyServer(function(input, output) {
   })
   
   output$uiOutput_data_options <- renderUI({
-    elements <- list(
+    elements <- list(column(4,
       selectInput("screenType", "Type of screen", c("Gene knockout (e.g. siRNA)" = "siRNA", "miRNA inhibitor / mimics" = "miRNA"), dataOptionDefaults()[["screenType"]]),
       selectInput("sampleCol", "Sample Name Column", dataColumns(), dataOptionDefaults()[["sampleCol"]]),
       selectInput("plateCol", "Plate Column", dataColumns(), dataOptionDefaults()[["plateCol"]]),
       selectInput("positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric"), dataOptionDefaults()[["posColType"]]),
-      selectInput("positionCol", "Position Column", dataColumns(), dataOptionDefaults()[["posCol"]]),
+      selectInput("positionCol", "Position Column", dataColumns(), dataOptionDefaults()[["posCol"]])
+    ),column(4,
       selectInput("accessionColType", "Accession Column Type", accTypes(), dataOptionDefaults()[["accColType"]]),
       selectInput("accessionCol", "Accession Column", dataColumns(), dataOptionDefaults()[["accCol"]]),
       selectInput("measurementCol", "Measurement Column", dataColumns(), dataOptionDefaults()[["measurementCol"]]),
       selectInput("replicateCol", "Replicate Column", dataColumns(), dataOptionDefaults()[["replicateCol"]]),
-      selectInput("experimentCol", "Experiment Column", dataColumns(), dataOptionDefaults()[["expCol"]]),
+      selectInput("experimentCol", "Experiment Column", dataColumns(), dataOptionDefaults()[["expCol"]])
+    ),column(4,
       checkboxInput("hasControls", "Are controls included?", TRUE),
       conditionalPanel(condition = "input.hasControls",
         selectInput("controlCol", "Control Column", dataColumns(), dataOptionDefaults()[["ctrlCol"]])),        
         uiOutput("uiOutput_controls")
     )
-    do.call(wellPanel, elements)
+    )
+    do.call(fluidRow, elements)
   })
   
   output$uiOutput_controls <- renderUI({

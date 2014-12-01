@@ -9,12 +9,12 @@ getTargets <- function(outliers, hits.min=1, at.least=2, group.miRNAs=T, group.m
   require(plyr)
   miRNA.targets <- data.frame()
   #repair ids
-  outliers$miRBase.ID.miRPlus.ID <- sub("mir", "miR", outliers$miRBase.ID.miRPlus.ID)
+  outliers$Sample <- sub("mir", "miR", outliers$Sample)
   
   if(length(databases) == 1) databases <- dbListTables(RmiR.Hs.miRNA_dbconn())
   
   #query all dbs
-  mirnas <- unique(outliers$miRBase.ID.miRPlus.ID)
+  mirnas <- unique(outliers$Sample)
   firstLoop <- TRUE
 
   #group miRNAs together
