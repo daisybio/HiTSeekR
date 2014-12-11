@@ -52,7 +52,9 @@ output$intHeatmapPlot <- renderChart2({
 # Interactive plots for screen hits #
 output$scatterPlotHits <- renderChart({
   outl <- outliers()
-  p1 <- dPlot(y=input$normalization, x=c("Sample", "Well.position"), z=paste(input$normalization, ".sem", sep=""), data=outl, type="bubble", groups="category", width=1000, height=600)  
+  p1 <- dPlot(y=input$normalization, x=c("Sample", "Well.position"), z=paste(input$normalization, ".sem", sep=""), 
+              data=outl, type="bubble", groups="category", height="700", width="100%",
+              bounds = list(x=70, y=30, height="600", width="90%"))  
   p1$addParams(dom='scatterPlotHits')
   if(input$showSEM) p1$zAxis(type="addMeasureAxis", overrideMax = 2*max(outl[[paste(input$normalization, ".sem", sep="")]]))
   

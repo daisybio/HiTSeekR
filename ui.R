@@ -5,11 +5,12 @@ require(grid)
 require(gridExtra)
 require(scales)
 require(RmiR)
+require(shinysky)
 
 shinyUI(fluidPage(
  navbarPage(
   HTML('<img src="RNAice.png"/>'),
-  id="mainNavbar",
+  id="mainNavbar",  
   tabPanel("Data",wellPanel(fluidRow(column(4,
            conditionalPanel(condition="input.file==null",
              selectInput("dataset", "Select a demo dataset or...", choices = c("BCSC/MaSC miRNA inhibitors" = "BCSC", "MTS data" = "MTS data"))
@@ -20,8 +21,8 @@ shinyUI(fluidPage(
     hr(),
     conditionalPanel(condition="input.showColOptions", wellPanel(uiOutput("uiOutput_data_options"))),
     uiOutput("uiOutput_data")
-  ),           
-  tabPanel("Hits", uiOutput("uiOutput_hits_options"), mainPanel(uiOutput("uiOutput_hits"))),        
+  ),   
+  tabPanel("Hits", uiOutput("uiOutput_hits_options"), uiOutput("uiOutput_hits")),        
   tabPanel("Consensus Hits", uiOutput("uiOutput_consensus_hits")),
   tabPanel("miRNA target genes",uiOutput("uiOutput_mirna_targets")),
   tabPanel("KPM", verbatimTextOutput("KPM.test"), actionButton("startKPMButton", "Start miRNA target gene enrichment with KPM"), downloadButton('downloadIndicatorMatrix')),

@@ -11,7 +11,7 @@ formattedTable <- reactive({
   return(data)
 })
 
-output$table <- renderDataTable(formattedTable())
+output$table_hits <- renderDataTable(formattedTable())
 
 # Raw data
 output$table_rawData <- renderDataTable(rawData())
@@ -30,6 +30,9 @@ output$consensusHitList <- renderChart2({
 
 # mRNA targets #
 output$mirna.targets.table <- renderDataTable(targetsForInteractionGraph())
+
+# Family hit rate # 
+output$family.hitrate <- renderDataTable(family.hitrate())
 
 # GO enrichment analysis based on mRNA targets #
 output$goEnrichmentTable <- renderChart2({

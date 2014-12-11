@@ -9,7 +9,6 @@ targetsForInteractionGraph <- reactive({
   result <- isolate({    
     result <- data.frame()
     grouped.targets <- getTargets(data, group.miRNAs=input$group.miRNAs, group.miRNAs.threshold=input$group.miRNAs.threshold, databases=input$selectedTargetDBs)  
-
     if(input$remove.nas.from.target.list){
       grouped.targets <- na.omit(grouped.targets)
     }

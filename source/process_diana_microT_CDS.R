@@ -8,7 +8,7 @@
 
 #read file efficiently
 library(sqldf)
-microT.hsa <- read.csv.sql(file="data//microT_CDS_data.filtered.hsa.csv",header=T, sql="select * from file", row.names=F,field.types=list(TranscriptId="text", "GeneId(name)"="text", "Mirna-Name(miRBase-version)"="text", "miTG-score"="real"), colClasses=c("character", "character", "character", "numeric"))
+microT.hsa <- read.csv.sql(file="data//microT_CDS_data.filtered.hsa.csv",header=T, dbname="microT.hsa.sqlite3", sql="select * from file", row.names=F,field.types=list(TranscriptId="text", "GeneId(name)"="text", "Mirna-Name(miRBase-version)"="text", "miTG-score"="real"), colClasses=c("character", "character", "character", "numeric"))
 gene_split <- colsplit(microT.hsa[,2], "\\(", c("ensembl_id", "symbol"))
 
 mirna_split <- colsplit(microT.hsa[,3], "\\(", c("mirna_id", "miRBase_version"))

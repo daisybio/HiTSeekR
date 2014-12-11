@@ -10,7 +10,7 @@ output$uiOutput_mirna_targets <- renderUI({
              checkboxInput("showTargetDBs", "Select miRNA target databases", FALSE),
              conditionalPanel(
                condition = "input.showTargetDBs",
-               checkboxGroupInput("selectedTargetDBs", "currently selected:", dbListTables(RmiR.Hs.miRNA_dbconn()), "mirbase"),
+               checkboxGroupInput("selectedTargetDBs", "currently selected:", c(dbListTables(RmiR.Hs.miRNA_dbconn()), "RNAhybrid_hsa"), "RNAhybrid_hsa"),
                helpText("tarbase is a database of experimentally verified targets. Other DBs deliver prediction based targets.")
              ),
              checkboxInput("group.miRNAs", "Group miRNAs to gene targets", FALSE),
