@@ -3,8 +3,15 @@ output$interactionTable <- renderChart2({
 })
 
 # Hit List #
-formattedTable <- reactive({
+formattedTable <- reactive({  
   data <- outliers()
+  
+  if(is.null(data)) return(NULL)
+  
+  if(!input$show.sem.in.hits)
+    data <- data %>% dplyr::select(-ends_with(".sem")) 
+  
+  data <- data %>% dplyr::select(-one_of("mature_from", "mature_to", "evidence", "experiment", "similarity"))
   data[data$category %in% c("promotor"),"category"] <- "<div style='background:#80B1D3; text-align:center; border-radius: 15px; width:25px; height:25px;'>P</div>"
   data[data$category %in% c("suppressor"),"category"] <- "<div style='background:#FB8072; text-align:center; border-radius: 15px; width:25px; height:25px;'>S</div>"
   data[data$category %in% c("included"),"category"] <- "<div style='background:#FDB462; text-align:center; border-radius: 15px; width:25px; height:25px;'>I</div>"

@@ -24,6 +24,8 @@ source("source/normalize.raw.data.R")
 source("source/call_KPM.R")
 source("source/highcharts_heatmap.R")
 source("source/highcharts_scatterplot.R")
+source("source/bayesian_hit_selection.R")
+source("source/variance_based_hit_selection.R")
 
 options(shiny.maxRequestSize=30*1024^2)
 
@@ -34,108 +36,17 @@ shinyServer(function(input, output, session) {
   #load the data
   source("server/load_data.R", local = TRUE)  
   
+  #process data
+  source("server/process_data.R", local=TRUE)
+  
   #data columns
   dataColumns <- reactive({
     colnames(rawData())
   })
   
-  #data option default
-  dataOptionDefaults <- reactive({
-    if(input$dataset == "BCSC"){
-      return(c("screenType" = "miRNA",
-        "sampleCol" = "Sample", 
-        "posColType" = "alpha",
-        "posCol" = "Well.position",
-        "accColType" = "MIMAT",
-        "accCol" = "miRBase.accession",
-        "measurementCol" = "CTB",
-        "replicateCol" = "Replicate",
-        "plateCol" = "Plate",
-        "expCol" = "cellType",
-        "ctrlCol" = "Control"
-      ))
-    }
-    else return(NULL)
-  })
-  
-  #process data
-  processedData <- reactive({
-    data <- rawData()
-    sampleCol <- data[,input$sampleCol]
-    if(input$positionColType == "alpha")
-    {
-      wellAlpha <- repairAlphaName(data[,input$positionCol])
-      rowCol <- alphaNames2Pos(wellAlpha)
-    }
-    else if(input$positionColType == "numeric")
-    {
-      #TODO
-    }
-    replicateCol <- data[,input$replicateCol]
-    measurementCol <- data[,input$measurementCol]
-    accessionCol <- data[,input$accessionCol]
-    plateCol <- data[,input$plateCol]
-    experimentCol <- data[,input$experimentCol]
-    controlCol <- data[,input$controlCol]
+  #default data options for demo data sets
+  source("server/default_options.R", local = TRUE)
     
-    processedData <- cbind(experimentCol, sampleCol, accessionCol, plateCol, wellAlpha, rowCol, replicateCol, controlCol, measurementCol)
-    colnames(processedData) <- c("Experiment", "Sample", "Accession", "Plate", "Well.position", "Row", "Column", "Replicate", "Control", "Raw")
-    
-    if(input$hasControls && !(is.null(input$controlCol)))
-    {
-      result <- normalizeRawData(processedData, control.based=T, pos.ctrl=input$posCtrl, neg.ctrl=input$negCtrl)
-    }
-    else{
-      result <- normalizeRawData(processedData, control.based=F)    
-    }
-    
-    return(as.data.frame(result))
-  })
-  
-  #identifier column types
-  accTypes <- reactive({
-    #if(input$screenType == "siRNA") return(c("RefSeq", "Entrez", "GeneSymbol"))
-    #else if(input$screenType == "miRNA") return(c("MI", "MIMAT"))
-    return(c("RefSeq", "Entrez", "MIMAT", "MI"))
-  })
-  
-  output$uiOutput_data_options <- renderUI({
-    elements <- list(column(4,
-      selectInput("screenType", "Type of screen", c("Gene knockout (e.g. siRNA)" = "siRNA", "miRNA inhibitor / mimics" = "miRNA"), dataOptionDefaults()[["screenType"]]),
-      selectInput("sampleCol", "Sample Name Column", dataColumns(), dataOptionDefaults()[["sampleCol"]]),
-      selectInput("plateCol", "Plate Column", dataColumns(), dataOptionDefaults()[["plateCol"]]),
-      selectInput("positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric"), dataOptionDefaults()[["posColType"]]),
-      selectInput("positionCol", "Position Column", dataColumns(), dataOptionDefaults()[["posCol"]])
-    ),column(4,
-      selectInput("accessionColType", "Accession Column Type", accTypes(), dataOptionDefaults()[["accColType"]]),
-      selectInput("accessionCol", "Accession Column", dataColumns(), dataOptionDefaults()[["accCol"]]),
-      selectInput("measurementCol", "Measurement Column", dataColumns(), dataOptionDefaults()[["measurementCol"]]),
-      selectInput("replicateCol", "Replicate Column", dataColumns(), dataOptionDefaults()[["replicateCol"]]),
-      selectInput("experimentCol", "Experiment Column", dataColumns(), dataOptionDefaults()[["expCol"]])
-    ),column(4,
-      checkboxInput("hasControls", "Are controls included?", TRUE),
-      conditionalPanel(condition = "input.hasControls",
-        selectInput("controlCol", "Control Column", dataColumns(), dataOptionDefaults()[["ctrlCol"]])),        
-        uiOutput("uiOutput_controls")
-    )
-    )
-    do.call(fluidRow, elements)
-  })
-  
-  output$uiOutput_controls <- renderUI({
-    if(is.null(input$controlCol) || !input$hasControls) return(NULL)
-    
-    data <- rawData()
-    
-    ctrlTypes <- unique(as.character(data[,input$controlCol]))
-    
-    ctrlSelects <- list(
-    selectInput("posCtrl", "Positive Control", ctrlTypes, multiple=T),
-    selectInput("negCtrl", "Negative Control", ctrlTypes, multiple=T)
-    )
-    do.call(wellPanel, ctrlSelects)
-  })
-  
   # filter and summarize
   source("server/filter_data.R", local = TRUE)
   
@@ -174,6 +85,7 @@ shinyServer(function(input, output, session) {
 
   ### User Interface ###
   
+  source("ui/navbar_data_options.R", local = TRUE)
   source("ui/navbar_hits.R", local = TRUE)
   source("ui/navbar_consensus_hits.R", local = TRUE)
   source("ui/navbar_mirna_targets.R", local = TRUE)

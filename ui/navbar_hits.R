@@ -1,15 +1,28 @@
 output$uiOutput_hits_options <- renderUI({
- wellPanel(
+
+  wellPanel(
   fluidRow(
     column(4,
-      actionButton("updateNormalization", "Update Settings", styleclass="primary")
+      actionButton("updateNormalization", "Update Settings", styleclass="primary"),
+      checkboxInput("show.sem.in.hits", "Show replicate standard error of the mean", FALSE)
     ),column(4,      
       selectInput("experimentSelected", "Select experiment:", unique(as.character(processedData()$Experiment)), processedData()$Experiment[1]),
       selectInput("normalization", "Raw Data / Normalization:", 
-                choices = c("Raw", "poc", "npi", "centered", "rcentered", "zscore", "rzscore", "Bscore", "posEffectNorm"))
+                choices = c("Raw signal" = "Raw", "Percentage of negative control (poc)" = "poc", "Normalized percentage inhibition (npi)" = "npi", "Centered by mean (centered)" = "centered", "Centered by median (rcentered)" = "rcentered", "z-score" = "zscore", "Robust z-score (rzscore)" = "rzscore", "B-score" = "Bscore"))      
     ),column(4,
-      selectInput("method", "Method for margin calculation:", choices = c("SD", "MAD", "quartile")),
-      sliderInput("margin", "Margin:",  min = 0.5, max = 5, value = 2.5, step= 0.5)
+      selectInput("method", "Method for margin calculation:", choices = c("Bayesian Statistics" = "Bayes", "Standard deviation" ="SD", "Median absolute deviation" = "MAD", "Inter-quartile range" = "quartile")),
+      conditionalPanel(
+        condition = "input.method != 'Bayes'",
+        sliderInput("margin", "Margin:",  min = 0.5, max = 5, value = 2.5, step= 0.5)
+      ),
+      conditionalPanel(
+        condition = "input.method == 'Bayes'",
+        wellPanel(
+        selectInput("bayes_hypothesis", "Select hypothesis:", 
+                    choices = list("effect" = "p_effect", "suppressor" = "p_suppressor", "promotor"= "p_promotor")),
+        sliderInput("bayes_pval_cutoff", "p-value cutoff (>)", min=0, max=1, value = 0.95, step=0.01)
+        )
+      )
     )
   ), fluidRow(
     checkboxInput("showFilterOptions", "Sample filter options", FALSE),               
@@ -44,9 +57,8 @@ output$uiOutput_hits <- renderUI({
    tabPanel("Scatter Plots", uiOutput("scatterPlotTagList")),
    tabPanel("Plate Viewer",
             sidebarPanel(
-              checkboxInput("showSEM", "Show SEM", TRUE),
               sliderInput("plateSelected", "Select a plate:", min=min(plates), max=max(plates), value=min(plates), step=1),
-              sliderInput("replicateSelected", "Select a replicate:", min=min(replicates), max=max(replicates), value=min(replicates), step=1)
+              sliderInput("replicateSelected", "Select a replicate (heatmap):", min=min(replicates), max=max(replicates), value=min(replicates), step=1)
             ),mainPanel(
               tags$script(src = "https://code.highcharts.com/modules/heatmap.js"),
               showOutput("intHeatmapPlot", "highcharts"),

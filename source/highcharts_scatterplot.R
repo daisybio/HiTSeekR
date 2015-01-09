@@ -26,14 +26,15 @@ highcharts.scatterplot.plate <- function(plot.data, show.error=F){
                  tooltip = list(pointFormat = '{point.Sample} {point.Accession}')
             ),
             list(name = group,#paste(group, 'error', sep=" "),
-                 type = 'errorbar',
-                 data = foreach(i = 1:nrow(group.data)) %do% 
-                    {                        
-                        return(c(group.data$x[i],c(group.data$y[i] - group.data$sem[i],
-                                 group.data$y[i] + group.data$sem[i])))
-                    },
-                 enableMouseTracking = FALSE
-            )
+               type = 'errorbar',
+               data = foreach(i = 1:nrow(group.data)) %do% 
+                  {                        
+                      return(c(group.data$x[i],c(group.data$y[i] - group.data$sem[i],
+                               group.data$y[i] + group.data$sem[i])))
+                  },
+               enableMouseTracking = FALSE,
+               visible = show.error
+            )            
         )
     }
     

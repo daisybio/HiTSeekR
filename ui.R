@@ -22,7 +22,7 @@ shinyUI(fluidPage(
     conditionalPanel(condition="input.showColOptions", wellPanel(uiOutput("uiOutput_data_options"))),
     uiOutput("uiOutput_data")
   ),   
-  tabPanel("Hits", uiOutput("uiOutput_hits_options"), uiOutput("uiOutput_hits")),        
+  tabPanel("Hits", shinyalert("hits_error"), uiOutput("uiOutput_hits_options"), uiOutput("uiOutput_hits")),        
   tabPanel("Consensus Hits", uiOutput("uiOutput_consensus_hits")),
   tabPanel("miRNA target genes",uiOutput("uiOutput_mirna_targets")),
   tabPanel("KPM", verbatimTextOutput("KPM.test"), actionButton("startKPMButton", "Start miRNA target gene enrichment with KPM"), downloadButton('downloadIndicatorMatrix')),

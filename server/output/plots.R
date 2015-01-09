@@ -53,10 +53,10 @@ output$intHeatmapPlot <- renderChart2({
 output$scatterPlotHits <- renderChart({
   outl <- outliers()
   p1 <- dPlot(y=input$normalization, x=c("Sample", "Well.position"), z=paste(input$normalization, ".sem", sep=""), 
-              data=outl, type="bubble", groups="category", height="700", width="100%",
+              data=outl, type="bubble", groups="category", height="800", width="100%",
               bounds = list(x=70, y=30, height="600", width="90%"))  
   p1$addParams(dom='scatterPlotHits')
-  if(input$showSEM) p1$zAxis(type="addMeasureAxis", overrideMax = 2*max(outl[[paste(input$normalization, ".sem", sep="")]]))
+  if(input$show.sem.in.hits) p1$zAxis(type="addMeasureAxis", overrideMax = 2*max(outl[[paste(input$normalization, ".sem", sep="")]]))
   
   return(p1)
 })
@@ -71,9 +71,8 @@ output$intPlateScatterPlot <- renderChart2({
   plot.data$Well.index <- seq(1, nrow(plot.data))
   plot.data <- plot.data[,c("Well.index", input$normalization, paste(input$normalization, ".sem", sep=""), "Control", "Accession", "Sample")]
   
-  p <- highcharts.scatterplot.plate(plot.data, show.error=input$showSEM)
+  p <- highcharts.scatterplot.plate(plot.data, show.error=input$show.sem.in.hits)
   p$exporting(enabled=TRUE)
-  #p$set(dom='intPlateScatterPlot')
   return(p)
 })
 

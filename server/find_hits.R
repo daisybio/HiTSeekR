@@ -4,12 +4,46 @@ outliers <- reactive({
   input$updateNormalization
   input$updateInclusion
   input$updateExclusion
+    
+  if(input$normalization != "Raw" && input$method=="Bayes")
+  {
+    showshinyalert(session, "hits_error", "Bayes method should be used on raw data only", "danger")  
+  }
   
+  progress <- shiny::Progress$new()
+  progress$set(message = "Finding hits...", value = 0)
+  on.exit(progress$close())
+  
+  updateProgress <- function(value = NULL, detail = NULL) {
+    if (is.null(value)) {
+      value <- progress$getValue()
+      value <- value + (progress$getMax() - value) / 5
+    }
+    progress$set(value = value, detail = detail)
+  }
+    
   outl <- isolate({
+    
     exp.data <- data()
+    
     #outl <- foreach(exp = unique(as.character(exp.data$Experiment)), .combine=rbind) %do%{
-    outl <- my.outliers(subset(exp.data, Experiment==input$experimentSelected), input$method, input$margin, signalColumn=input$normalization)    
-         
+    exp.data <- subset(exp.data, Experiment==input$experimentSelected)
+    
+    if(input$method == "Bayes")
+    {
+      if(is.null(negCtrl())){
+        showshinyalert(session, "hits_error", "Bayesian statistics are based on negative controls (used to calculate the priors). Select a negative control column in the DATA tab", "error")
+        return(exp.data[FALSE,])
+      }      
+      
+      #bayesian hit detection
+      outl <- bayesianHitSelection(exp.data, neg.ctrl=negCtrl(), signalColumn=input$normalization,alpha = 0.05, updateProgress=updateProgress)
+      outl <- outl[outl[[input$bayes_hypothesis]] > input$bayes_pval_cutoff,]  
+    }
+    else{
+      outl <- find.hits(exp.data, input$method, input$margin, signalColumn=input$normalization, updateProgress=updateProgress)    
+    }  
+
     if(nrow(outl) == 0) return(outl)
     outl[which(outl[,input$normalization] > mean(exp.data[,input$normalization], na.rm=T)),"category"] <- "promotor"
     outl[which(outl[,input$normalization] < mean(exp.data[,input$normalization], na.rm=T)),"category"] <- "suppressor"
@@ -21,11 +55,12 @@ outliers <- reactive({
         outl <- rbind(outl, extra)
       }
     }
-    
+     
     outl <- outl[,c(ncol(outl), seq(1:(ncol(outl)-1)))]
-    
+      
     return(outl)
   })
+  
   return(outl)
 })
 
