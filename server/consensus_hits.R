@@ -7,7 +7,7 @@ outliers.all <- reactive({
   for(method in input$multiNormalizations)
   {
     my.data$signal <- my.data[[method]]
-    outl <- isolate(my.outliers(my.data, input$method, input$margin, withControls=input$includeControls))
+    outl <- isolate(find.hits(my.data, input$method, input$margin, withControls=input$includeControls))
     outl$method <- method
     
     outl[outl[[method]] > mean(my.data[[method]], na.rm=T),"category"] <- "promotor"

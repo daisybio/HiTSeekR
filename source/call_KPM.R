@@ -1,11 +1,12 @@
 library(RCurl)
 library(rjson)
+library(foreach)
 
 base64EncFile <- function(fileName){  
   return(base64(readChar(fileName, file.info(fileName)$size)))
 }
 
-setup.KPM <- function(list.of.indicator.matrices, graphFile, algorithm="Greedy", strategy="INES", removeBENs=FALSE, ATTACHED_TO_ID){
+setup.KPM <- function(list.of.indicator.matrices, graphFile, algorithm="Greedy", strategy="GLONE", removeBENs=FALSE, K=0, L=0, ATTACHED_TO_ID){
   
   #create tempfiles
   tmp.file <- tempfile()
@@ -13,22 +14,25 @@ setup.KPM <- function(list.of.indicator.matrices, graphFile, algorithm="Greedy",
   #base64 encode files
   datasetList <- datasetList.KPM(list.of.indicator.matrices, list(tmp.file), ATTACHED_TO_ID)
   
+  #create a run id
+  RNAice_RUN_ID <- paste(sample(c(LETTERS[1:6],0:9),6,replace=TRUE),collapse="")
+  
   # setup the json settings:
   KPMsettings <- toJSON(
     list(
       parameters=c(
-        name=paste("RNAice run", ATTACHED_TO_ID),
+        name=paste("RNAice run", RNAice_RUN_ID),
         algorithm=algorithm,
         strategy=strategy,
-        removeBENs=as.character(removeBENs),
+        removeBENs=tolower(as.character(removeBENs)),
         unmapped_nodes="Add to positive list",
         computed_pathways=20,
         graphName=basename(graphFile),             
         l_samePercentage="false",
         samePercentage_val=0,
-        k_values=list(c(val=5, val_step=1, val_max=1, use_range="false", isPercentage="false")),
+        k_values=list(c(val=K, val_step=1, val_max=1, use_range="false", isPercentage="false")),
         l_values=list(      
-          c(val=102, val_step=1, val_max=1, use_range="false", isPercentage="false", datasetName=basename(tmp.file))
+          c(val=L, val_step=1, val_max=1, use_range="false", isPercentage="false", datasetName=basename(tmp.file))
         )), 
       withPerturbation="false",
       linkType="OR",
@@ -55,37 +59,88 @@ datasetList.KPM <- function(list.of.indicator.matrices, list.of.tmp.files, ATTAC
   return(toJSON(datasetList))
 }
 
-call.KPM <- function(indicator.matrices){
+call.KPM <- function(indicator.matrices, url=url <- "http://localhost:8080/kpm-web/", ATTACHED_TO_ID=NULL, ...){
   
   # generate random UUID:
-  ATTACHED_TO_ID = paste(sample(c(letters[1:6],0:9),30,replace=TRUE),collapse="")
+  if(is.null(ATTACHED_TO_ID))
+  ATTACHED_TO_ID = paste(sample(c(LETTERS[1:6],0:9),32,replace=TRUE),collapse="")
+  print(ATTACHED_TO_ID)
   
   #PPI network for KPM
   #graphFile <- "data/biogrid_entrez.sif"
-  graphFile <- "data/graph-ulitsky-entrez.sif"
+  #graphFile <- "data/graph-ulitsky-entrez.sif"
+  graphFile <- "data/graph-hprd-entrez.sif"
   graph <- base64EncFile(graphFile)
   graph <- toJSON(c(name=basename(graphFile), attachedToID=ATTACHED_TO_ID, contentBase64=graph))
   
   #KPM settings:
-  kpmSetup <- setup.KPM(indicator.matrices, ATTACHED_TO_ID=ATTACHED_TO_ID, graphFile)
+  kpmSetup <- setup.KPM(indicator.matrices, ATTACHED_TO_ID=ATTACHED_TO_ID, graphFile, ...)
     
   result <- NULL
+  print(sprintf("url: %s", url))
+  print(sprintf("kpmSettings: %s", kpmSetup[[1]]))  
+  result <- sendToKpmServiceAsync(url, kpmSetup, graph)
+
+  return(result)
+}
+
+withTryCatch <- function(surroundedFunc){
   tryCatch({
-    
-    url <- "http://localhost:8080/kpm-web/requests/kpmJSON"
-    print(sprintf("url: %s", url))
-    
-    result <- postForm(url, kpmSettings=kpmSetup[[1]], datasets=kpmSetup[[2]], graph=graph)
-    result <- fromJSON(result)  
+    surroundedFunc()
   }, error = function(e) {
-    
     if("COULDNT_CONNECT" %in% class(e)){
       print("Error: Couldn't connect to url.")
     }else{
       print("Unexpected error:")
       print(class(e))
+    }    
+    return(NULL)
+  })
+}
+
+sendToKpmServiceAsync <- function(url, kpmSetup, inputGraph){
+  withTryCatch(function(){    
+    url <- paste(url, "requests/kpmAsyncJSON", sep="")    
+    result <- postForm(url, kpmSettings=kpmSetup[[1]], datasets=kpmSetup[[2]], graph=inputGraph)
+    
+    jsonResult <- fromJSON(result)
+    print(jsonResult["comment"])   
+    return(jsonResult)
+  })
+}
+
+getKpmRunStatus <- function(url, questId){
+  withTryCatch(function(){
+    url <- paste(url, "requests/kpmRunStatus", sep="")
+    print(sprintf("url: %s", url))    
+    result <- postForm(url, questID=questId)
+    jsonResult <- fromJSON(result)
+    
+    if(tolower(jsonResult["success"]) == "cancelled"){
+      print("Run has been cancelled.")
+      return
     }
     
-  })  
-  return(result)
+    print(jsonResult["completed"]) 
+    print(jsonResult["progress"])
+    
+    return(jsonResult)
+  })
+}
+
+getKpmResults <- function(url, questId){
+  withTryCatch(function(){
+    url <- paste(url, "requests/kpmResults", sep="")
+    print(sprintf("url: %s", url))
+    
+    result <- postForm(url, questID=questId)
+    jsonResult <- fromJSON(result)
+    
+    if(tolower(jsonResult["success"]) == "true"){
+      return(jsonResult)
+    }
+    else{
+      return(NULL)
+    }
+  })
 }

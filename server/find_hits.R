@@ -25,7 +25,6 @@ outliers <- reactive({
   outl <- isolate({
     
     exp.data <- data()
-    
     #outl <- foreach(exp = unique(as.character(exp.data$Experiment)), .combine=rbind) %do%{
     exp.data <- subset(exp.data, Experiment==input$experimentSelected)
     
@@ -42,6 +41,7 @@ outliers <- reactive({
     }
     else{
       outl <- find.hits(exp.data, input$method, input$margin, signalColumn=input$normalization, updateProgress=updateProgress)    
+      outl <- as.data.frame(outl)
     }  
 
     if(nrow(outl) == 0) return(outl)
@@ -64,6 +64,12 @@ outliers <- reactive({
   return(outl)
 })
 
+selectedHitList <- reactive({
+  if(input$useConsensus == "hit list") data <- outliers()
+  else data <- consensusHitList()
+  return(data)
+})
+
 family.hitrate <- reactive({
  library(mirbase.db)
  all.data <- data()
@@ -71,12 +77,12 @@ family.hitrate <- reactive({
  hits <- outliers()
 
  result <- formattedTable()
- result <- within(result, hits <- paste(category, mature_name))
+ result <- within(result, hits <- paste(category, Sample))
  result <- result %>% group_by(prefam_acc, id) %>% summarise(hits_count=n(),
                 distinct_hits_count=n_distinct(mirna_id), 
-                category_mature_mirna=paste(hits, collapse="")
+                samples=paste(hits, collapse="")
  )
- #
+ 
  final_result <- left_join(result, all.data, by="prefam_acc")
  final_result <- final_result %>% mutate(family_coverage=distinct_hits_count/library_count)
  final_result <- final_result %>% filter(library_count > input$family_size_cutoff, family_coverage > (input$family_coverage_cutoff/100))
@@ -89,8 +95,6 @@ family.hitrate <- reactive({
  final_result[family_coverage < 0.33, "family_coverage"] <-  sub("#FDB462", "#FF0000", final_result[family_coverage < 0.33, "family_coverage"])
  final_result[family_coverage > 0.66, "family_coverage"] <-  sub("#FDB462", "#40FF00", final_result[family_coverage > 0.66, "family_coverage"])
  final_result <- na.omit(final_result)
- 
- showshinyalert(session, "miRNA_family_info", "library_count refers to ", "info")
- 
+  
  return(as.data.frame(final_result))
 })

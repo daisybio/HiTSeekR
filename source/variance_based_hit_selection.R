@@ -3,7 +3,7 @@ find.hits <- function(plates, method, margin=2, withControls=F, signalColumn="Ra
 { 
   library(dplyr)
   
-  updateProgress(detail=method)
+  if(!is.null(updateProgress)) updateProgress(detail=method)
   
   upper_margin <- margin
   

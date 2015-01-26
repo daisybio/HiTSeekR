@@ -28,7 +28,7 @@ output$downloadConsensusHits <- downloadHandler(
 output$downloadTargets <- downloadHandler(
   filename = function() { paste('targets', paste(input$selectedTargetDBs, collapse="_"), input$margin, input$method, '.csv', sep='_') },
   content = function(file) {
-    data <- targets()
+    data <- mirna.targets()
     if(input$colorizeInTargetList){
       data$categories <- gsub("blue", "P", gsub("red", "S", sapply(str_extract_all(data$miRNA_list, "red|blue"), paste, collapse="/")))
       data$miRNA_list <- gsub("<|>", "", sapply(str_extract_all(data$miRNA_list, ">.*?<"), paste, collapse="/"))

@@ -3,23 +3,20 @@ library(RmiR)
 library(dplyr)
 library(foreach)
 
-getTargets <- function(outliers, group.miRNAs=T, group.miRNAs.threshold=2, get.gene.symbols=F, databases=NA){
+getTargets <- function(hits, rnah.pvalue.threshold=0.001, get.gene.symbols=F, databases=NA){
   #repair ids
-  outliers <- sub("mir", "miR", outliers$Sample)
+  hits <- na.omit(sub("mir", "miR", hits$mature_name))
   miRNA.db <- src_sqlite(RmiR.Hs.miRNA_dbfile())
   if("RNAhybrid_hsa" %in% databases) rnah.db <- src_sqlite("data/rnahybrid.sqlite3")
   
   query.result <- foreach(db=databases, .combine=rbind) %do% {
-    if(db == "RNAhybrid_hsa") miRNA.targets <- tbl(rnah.db, "rnah")
+    if(db == "RNAhybrid_hsa"){
+      miRNA.targets <- tbl(rnah.db, "rnah")
+      miRNA.targets <- filter(miRNA.targets, pvalue < rnah.pvalue.threshold)
+    } 
     else miRNA.targets <- tbl(miRNA.db, db) 
     
-    miRNA.targets <- miRNA.targets %>% filter(mature_miRNA %in% outliers) 
-    if(group.miRNAs){
-      miRNA.targets <- miRNA.targets %>% 
-      group_by(mature_miRNA, gene_id) %>% 
-      summarize(count=n(), source_db=db) %>% 
-      filter(count > group.miRNAs.threshold)
-    }
+    miRNA.targets <- miRNA.targets %>% filter(mature_miRNA %in% hits) 
     miRNA.targets <- collect(miRNA.targets)
     #get gene symbols and add them to the result table
     if(nrow(miRNA.targets) > 0 & get.gene.symbols){      

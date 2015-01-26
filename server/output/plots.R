@@ -76,17 +76,26 @@ output$intPlateScatterPlot <- renderChart2({
   return(p)
 })
 
+#create scatter plots of signal in all plates for each experiment using highcharts
+#use taglist to bind them together
+#TODO fix tooltip
 observe({
-  if(!identical(input$mainNavbar, "Hits")) return(NULL)
+  #if(!identical(input$mainNavbar, "Hits")) return(NULL)
   exp.data <- processedData()
   if(is.null(exp.data)) return(NULL)
+  if(is.null(input$normalization)) sel.normalization <- "Raw"
+  else sel.normalization <- input$normalization  
+  
   for(experiment in unique(exp.data$Experiment))
   {
     local({
       plotData <- subset(exp.data, Experiment == experiment)
       plotName <- paste(experiment, "IntScatterPlot", sep="")
-      output[[plotName]] <- renderChart({
-        p <- hPlot(Raw ~ wellCount, data = formatIntegerForPlot(plotData, "Plate"), type = "scatter", group = "Plate")
+      output[[plotName]] <- renderChart({         
+        formatted.plotData <-formatIntegerForPlot(plotData, "Plate")
+        p <- hPlot(y= sel.normalization, x = "wellCount", data = formatted.plotData, type = "scatter", group = "Plate")
+        #p$params$series[[1]]$data <- toJSONArray(formatted.plotData, json=F)
+        #p$tooltip(formatter = "#! function(){ return this.point.x + ',k' + this.point.Sample + this.point.y;} !#")
         p$addParams(dom=plotName)      
         return(p)
       })
@@ -100,7 +109,8 @@ output$intScatterPlot <- renderChart({
   return(p)
 })
 
-# Whole screen scatter plot #
+# Whole screen scatter plot, non interactive #
+### DEPRECATED ###
 output$scatterPlot <- renderPlot({
   data <- processedData()
   q <- ggplot(data, aes_string(x="wellCount", y=input$normalization, color="Plate", shape="Replicate")) + geom_point() + geom_line(stat="hline", yintercept="mean", color="black", aes(group=interaction(Plate, Replicate))) 
@@ -130,4 +140,17 @@ output$normalizationComparison <- renderPlot({
   data$signal <- NULL
   p2 <- qplot(x=wellCount, y=value, data=melt(subset(data, Plate==input$plateSelected), id.vars=c("Plate", "Well.position", "wellCount", "Replicate", "Sample", "Accession", "Sample", "Control", "Row", "Column")), color=Replicate, main="Comparison of different normalization methods") + facet_wrap(~variable, scales="free", ncol=3) + geom_smooth(method="loess")
   print(p2)
+})
+
+#KPM miRNA target enrichment plot
+output$KPM.plot <- renderPlot({
+
+  hits <- selectedHitList()
+  
+  if(input$accessionColType == "MI")
+  {
+    mimat <- as.data.frame(mirbaseMATURE)
+    hits <- left_join(hits, mimat, by=c("mirna_id"))
+  }
+  plot.miRNA.target.enrichment.graph(KPM.result(),targets.indicator.matrix(), hits)
 })

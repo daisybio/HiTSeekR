@@ -14,6 +14,8 @@ require(VennDiagram)
 require(qgraph)
 require(RTCA)
 require(shinysky)
+library(iterators)
+library(foreach)
 
 source("source/heatmap.R")
 source("source/RmiR2.R")
@@ -26,8 +28,12 @@ source("source/highcharts_heatmap.R")
 source("source/highcharts_scatterplot.R")
 source("source/bayesian_hit_selection.R")
 source("source/variance_based_hit_selection.R")
+source("source/plot.miRNA.target.enrichment.graph.R")
 
 options(shiny.maxRequestSize=30*1024^2)
+
+# load mircancer database #
+mircancer.database <- read.table("data/miRCancerSeptember2014.txt", sep="\t", header=T, quote="\"")
 
 shinyServer(function(input, output, session) {
   
@@ -90,6 +96,5 @@ shinyServer(function(input, output, session) {
   source("ui/navbar_consensus_hits.R", local = TRUE)
   source("ui/navbar_mirna_targets.R", local = TRUE)
   source("ui/gene_ontology.R", local = TRUE)
-  source("ui/navbar_mircancer.R", local = TRUE)
   source("ui/navbar_data.R", local = TRUE)
 }) 

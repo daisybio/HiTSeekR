@@ -1,13 +1,8 @@
-# load database #
-mircancer.database <- reactive({
-  read.table("data/miRCancerJune2013.txt", sep="\t", header=T, quote="\"")
-})
-
 # find entries for currently selected hits #
-outliers.mircancer <- reactive({
-  outliers <- outliers()
-  mirdb <- mircancer.database()
-  outliers$Sample <- sub("hsa-miR", "hsa-mir", outliers$Sample)
-  outliers <- outliers[-grep(".*>NA</a>", outliers$Accession),]
-  merge(outliers[,c("Sample", "Accession")], mirdb, by.x="Sample", by.y="mirId", all.x=T)
+hits.mircancer <- reactive({
+  hits <- selectedHitList()
+  hits <- hits[,c("mirna_id", "category", "Experiment", "Accession", "Sample")]
+  mirdb <- mircancer.database
+  showshinyalert(session, "mircancer_status", "This information was extracted from the September 2014 release of <a href='http://mircancer.ecu.edu/'>miRCancer</a>. To find the corresponding PubMed articles browse the miRNA in question by clicking on its id.","info")
+  return(as.data.frame(left_join(hits, mirdb, by = c("mirna_id" = "mirId"))))
 })

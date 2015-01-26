@@ -8,12 +8,12 @@ require(RmiR)
 require(shinysky)
 
 shinyUI(fluidPage(
- navbarPage(
-  HTML('<img src="RNAice.png"/>'),
+ navbarPage(  
+  titlePanel(HTML('<img src="RNAice.png"/>'), windowTitle="RNAice - RNAi comprehensive evaluation"),
   id="mainNavbar",  
   tabPanel("Data",wellPanel(fluidRow(column(4,
            conditionalPanel(condition="input.file==null",
-             selectInput("dataset", "Select a demo dataset or...", choices = c("BCSC/MaSC miRNA inhibitors" = "BCSC", "MTS data" = "MTS data"))
+             selectInput("dataset", "Select a demo dataset or...", choices = c("BCSC/MaSC miRNA inhibitors" = "BCSC", "Melanoma-Inhibiting miRNAs" = "A375_MTS"))
            )), column(4,
     fileInput("file", "Upload a new data set", multiple=FALSE)), column(4,
     selectInput("fileSeparator", "Column separator", c("tab"= "\t", "comma"= ",", "semicolon"=";"))))),                     
@@ -22,11 +22,11 @@ shinyUI(fluidPage(
     conditionalPanel(condition="input.showColOptions", wellPanel(uiOutput("uiOutput_data_options"))),
     uiOutput("uiOutput_data")
   ),   
-  tabPanel("Hits", shinyalert("hits_error"), uiOutput("uiOutput_hits_options"), uiOutput("uiOutput_hits")),        
+  tabPanel("Hit Discovery", shinyalert("hits_error"), uiOutput("uiOutput_hits_options"), uiOutput("uiOutput_hits")),        
   tabPanel("Consensus Hits", uiOutput("uiOutput_consensus_hits")),
-  tabPanel("miRNA target genes",uiOutput("uiOutput_mirna_targets")),
-  tabPanel("KPM", verbatimTextOutput("KPM.test"), actionButton("startKPMButton", "Start miRNA target gene enrichment with KPM"), downloadButton('downloadIndicatorMatrix')),
-  tabPanel("Controls", plotOutput("controlPlot", height=800), plotOutput("rowAndColumn", height=800)),
-  tabPanel("miRcancer DB", uiOutput("uiOutput_mircancer")),
+  tabPanel("miRNA Targets", 
+           shinyalert("mirna_target_status"), 
+           uiOutput("uiOutput_mirna_targets")),
+  tabPanel("Controls", plotOutput("controlPlot", height=800), plotOutput("rowAndColumn", height=800)),  
   tabPanel("Gene Ontology", uiOutput("uiOutput_geneOntology"))
 )))

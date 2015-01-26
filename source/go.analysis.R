@@ -24,7 +24,7 @@ goEnrichmentAnalysis <- function(go.targets, goUpOrDown="both", goDomain="BP", g
   #filter function for significant genes
   topGenes <- function(geneList)
   {
-    return(geneList >goScoringThreshold)
+    return(geneList > goScoringThreshold)
   }
   
   #create topGO data object

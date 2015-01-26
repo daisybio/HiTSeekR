@@ -1,12 +1,18 @@
-output$uiOutput_hits_options <- renderUI({
+#return experiments included in the selected data set
+experiments <- reactive({
+  experiments <- unique(as.character(processedData()$Experiment))
+  if(is.null(experiments)) return(NULL)
+  else return(experiments)
+})
 
+output$uiOutput_hits_options <- renderUI({
   wellPanel(
   fluidRow(
     column(4,
       actionButton("updateNormalization", "Update Settings", styleclass="primary"),
       checkboxInput("show.sem.in.hits", "Show replicate standard error of the mean", FALSE)
     ),column(4,      
-      selectInput("experimentSelected", "Select experiment:", unique(as.character(processedData()$Experiment)), processedData()$Experiment[1]),
+      selectInput("experimentSelected", "Select experiment:", experiments(), experiments()[1]),
       selectInput("normalization", "Raw Data / Normalization:", 
                 choices = c("Raw signal" = "Raw", "Percentage of negative control (poc)" = "poc", "Normalized percentage inhibition (npi)" = "npi", "Centered by mean (centered)" = "centered", "Centered by median (rcentered)" = "rcentered", "z-score" = "zscore", "Robust z-score (rzscore)" = "rzscore", "B-score" = "Bscore"))      
     ),column(4,
@@ -38,23 +44,13 @@ output$uiOutput_hits_options <- renderUI({
  )
 })
 
-
-output$scatterPlotTagList <- renderUI({
-  exp.data <- processedData()
-  plots <- foreach(experiment = unique(exp.data$Experiment)) %do% {
-    plot.name <- paste(experiment, "IntScatterPlot", sep="")
-    showOutput(plot.name, "highcharts")
-  }
-  do.call(tagList, plots)
-})
-
 output$uiOutput_hits <- renderUI({
   exp.data <- processedData()
   plates <- as.integer(unique(exp.data$Plate))
   replicates <- as.integer(unique(exp.data$Replicate))
   
  elements <- list(    
-   tabPanel("Scatter Plots", uiOutput("scatterPlotTagList")),
+   #tabPanel("Scatter Plots", uiOutput("scatterPlotTagList")),
    tabPanel("Plate Viewer",
             sidebarPanel(
               sliderInput("plateSelected", "Select a plate:", min=min(plates), max=max(plates), value=min(plates), step=1),
