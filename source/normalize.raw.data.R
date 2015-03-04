@@ -3,7 +3,7 @@ normalizeRawData <- function(plates, control.based=F, pos.ctrl=NULL, neg.ctrl=NU
   
   if(is.function(updateProgress)) updateProgress(detail="Plate based", value=0.2)
   #applying normalization strategies
-  plates.norm <- plates %>% group_by(Experiment, Plate, Replicate) %>% mutate(
+  plates.norm <- plates %>% group_by(Experiment, Readout, Plate, Replicate) %>% mutate(
                        rzscore=(Raw - median(Raw, na.rm=T))/mad(Raw, na.rm=T),
                        zscore=(Raw - mean(Raw, na.rm=T))/sd(Raw, na.rm=T), 
                        centered=Raw/mean(Raw, na.rm=T),

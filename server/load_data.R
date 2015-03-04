@@ -7,6 +7,19 @@ rawData <- reactive({
     else if(input$dataset == "A375_MTS"){
       data <- read.table("data/A375_MTS.txt", header=T, sep="\t")
     }
+    else if(input$dataset == "DM_Kc167"){
+      library(cellHTS2)
+      experimentName <- "KcViab"
+      dataPath <- system.file(experimentName, package="cellHTS2")
+      x <- readPlateList("Platelist.txt", name = experimentName,path = dataPath)
+      x <- configure(x, descripFile = "Description.txt", confFile = "Plateconf.txt", logFile = "Screenlog.txt", path = dataPath)
+      x <- cellHTS2::annotate(x, geneIDFile = "GeneIDs_Dm_HFA_1.1.txt", path = dataPath)
+      kcViab <- cbind(as(featureData(x), "data.frame"), assayData(x)[["Channel 1"]])
+      kcViab <- melt(kcViab,id.vars=c("plate", "well", "controlStatus", "HFAID", "GeneID"))
+      colnames(kcViab)[ncol(kcViab)-1] <- "replicate"   
+      data <- kcViab
+      data$experiment <- experimentName
+    }
   }
   else{
     file <- input$file
@@ -14,4 +27,12 @@ rawData <- reactive({
   }
   
   return(data)
+})
+
+datasetName <- reactive({
+  if(!is.null(input$file)){
+    updateSelectInput(session, "dataset", c(demo.data.sets, "CUSTOM"="CUSTOM"), "CUSTOM")
+    return("CUSTOM")
+  } 
+  else return(input$dataset)
 })

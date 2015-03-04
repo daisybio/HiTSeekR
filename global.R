@@ -1,0 +1,1 @@
+demo.data.sets <- c("BCSC/MaSC miRNA inhibitors" = "BCSC", "Melanoma-Inhibiting miRNAs" = "A375_MTS", "Drosophila M. Kc167 genome-wide siRNA screen"="DM_Kc167")

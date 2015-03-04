@@ -52,11 +52,16 @@ output$intHeatmapPlot <- renderChart2({
 # Interactive plots for screen hits #
 output$scatterPlotHits <- renderChart({
   outl <- outliers()
-  p1 <- dPlot(y=input$normalization, x=c("Sample", "Well.position"), z=paste(input$normalization, ".sem", sep=""), 
+  p1 <- dPlot(y=input$normalization, x=c("Sample", "Well.position"), z=paste(input$normalization, "_sem", sep=""), 
               data=outl, type="bubble", groups="category", height="800", width="100%",
               bounds = list(x=70, y=30, height="600", width="90%"))  
   p1$addParams(dom='scatterPlotHits')
-  if(input$show.sem.in.hits) p1$zAxis(type="addMeasureAxis", overrideMax = 2*max(outl[[paste(input$normalization, ".sem", sep="")]]))
+  #in case we don't see any promotors we need to change the default color to red to make sure suppressors remain colored red
+  if(!("promotor" %in% as.character(outl$category)))
+    p1$defaultColors("#!d3.scale.ordinal().range(['#FB8072','#FDB462']).domain([0,1])!#")
+  else if("included" %in% as.character(outl$category))
+    p1$defaultColors("#!d3.scale.ordinal().range(['#FDB462','#80B1D3','#FB8072']).domain([0,1])!#")
+  if(input$show.sem.in.hits) p1$zAxis(type="addMeasureAxis", overrideMax = 2*max(outl[[paste(input$normalization, "_sem", sep="")]]))
   
   return(p1)
 })
@@ -69,7 +74,7 @@ output$intPlateScatterPlot <- renderChart2({
   
   plot.data <- as.data.frame(plot.data)
   plot.data$Well.index <- seq(1, nrow(plot.data))
-  plot.data <- plot.data[,c("Well.index", input$normalization, paste(input$normalization, ".sem", sep=""), "Control", "Accession", "Sample")]
+  plot.data <- plot.data[,c("Well.index", input$normalization, paste(input$normalization, "_sem", sep=""), "Control", "Accession", "Sample")]
   
   p <- highcharts.scatterplot.plate(plot.data, show.error=input$show.sem.in.hits)
   p$exporting(enabled=TRUE)
@@ -110,12 +115,14 @@ output$intScatterPlot <- renderChart({
 })
 
 # Whole screen scatter plot, non interactive #
-### DEPRECATED ###
 output$scatterPlot <- renderPlot({
-  data <- processedData()
-  q <- ggplot(data, aes_string(x="wellCount", y=input$normalization, color="Plate", shape="Replicate")) + geom_point() + geom_line(stat="hline", yintercept="mean", color="black", aes(group=interaction(Plate, Replicate))) 
+  exp.data <- processedData()
+  if(is.null(exp.data)) return(NULL)
+  if(is.null(input$normalization)) sel.normalization <- "Raw"
+  else sel.normalization <- input$normalization  
+  q <- ggplot(exp.data, aes_string(x="wellCount", y=sel.normalization, color="Plate", shape="Replicate")) + geom_point() + geom_line(stat="hline", yintercept="mean", color="black", aes(group=interaction(Plate, Replicate))) 
   q <- q + theme_bw()
-  if("Experiment" %in% colnames(data)) q <- q + facet_wrap(~Experiment, ncol=1, scales="free")
+  if("Experiment" %in% colnames(exp.data)) q <- q + facet_wrap(~Experiment, ncol=1, scales="free")
   print(q)
 })
 
@@ -142,9 +149,7 @@ output$normalizationComparison <- renderPlot({
   print(p2)
 })
 
-#KPM miRNA target enrichment plot
-output$KPM.plot <- renderPlot({
-
+KPM.modify.hits <- reactive({
   hits <- selectedHitList()
   
   if(input$accessionColType == "MI")
@@ -152,5 +157,18 @@ output$KPM.plot <- renderPlot({
     mimat <- as.data.frame(mirbaseMATURE)
     hits <- left_join(hits, mimat, by=c("mirna_id"))
   }
-  plot.miRNA.target.enrichment.graph(KPM.result(),targets.indicator.matrix(), hits)
+  return(hits)
+})
+
+#KPM miRNA target enrichment plot
+#using igraph
+output$KPM.plot.d3 <- renderForceNetwork({
+  hits <- KPM.modify.hits()
+  plot.miRNA.target.enrichment.graph.d3(KPM.result(),targets.indicator.matrix(), hits, input$highlight.kpm_d3)  
+})
+
+#interactive using d3
+output$KPM.plot.igraph <- renderPlot({
+  hits <- KPM.modify.hits()
+  plot.miRNA.target.enrichment.graph.igraph(KPM.result(),targets.indicator.matrix(), hits)
 })

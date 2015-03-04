@@ -1,10 +1,8 @@
 # find screening hits, e.g. the outliers #
-outliers <- reactive({
+hit.detect <- reactive({
   
   input$updateNormalization
-  input$updateInclusion
-  input$updateExclusion
-    
+  
   if(input$normalization != "Raw" && input$method=="Bayes")
   {
     showshinyalert(session, "hits_error", "Bayes method should be used on raw data only", "danger")  
@@ -26,7 +24,7 @@ outliers <- reactive({
     
     exp.data <- data()
     #outl <- foreach(exp = unique(as.character(exp.data$Experiment)), .combine=rbind) %do%{
-    exp.data <- subset(exp.data, Experiment==input$experimentSelected)
+    exp.data <- subset(exp.data, Experiment==input$experimentSelected & Readout==input$readoutSelected)
     
     if(input$method == "Bayes")
     {
@@ -37,29 +35,59 @@ outliers <- reactive({
       
       #bayesian hit detection
       outl <- bayesianHitSelection(exp.data, neg.ctrl=negCtrl(), signalColumn=input$normalization,alpha = 0.05, updateProgress=updateProgress)
-      outl <- outl[outl[[input$bayes_hypothesis]] > input$bayes_pval_cutoff,]  
     }
     else{
       outl <- find.hits(exp.data, input$method, input$margin, signalColumn=input$normalization, updateProgress=updateProgress)    
       outl <- as.data.frame(outl)
     }  
 
-    if(nrow(outl) == 0) return(outl)
+    if(nrow(outl) == 0) stop("No hits were found with these settings.")
     outl[which(outl[,input$normalization] > mean(exp.data[,input$normalization], na.rm=T)),"category"] <- "promotor"
     outl[which(outl[,input$normalization] < mean(exp.data[,input$normalization], na.rm=T)),"category"] <- "suppressor"
-    
-    if(input$updateInclusion != 0 && nchar(input$include) > 0){
-      if(length(grep(input$include, data$Sample)) > 0){
-        extra <- data[grep(input$include, data$Sample),]
-        extra$category <- "included"
-        outl <- rbind(outl, extra)
-      }
-    }
-     
-    outl <- outl[,c(ncol(outl), seq(1:(ncol(outl)-1)))]
-      
+           
     return(outl)
   })
+  
+  return(outl)
+})
+
+outliers <- reactive({
+  outl <- hit.detect()
+  
+  input$updateButton
+  
+  #we don't want this to update when we change the method. outl needs to update first.
+  method <- isolate({
+    input$method
+  })
+  
+  #inclusion filter
+  
+  if(method == "Bayes"){
+    exp.data <- outl
+    outl <- outl[outl[[input$bayes_hypothesis]] > input$bayes_pval_cutoff,]  
+  }
+  else{
+    exp.data <- data()
+    exp.data <- subset(exp.data, Experiment==input$experimentSelected)
+  }
+  if(nchar(input$include) > 0){
+    if(length(grep(input$include, exp.data$Sample)) > 0){
+      extra <- exp.data[grep(input$include, exp.data$Sample),]
+      extra$category <- "included"
+      outl <- rbind(outl, extra)
+    }
+  }
+  
+  #exclusion filter
+  
+  if(nchar(input$exclude) > 0){
+      outl <- outl[-grep(input$exclude, outl$Sample),]
+  }
+
+  
+  #fix column order
+  outl <- outl[,c(ncol(outl), seq(1:(ncol(outl)-1)))]
   
   return(outl)
 })

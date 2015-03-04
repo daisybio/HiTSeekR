@@ -1,6 +1,6 @@
 #data option default
-dataOptionDefaults <- reactive({
-  if(input$dataset == "BCSC"){
+dataOptionDefaults <- reactive({  
+  if(datasetName() == "BCSC"){
     return(c("screenType" = "miRNA",
              "sampleCol" = "Sample", 
              "posColType" = "alpha",
@@ -16,11 +16,10 @@ dataOptionDefaults <- reactive({
              "negCtrls" = "NEG",
              "rowCol" = "",
              "colCol" = "",
-             "hasCtrls" = TRUE
+             "hasCtrls" = "TRUE"
     ))
-  }
-  
-  else if(input$dataset == "A375_MTS"){
+  }  
+  else if(datasetName() == "A375_MTS"){
     return(c("screenType" = "miRNA",
              "sampleCol" = "miRNA", 
              "posColType" = "rowcol",
@@ -36,8 +35,43 @@ dataOptionDefaults <- reactive({
              "negCtrls" = "",
              "rowCol" = "Row",
              "colCol" = "Column",
-             "hasCtrls" = FALSE
+             "hasCtrls" = "FALSE"
     ))
   }
-  else return(NULL)
+  else if(datasetName() == "DM_Kc167"){
+    return(c("screenType" = "siRNA",
+             "sampleCol" = "HFAID", 
+             "posColType" = "alpha",
+             "posCol" = "well",
+             "accColType" = "FlybaseCG",
+             "accCol" = "GeneID",
+             "measurementCol" = "value",
+             "replicateCol" = "replicate",
+             "plateCol" = "plate",
+             "expCol" = "experiment",
+             "ctrlCol" = "controlStatus",
+             "posCtrls" = "pos",
+             "negCtrls" = "neg",
+             "rowCol" = "",
+             "colCol" = "",
+             "hasCtrls" = "TRUE"
+    ))
+  }
+  else return(c("screenType" = "",
+                    "sampleCol" = "", 
+                    "posColType" = "",
+                    "posCol" = "",
+                    "accColType" = "",
+                    "accCol" = "",
+                    "measurementCol" = "",
+                    "replicateCol" = "",
+                    "plateCol" = "",
+                    "expCol" = "",
+                    "ctrlCol" = "",
+                    "posCtrls" = "",
+                    "negCtrls" = "",
+                    "rowCol" = "",
+                    "colCol" = "",
+                    "hasCtrls" = "FALSE"
+  ))
 })

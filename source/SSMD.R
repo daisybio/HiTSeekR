@@ -16,8 +16,6 @@ ssmd <- function(pop1, pop2, alpha=0.05)
   return (c(beta, error))
 }
 
-
-
 ssmd.robust <- function(pop1, pop2, alpha=0.05)
 {
   fctr <- function(pop, exp.denominator=1, exp.mad=2)

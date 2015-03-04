@@ -1,30 +1,27 @@
-output$interactionTable <- renderChart2({
-  dTable(targetsForInteractionGraph())
-})
-
 # Hit List #
 formattedTable <- reactive({  
   data <- outliers()
   if(is.null(data)) return(NULL)
   
   if(!input$show.sem.in.hits)
-    data <- data %>% dplyr::select(-ends_with(".sem")) 
+    data <- data %>% dplyr::select(-ends_with("_sem")) 
   
   if("mature_from" %in% colnames(data))
     data <- data %>% dplyr::select(-one_of("mature_from", "mature_to", "evidence", "experiment", "similarity"))
+  
   data[data$category %in% c("promotor"),"category"] <- "<div style='background:#80B1D3; text-align:center; border-radius: 15px; width:25px; height:25px;'>P</div>"
   data[data$category %in% c("suppressor"),"category"] <- "<div style='background:#FB8072; text-align:center; border-radius: 15px; width:25px; height:25px;'>S</div>"
   data[data$category %in% c("included"),"category"] <- "<div style='background:#FDB462; text-align:center; border-radius: 15px; width:25px; height:25px;'>I</div>"
-  return(data)
+  return(as.data.frame(data))
 })
 
-output$table_hits <- renderDataTable(formattedTable())
+output$table_hits <- renderDataTable(formattedTable(), escape=FALSE)
 
 # Raw data
-output$table_rawData <- renderDataTable(rawData())
+output$table_rawData <- renderDataTable(rawData(), escape=FALSE)
 
 # Processed data 
-output$table_processedData <- renderDataTable(processedData())
+output$table_processedData <- renderDataTable(processedData(), escape=FALSE)
 
 # Consensus hit list #
 output$consensusHitList <- renderChart2({
@@ -36,12 +33,12 @@ output$consensusHitList <- renderChart2({
 })
 
 # mRNA targets #
-output$mirna.targets.table <- renderDataTable(mirna.targets())
+output$mirna.targets.table <- renderDataTable(mirna.targets(), escape=FALSE)
 
 #
 
 # Family hit rate # 
-output$family.hitrate <- renderDataTable(family.hitrate())
+output$family.hitrate <- renderDataTable(family.hitrate(), escape=FALSE)
 
 # GO enrichment analysis based on mRNA targets #
 output$goEnrichmentTable <- renderChart2({
@@ -55,4 +52,4 @@ output$mircancer.table <- renderDataTable({
   mirc.hits[mirc.hits$category %in% c("suppressor"),"category"] <- "<div style='background:#FB8072; text-align:center; border-radius: 15px; width:25px; height:25px;'>S</div>"  
   mirc.hits$mirna_id <- paste("<a href='http://mircancer.ecu.edu/search.jsp?mirId=", mirc.hits$mirna_id, "&logic=&condition=And&cancerName=", mirc.hits$Cancer, "'>", mirc.hits$mirna_id, "</a>", sep="")
   return(mirc.hits)
-})
+}, escape=FALSE)

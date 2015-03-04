@@ -1,8 +1,10 @@
 #filter and summarise
 data <- reactive({
-  
+  #load data in "normalized" form with known column names
   data <- processedData()
   
+  if(is.null(data)) stop("Please process the input data first")
+  #fire up a progress bar
   progress <- shiny::Progress$new()
   progress$set(message = "Merge & Filter...", value = 0)
   on.exit(progress$close())
@@ -16,25 +18,25 @@ data <- reactive({
     progress$set(value = value, detail = detail)
   }
   
-  input$updateExclusion
-  
-  data <- isolate({
-    if(input$updateExclusion != 0 && nchar(input$exclude) > 0){
-      data <- data[-grep(input$exclude, data$Sample),]
-    }
-    else data
-  })
-  
+  #update progress bar
   updateProgress(detail = "Merging replicates", value=0.2)
-  deviations <- ddply(data, .(Experiment, Plate, Well.position), numcolwise(function(x){sd(x)/length(x)}))
-  data <- ddply(data, .(Experiment, Plate, Well.position,Sample, Accession, Control), numcolwise(mean))
-  data <- merge(data, deviations[,setdiff(colnames(deviations),c("wellCount", "Row", "Column", "Sample", "Control"))], by=c("Experiment", "Plate", "Well.position"), suffixes=c("", ".sem"))
+
+  #function to calculate standard error of the mean
+  sem <- function(x){x <- na.omit(x); return(sd(x)/length(x))}
+    
+  #merge replicates
+  #data <- data %>% filter(!is.na(Raw))
+  data <- data %>% group_by(Experiment, Readout, Plate, Well.position, Sample, Accession, Well.position, Control) %>% summarise_each(funs(mean(., na.rm=T), sem(.)), c(-Replicate, -wellCount))  
+  
+  #fix column names and get rid of NaNs
+  colnames(data) <- str_replace(colnames(data), "_mean", "")
   
   #if we are dealing with miRNAs add miRNA family name and ID
   if(input$screenType == "miRNA")
   {
-    updateProgress(detail = "Querying mirbase", value=0.6)
-    library(mirbase.db)
+    #update progress bar
+    updateProgress(message = "Querying mirbase", value=0.6)
+    
     fam <- as.data.frame(mirbaseFAMILY)
     
     mergeRows <- function(y){
@@ -43,26 +45,39 @@ data <- reactive({
     }     
     data$Accession <- as.character(data$Accession)
     
-    if(input$accessionColType == "MIMAT")
+    if(input$accessionColType=="mature_name")
     {
+      updateProgress(detail = "Replace alias with MIMAT", value=0.7)
+      data$Accession <- find.mimat(data$Accession)
+    }
+    if(input$accessionColType %in% c("MIMAT", "mature_name"))
+    {
+      updateProgress(detail = "Get miRNA family id", value=0.8)
       mimat <- as.data.frame(mirbaseMATURE)
       result <- left_join(mimat, fam, by="mirna_id")
       data <- left_join(data, result, by=c("Accession" = "mature_acc"))
-      data <- data %>% group_by(Experiment, Plate, Well.position) %>% summarise_each(funs(mergeRows))      
-    }
-    
+      data <- data %>% group_by(Experiment, Readout, Plate, Well.position) %>% summarise_each(funs(mergeRows))      
+    }    
     else if(input$accessionColType=="MI"){
+      updateProgress(detail = "Get miRNA id", value=0.8)
       mi <- as.data.frame(mirbaseACC2ID)
       data <- left_join(data, mi, by=c("Accession" = "mirna_acc"))
       data <- left_join(data, fam, by=c("mirna_id"))
-    }
+    }    
     
     else{
       stop("unknown miRNA identifier selected")
     }
-    
-    return(as.data.frame(data))
+  }
+  else if(input$screenType == "siRNA")
+  {
+    if(input$accessionColType=="FlybaseCG")
+    {
+      library(org.Dm.eg.db)
+      flybaseCG <- as.data.frame(org.Dm.egFLYBASECG)
+      data <- left_join(data, flybaseCG, by=c("Accession" = "flybase_cg_id"))
+    }
   }
   
-  return(data)
+  return(as.data.frame(data))
 })

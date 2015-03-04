@@ -7,26 +7,46 @@ require(scales)
 require(RmiR)
 require(shinysky)
 
-shinyUI(fluidPage(
- navbarPage(  
-  titlePanel(HTML('<img src="RNAice.png"/>'), windowTitle="RNAice - RNAi comprehensive evaluation"),
+shinyUI(navbarPage(
+  title=HTML('<img style="height:40px; margin-top: -7px;" src="RNAice.png"/>'),
+  windowTitle="RNAice - RNAi comprehensive evaluation",
+  header=tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "rnaice.css"),
+    shinyalert("general_status")
+  ),
   id="mainNavbar",  
-  tabPanel("Data",wellPanel(fluidRow(column(4,
-           conditionalPanel(condition="input.file==null",
-             selectInput("dataset", "Select a demo dataset or...", choices = c("BCSC/MaSC miRNA inhibitors" = "BCSC", "Melanoma-Inhibiting miRNAs" = "A375_MTS"))
-           )), column(4,
-    fileInput("file", "Upload a new data set", multiple=FALSE)), column(4,
-    selectInput("fileSeparator", "Column separator", c("tab"= "\t", "comma"= ",", "semicolon"=";"))))),                     
+  tabPanel("Data",wellPanel(
+    tags$style(type="text/css", '#loadOptionsPanel { max-width:800px;}'),
+    id="loadOptionsPanel",
+    fluidRow(
+      column(4,
+        conditionalPanel(condition="input.file==null",
+             selectInput("dataset", "Select a demo dataset or...", choices = demo.data.sets)
+        )), 
+      column(4,
+            fileInput("file", "Upload a new data set", multiple=FALSE)
+        ), 
+      column(4,
+        selectInput("fileSeparator", "Column separator", c("tab"= "\t", "comma"= ",", "semicolon"=";"))))
+        ),                     
     checkboxInput("showColOptions", "Show file input options", FALSE),
+    actionButton("startButton", "Process raw data", styleclass="primary"),    
     hr(),
-    conditionalPanel(condition="input.showColOptions", wellPanel(uiOutput("uiOutput_data_options"))),
+    conditionalPanel(condition="input.showColOptions", 
+          wellPanel(
+            tags$style(type="text/css", '#dataOptionsPanel { max-width:1200px;}'),
+            id="dataOptionsPanel",
+            uiOutput("uiOutput_data_options")
+          )
+    ),
     uiOutput("uiOutput_data")
-  ),   
+  ),
+  tabPanel("Quality Control", plotOutput("controlPlot", height=800), plotOutput("rowAndColumn", height=800)),  
   tabPanel("Hit Discovery", shinyalert("hits_error"), uiOutput("uiOutput_hits_options"), uiOutput("uiOutput_hits")),        
   tabPanel("Consensus Hits", uiOutput("uiOutput_consensus_hits")),
-  tabPanel("miRNA Targets", 
+  tabPanel("microRNAs", 
            shinyalert("mirna_target_status"), 
-           uiOutput("uiOutput_mirna_targets")),
-  tabPanel("Controls", plotOutput("controlPlot", height=800), plotOutput("rowAndColumn", height=800)),  
-  tabPanel("Gene Ontology", uiOutput("uiOutput_geneOntology"))
-)))
+           uiOutput("uiOutput_mirna_targets")
+  ),
+  tabPanel("Systems Biology", uiOutput("uiOutput_geneOntology"))
+))

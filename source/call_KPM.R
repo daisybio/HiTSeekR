@@ -6,7 +6,13 @@ base64EncFile <- function(fileName){
   return(base64(readChar(fileName, file.info(fileName)$size)))
 }
 
-setup.KPM <- function(list.of.indicator.matrices, graphFile, algorithm="Greedy", strategy="GLONE", removeBENs=FALSE, K=0, L=0, ATTACHED_TO_ID){
+setup.KPM <- function(list.of.indicator.matrices, graphFile, 
+                      algorithm="Greedy", strategy="GLONE", 
+                      removeBENs=FALSE, range, 
+                      Kmin=0, Lmin=0, Kmax=0, Lmax=0, Kstep=1, Lstep=1, 
+                      ATTACHED_TO_ID, 
+                      computed.pathways=20, 
+                      with.perturbation=FALSE){
   
   #create tempfiles
   tmp.file <- tempfile()
@@ -26,15 +32,22 @@ setup.KPM <- function(list.of.indicator.matrices, graphFile, algorithm="Greedy",
         strategy=strategy,
         removeBENs=tolower(as.character(removeBENs)),
         unmapped_nodes="Add to positive list",
-        computed_pathways=20,
+        computed_pathways=computed.pathways,
         graphName=basename(graphFile),             
         l_samePercentage="false",
         samePercentage_val=0,
-        k_values=list(c(val=K, val_step=1, val_max=1, use_range="false", isPercentage="false")),
+        k_values=list(c(val=Kmin, val_step=Kstep, val_max=Kmax, use_range=tolower(as.character(range)), isPercentage="false")),
         l_values=list(      
-          c(val=L, val_step=1, val_max=1, use_range="false", isPercentage="false", datasetName=basename(tmp.file))
+          c(val=Lmin, val_step=Lstep, val_max=Lmax, use_range=tolower(as.character(range)), isPercentage="false", datasetName=basename(tmp.file))
         )), 
-      withPerturbation="false",
+      withPerturbation=tolower(as.character(with.perturbation)),
+      perturbation=list(c( # perturbation can be left out, if withPeturbation parameter is set to false.
+        technique="Node-swap",
+        startPercent=5,
+        stepPercent=1,
+        maxPercent=15,
+        graphsPerStep=1
+      )),      
       linkType="OR",
       attachedToID=ATTACHED_TO_ID,
       positiveNodes="",
@@ -59,13 +72,11 @@ datasetList.KPM <- function(list.of.indicator.matrices, list.of.tmp.files, ATTAC
   return(toJSON(datasetList))
 }
 
-call.KPM <- function(indicator.matrices, url=url <- "http://localhost:8080/kpm-web/", ATTACHED_TO_ID=NULL, ...){
+call.KPM <- function(indicator.matrices, ATTACHED_TO_ID=NULL, url="http://localhost:8080/kpm-web/",...){
   
   # generate random UUID:
   if(is.null(ATTACHED_TO_ID))
   ATTACHED_TO_ID = paste(sample(c(LETTERS[1:6],0:9),32,replace=TRUE),collapse="")
-  print(ATTACHED_TO_ID)
-  
   #PPI network for KPM
   #graphFile <- "data/biogrid_entrez.sif"
   #graphFile <- "data/graph-ulitsky-entrez.sif"
@@ -89,10 +100,9 @@ withTryCatch <- function(surroundedFunc){
     surroundedFunc()
   }, error = function(e) {
     if("COULDNT_CONNECT" %in% class(e)){
-      print("Error: Couldn't connect to url.")
-    }else{
-      print("Unexpected error:")
-      print(class(e))
+      stop("Couldn't connect to KPM url.")
+    }else{      
+      stop(paste("Unexpected error in KPM:", class(e)))
     }    
     return(NULL)
   })

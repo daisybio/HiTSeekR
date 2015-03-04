@@ -1,6 +1,9 @@
-processedData <- reactive({
+processedData <- reactive({  
+  input$startButton
+
+  isolate({
+  hideshinyalert(session, "general_status")
   data <- rawData()
-  
   progress <- shiny::Progress$new()
   progress$set(message = "Processing...", value = 0)
   on.exit(progress$close())
@@ -13,10 +16,47 @@ processedData <- reactive({
     }
     progress$set(value = value, detail = detail)
   }
-  sampleCol <- data[,input$sampleCol]
   
   if(is.null(input$positionColType)) return(NULL)
-  else if(input$positionColType == "alpha")
+  
+  #first check if we are dealing with several readouts
+  numberOfReadouts <- length(input$measurementCol)
+  numberOfExperiments <- length(input$experimentCol)
+  numberOfReplicates <- length(input$replicateCol)
+  
+  #count which types of data have multiple columns
+  count <- 0
+  if(numberOfReadouts > 1) count <- count + 1
+  if(numberOfExperiments > 1) count <- count + 1
+  if(numberOfReplicates > 1) count <- count + 1
+  
+  if(count > 1) stop("We do not support several experiments and measurements (readouts / replicates) in the same data set")
+  
+  if(numberOfReadouts == 0 && numberOfExperiments < 2 && numberOfReplicates < 2) stop("You need to specify at least one measurement column (e.g. fluorescence counts)")
+  
+  if(numberOfReadouts  == 1){
+    data$readoutCol <- input$measurementCol
+    data$measurementCol  <- data[,input$measurementCol]  
+  }
+  else{
+    data <- gather_(data, "readoutCol", "measurementCol", input$measurementCol) 
+  }
+    
+  if(numberOfExperiments == 0) data$experimentCol <- datasetName()
+  else if(numberOfExperiments == 1) data$experimentCol <- data[,input$experimentCol]
+  else{
+    data <- gather_(data, "experimentCol", "measurementCol", input$experimentCol)
+  }
+  
+  if(numberOfReplicates == 0) data$replicateCol <- 1
+  else if(numberOfReplicates == 1) data$replicateCol <- data[,input$replicateCol]
+  else{
+    data <- gather_(data, "replicateCol", "measurementCol", input$replicateCol)
+  }
+  
+  sampleCol <- data[,input$sampleCol]  
+  
+  if(input$positionColType == "alpha")
   {
     wellAlpha <- repairAlphaName(data[,input$positionCol])
     rowCol <- alphaNames2Pos(wellAlpha)
@@ -35,28 +75,25 @@ processedData <- reactive({
       paste(LETTERS[row[,input$colCol]], row[,input$rowCol], sep="")
     }
   }
-  replicateCol <- data[,input$replicateCol]
-  measurementCol <- data[,input$measurementCol]
   accessionCol <- data[,input$accessionCol]
   plateCol <- data[,input$plateCol]
-  experimentCol <- data[,input$experimentCol]
   
   if(input$hasControls) controlCol <- data[,input$controlCol]
   else controlCol <- NA
   
-  processedData <- data.frame(experimentCol, sampleCol, accessionCol, plateCol, wellAlpha, rowCol, replicateCol, controlCol, measurementCol)
-  colnames(processedData) <- c("Experiment", "Sample", "Accession", "Plate", "Well.position", "Row", "Column", "Replicate", "Control", "Raw")
+  processedData <- data.frame(data$experimentCol, sampleCol, accessionCol, plateCol, wellAlpha, rowCol, data$replicateCol, controlCol, data$readoutCol, data$measurementCol)
+  colnames(processedData) <- c("Experiment", "Sample", "Accession", "Plate", "Well.position", "Row", "Column", "Replicate", "Control", "Readout", "Raw")
   
-  if(input$hasControls && !(is.null(input$controlCol)))
+  if(input$hasControls)
   {  
     result <- normalizeRawData(processedData, control.based=T, pos.ctrl=input$posCtrl, neg.ctrl=input$negCtrl, updateProgress=updateProgress)
   }
-  else if(!is.null(negCtrl()) && !is.null(posCtrl)){
-    result <- normalizeRawData(processedData, control.based=T, pos.ctrl=posCtrl(), neg.ctrl=negCtrl(), updateProgress=updateProgress)    
-  }
+  #else if(!is.null(negCtrl()) && !is.null(posCtrl())){
+  #  result <- normalizeRawData(processedData, control.based=T, pos.ctrl=posCtrl(), neg.ctrl=negCtrl(), updateProgress=updateProgress)    
+  #}
   else{
     result <- normalizeRawData(processedData, control.based=F, updateProgress=updateProgress)    
   }
-  
   return(as.data.frame(result))
+  })
 })

@@ -1,17 +1,17 @@
 #identifier column types
 accTypes <- reactive({
   if(is.null(input$screenType)) return(NULL)
-  else if(input$screenType == "siRNA") return(c("RefSeq", "Entrez", "GeneSymbol"))
-  else if(input$screenType == "miRNA") return(c("MI", "MIMAT"))
+  else if(input$screenType == "siRNA") return(c("RefSeq", "Entrez", "GeneSymbol", "FlybaseCG"))
+  else if(input$screenType == "miRNA") return(c("MI", "MIMAT", "mature_name"))
   #return(c("RefSeq", "Entrez", "MIMAT", "MI"))
 })
 
 #return available control types found in data
 ctrlTypes <- reactive({
   data <- rawData()
-  if(!is.null(input$controlCol)) ctrlCol <- data[,input$controlCol]
+  if(!is.null(input$controlCol) && input$controlCol %in% colnames(data)) ctrlCol <- data[,input$controlCol]
   
-  else ctrlCol <- data[,dataOptionDefaults()[["controlCol"]]]
+  else ctrlCol <- data[,dataOptionDefaults()[["ctrlCol"]]]
   
   unique(as.character(ctrlCol))
 })
@@ -32,32 +32,88 @@ posCtrl <- reactive({
 
 #select corresponding columns in the dataset to process to a common format
 output$uiOutput_data_options <- renderUI({
+  
   elements <- list(column(4,
-                          selectInput("screenType", "Type of screen", c("Gene knockout (e.g. siRNA)" = "siRNA", "miRNA inhibitor / mimics" = "miRNA"), dataOptionDefaults()[["screenType"]]),
-                          selectInput("sampleCol", "Sample Name Column", dataColumns(), dataOptionDefaults()[["sampleCol"]]),
-                          selectInput("plateCol", "Plate Column", dataColumns(), dataOptionDefaults()[["plateCol"]]),
-                          selectInput("positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol"), dataOptionDefaults()[["posColType"]]),
+                          selectInput("screenType", "Type of screen", c("Gene (e.g. siRNA)" = "siRNA", "miRNA (e.g. inhibitor)" = "miRNA")),
+                          selectInput("sampleCol", "Sample Name Column", dataColumns()),
+                          selectInput("plateCol", "Plate Column", dataColumns()),
+                          selectInput("positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol")),
                           conditionalPanel("input.positionColType == 'rowcol'", 
-                            selectInput("rowCol", "Row Column", dataColumns(), dataOptionDefaults()[["rowCol"]]),
-                            selectInput("colCol", "Column Column", dataColumns(), dataOptionDefaults()[["colCol"]])
+                            selectInput("rowCol", "Row Column", dataColumns()),
+                            selectInput("colCol", "Column Column", dataColumns())
                           ),
                           conditionalPanel("input.positionColType != 'rowcol'",
-                            selectInput("positionCol", "Position Column", dataColumns(), dataOptionDefaults()[["posCol"]])
+                            selectInput("positionCol", "Position Column", dataColumns())
                           )
   ),column(4,
-           selectInput("accessionColType", "Accession Column Type", accTypes(), dataOptionDefaults()[["accColType"]]),
-           selectInput("accessionCol", "Accession Column", dataColumns(), dataOptionDefaults()[["accCol"]]),
-           selectInput("measurementCol", "Measurement Column", dataColumns(), dataOptionDefaults()[["measurementCol"]]),
-           selectInput("replicateCol", "Replicate Column", dataColumns(), dataOptionDefaults()[["replicateCol"]]),
-           selectInput("experimentCol", "Experiment Column", dataColumns(), dataOptionDefaults()[["expCol"]])
+           selectInput("accessionColType", "Accession Column Type", NULL),
+           selectInput("accessionCol", "Accession Column", dataColumns()),           
+           selectInput("measurementCol", "Measurement Column", dataColumns(), multiple=T),
+           selectInput("replicateCol", "Replicate Column", dataColumns(), multiple=T),
+           selectInput("experimentCol", "Experiment Column", dataColumns(), multiple=T)
   ),column(4,
-           checkboxInput("hasControls", "Are controls included?", dataOptionDefaults()[["hasCtrls"]]=="TRUE"),
+           checkboxInput("hasControls", "Are controls included?", FALSE),
            conditionalPanel(condition = "input.hasControls",
-           selectInput("controlCol", "Control Column", dataColumns(), dataOptionDefaults()[["ctrlCol"]]),        
+           selectInput("controlCol", "Control Column", dataColumns()),        
            uiOutput("uiOutput_controls"))
   )
   )
   do.call(fluidRow, elements)
+})
+
+#make an update of the data import options if necessary
+dataUpdateObserver <- observe({
+  datasetName()
+  isolate({
+    updateSelectInput(session, "screenType", "Type of screen", c("Gene knockout (e.g. siRNA)" = "siRNA", "miRNA inhibitor / mimics" = "miRNA"), dataOptionDefaults()[["screenType"]])
+    updateSelectInput(session, "sampleCol", "Sample Name Column", dataColumns(), dataOptionDefaults()[["sampleCol"]])
+    updateSelectInput(session, "plateCol", "Plate Column", dataColumns(), dataOptionDefaults()[["plateCol"]])
+    updateSelectInput(session, "positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol"), dataOptionDefaults()[["posColType"]])
+    updateSelectInput(session, "rowCol", "Row Column", dataColumns(), dataOptionDefaults()[["rowCol"]])
+    updateSelectInput(session, "colCol", "Column Column", dataColumns(), dataOptionDefaults()[["colCol"]])
+    updateSelectInput(session, "positionCol", "Position Column", dataColumns(), dataOptionDefaults()[["posCol"]])
+    #updateSelectInput(session, "accessionColType", "Accession Column Type", accTypes(), dataOptionDefaults()[["accColType"]])
+    updateSelectInput(session, "accessionCol", "Accession Column", dataColumns(), dataOptionDefaults()[["accCol"]])
+    updateSelectInput(session, "measurementCol", "Measurement Column", dataColumns(), dataOptionDefaults()[["measurementCol"]])
+    updateSelectInput(session, "replicateCol", "Replicate Column", dataColumns(), dataOptionDefaults()[["replicateCol"]])
+    updateSelectInput(session, "experimentCol", "Experiment Column", dataColumns(), dataOptionDefaults()[["expCol"]])
+    hasCtrls <- dataOptionDefaults()[["hasCtrls"]]=="TRUE"
+    updateCheckboxInput(session, "hasControls", "Are controls included?", hasCtrls)
+    if(hasCtrls){
+      updateSelectInput(session, "controlCol", "Control Column", dataColumns(), dataOptionDefaults()[["ctrlCol"]])
+      updateSelectInput(session, "posCtrl", "Positive Control", ctrlTypes(), dataOptionDefaults()[["posCtrls"]])
+      updateSelectInput(session, "negCtrl", "Negative Control", ctrlTypes(), dataOptionDefaults()[["negCtrls"]])
+    }
+  })
+}, priority=1000)
+
+
+dataChangeObserver <- observe({
+    datasetName()
+    input$screenType
+    input$sampleCol
+    input$plateCol
+    input$positionColType
+    input$rowCol
+    input$colCol
+    input$positionCol
+    input$accessionCol
+    input$accessionColType
+    input$measurementCol
+    input$replicateCol
+    input$experimentCol
+    input$hasControls
+    input$controlCol
+    input$posCtrl
+    input$negCtrl
+    isolate({
+      if(input$startButton != 0)
+      showshinyalert(session, "general_status", "Input has changed. You need to process the data again for the changes to take effect", "danger")  
+    })
+})
+
+accessionColTypeObserver <- observe({
+  updateSelectInput(session, "accessionColType", "Accession Column Type", accTypes(), dataOptionDefaults()[["accColType"]])
 })
 
 #extra well pane for selecting controls of the experiment
@@ -73,3 +129,4 @@ output$uiOutput_controls <- renderUI({
 #with the defaults of the selected dataset even though the corresponding input
 #is hidden in the UI.
 outputOptions(output, 'uiOutput_data_options', suspendWhenHidden=FALSE)
+#outputOptions(output, 'uiOutput_controls', suspendWhenHidden=FALSE)

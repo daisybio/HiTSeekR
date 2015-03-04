@@ -6,8 +6,32 @@ KPM.run <- reactive({
   isolate({
     showshinyalert(session, "kpm_status", "Generating indicator matrix", "info")  
     indicator.matrix <- targets.indicator.matrix()
-    showshinyalert(session, "kpm_status", "Sending data to KPM", "info")  
-    result <- call.KPM(list(indicator.matrix), input$kpm_URL, ATTACHED_TO_ID, strategy=input$kpm_strategy, algorithm=input$kpm_algorithm, removeBENs=input$kpm_ben_removal, K=input$kpm_K, L=input$kpm_L)
+    showshinyalert(session, "kpm_status", "Sending data to KPM", "info")
+    #browser()
+    if(input$kpm_ranged)
+    {
+      Kmin <- input$kpm_lower_K
+      Lmin <- input$kpm_lower_L
+    }
+    else{
+      Kmin <- input$kpm_K
+      Lmin <- input$kpm_L
+    }
+    result <- call.KPM(list(indicator.matrix), 
+                       url=input$kpm_URL, 
+                       ATTACHED_TO_ID=ATTACHED_TO_ID, 
+                       strategy=input$kpm_strategy, 
+                       algorithm=input$kpm_algorithm, 
+                       removeBENs=input$kpm_ben_removal, 
+                       range=input$kpm_ranged,
+                       Kmin=Kmin, 
+                       Lmin=Lmin,
+                       Kmax=input$kpm_upper_L,
+                       Lmax=input$kpm_upper_L,
+                       Kstep=input$kpm_step_K,
+                       Lstep=input$kpm_step_L,
+                       with.perturbation=input$kpm_perturbation,
+                       computed.pathways=input$kpm_pathways)
     return(result)
   })
 })

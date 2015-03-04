@@ -12,8 +12,8 @@ highcharts.heatmap <- function(plot.data, dataType, showLabels=F, useWithShiny=T
   # use type='heatmap' for heat maps
   p$chart(zoomType = "xy", type = 'heatmap')
   #p$title(text='Sales per employee per weekday')
-  p$xAxis(min = 1, max = max(plot.data$x))
-  p$yAxis(min = 1, max = max(plot.data$y), reversed=TRUE)
+  p$xAxis(min = 1, max = max(plot.data$x, na.rm=T))
+  p$yAxis(min = 1, max = max(plot.data$y, na.rm=T), reversed=TRUE)
   p$series(name = 'Heatmap',
            data =  toJSONArray2(plot.data, json=FALSE),
            color = "#cccccc",

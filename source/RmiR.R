@@ -1,58 +1,58 @@
-#function to merge column name into one
-my.aggregate <- function(x)
-{
-  paste(unique(setdiff(x,NA)), collapse="/")
-}
+library(org.Hs.eg.db)
+library(RmiR)
+library(dplyr)
+library(foreach)
 
-getTargets <- function(outliers, hits.min=1, at.least=2, group.miRNAs=T, group.miRNAs.threshold=2, get.gene.symbols=T, databases=NA){
-  require(RmiR)
-  require(plyr)
-  miRNA.targets <- data.frame()
+getTargets <- function(hits, rnah.pvalue.threshold=0.001, get.gene.symbols=F, databases=NA){
   #repair ids
-  outliers$Sample <- sub("mir", "miR", outliers$Sample)
+  hits <- na.omit(sub("mir", "miR", hits$mature_name))
+  miRNA.db <- src_sqlite(RmiR.Hs.miRNA_dbfile())
+  if("RNAhybrid_hsa" %in% databases) rnah.db <- src_sqlite("data/rnahybrid.sqlite3")
   
-  if(length(databases) == 1) databases <- dbListTables(RmiR.Hs.miRNA_dbconn())
-  
-  #query all dbs
-  mirnas <- unique(outliers$Sample)
-  firstLoop <- TRUE
-
-  #group miRNAs together
-  if(group.miRNAs) query <- "SELECT gene_id, COUNT(DISTINCT mature_miRNA) as miRNA_count, REPLACE(GROUP_CONCAT(DISTINCT mature_miRNA), ',', '/') AS miRNA_list, SUM(sum_hits) AS total_hits, MIN(db_count) AS min_db_count FROM ("
-  
-  else query <- ""
-  
-  #group miRNA / gene pairs and sum up number of hits in various databases, as well as number of databases where this interaction is reported
-  query <- paste(query, "SELECT mature_miRNA, gene_id, SUM(hits) AS sum_hits, COUNT(DISTINCT database) AS db_count, REPLACE(GROUP_CONCAT(DISTINCT database), ',', '/') AS db_list FROM (", sep="")
-  
-  #query each database for miRNA targets, merge results using UNION and by adding a database column on the fly
-  for(database in databases)
-  {
-    if(!firstLoop){ query <- paste(query, " UNION ALL ", sep="") }
-    firstLoop <- FALSE
-    query <- paste(query, "SELECT mature_miRNA, CAST(gene_id AS NUMBER) AS gene_id, COUNT(gene_id) AS hits, '", database, 
-                   "' AS database FROM ", database, " WHERE mature_miRNA IN ", 
-                   paste("('", paste(mirnas, collapse="','"), "')", sep="")  ,
-                   " GROUP BY mature_miRNA, gene_id", sep="")
+  query.result <- foreach(db=databases, .combine=rbind) %do% {
+    if(db == "RNAhybrid_hsa"){
+      miRNA.targets <- tbl(rnah.db, "rnah")
+      miRNA.targets <- filter(miRNA.targets, pvalue < rnah.pvalue.threshold)
+    } 
+    else miRNA.targets <- tbl(miRNA.db, db) 
+    
+    miRNA.targets <- miRNA.targets %>% filter(mature_miRNA %in% hits) 
+    miRNA.targets <- collect(miRNA.targets)
+    #get gene symbols and add them to the result table
+    if(nrow(miRNA.targets) > 0 & get.gene.symbols){      
+      gene_ids <- unique(miRNA.targets$gene_id)
+      gene_symbols <- as.character(mget(as.character(gene_ids), org.Hs.egSYMBOL, ifnotfound=NA))                                   
+      names(gene_symbols) <- gene_ids
+      miRNA.targets$gene_symbol <- gene_symbols[miRNA.targets$gene_id]
+    }
+    
+    return(miRNA.targets)
   }
   
-  #finish grouping SQL statement for gene/miRNA pairs, filter for minimum number of databases and hits
-  query <- paste(query, ") GROUP BY gene_id, mature_miRNA HAVING db_count >= ", at.least, " AND sum_hits >= ", hits.min, sep="") 
+  #if(nrow(query.result > 20.000)) stop("Too many hits")
+  #else 
+  return(query.result)
+}
   
-  #finish grouping SQL statement for grouping miRNAs together for each gene, filter for minimum number of interactions found per gene
-  if(group.miRNAs) query <- paste(query, ") GROUP BY gene_id HAVING COUNT(DISTINCT mature_miRNA) >= ", group.miRNAs.threshold,sep="")
-  
-  #execute the final SQL statement
-  miRNA.targets <- dbGetQuery(RmiR.Hs.miRNA_dbconn(), query)
-  
-  #get gene symbols and add them to the result table
-  if(nrow(miRNA.targets) > 0 && get.gene.symbols){
-    require(org.Hs.eg.db)
-    miRNA.targets$gene_symbol <- paste("<a href='http://www.ncbi.nlm.nih.gov/gene/?term=", 
-                                       miRNA.targets$gene_id, "%5Buid%5D", "' target='_blank'>",
-      as.character(mget(as.character(miRNA.targets$gene_id), org.Hs.egSYMBOL, ifnotfound=NA)),
-                                       "</a>", sep="")
-  }
-  #return result
-  return(miRNA.targets)
+getRNAhybridTargets <- function(outliers, group.miRNAs=T, group.miRNAs.threshold=2, pvalue.threshold = 0.1){
+    #repair ids
+    outliers <- sub("mir", "miR", outliers$Sample)
+    miRNA.db <- src_sqlite("rnah.sqlite3")
+    miRNA.db <- tbl(miRNA.db, "rnah")
+    miRNA.targets <- miRNA.db %>% filter(pvalue < pvalue.threshold)
+    miRNA.targets <- miRNA.targets %>% filter(miRNA %in% outliers) 
+    if(group.miRNAs){
+            miRNA.targets <- miRNA.targets %>% 
+                group_by(miRNA, Entrez) %>% 
+                summarize(count=n(), source_db="RNAhybrid") %>% 
+                filter(count > group.miRNAs.threshold)
+        }
+        miRNA.targets <- collect(miRNA.targets)
+        
+        return(miRNA.targets)
+    
+    
+    #if(nrow(query.result > 20.000)) stop("Too many hits")
+    #else 
+    return(miRNA.targets)
 }

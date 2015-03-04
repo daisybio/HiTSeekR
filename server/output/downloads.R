@@ -26,18 +26,21 @@ output$downloadConsensusHits <- downloadHandler(
 
 # mRNA targets #
 output$downloadTargets <- downloadHandler(
-  filename = function() { paste('targets', paste(input$selectedTargetDBs, collapse="_"), input$margin, input$method, '.csv', sep='_') },
+  filename = function() { paste('mirna', 'target','genes', paste(input$selectedTargetDBs, collapse="_"), input$margin, input$method, input$normalization, '.csv', sep='_') },
   content = function(file) {
     data <- mirna.targets()
-    if(input$colorizeInTargetList){
-      data$categories <- gsub("blue", "P", gsub("red", "S", sapply(str_extract_all(data$miRNA_list, "red|blue"), paste, collapse="/")))
-      data$miRNA_list <- gsub("<|>", "", sapply(str_extract_all(data$miRNA_list, ">.*?<"), paste, collapse="/"))
-    } 
-    data$url <- str_extract(data$gene_symbol, "http://.*?%5D")
-    data$gene_symbol <- gsub("<|>", "", str_extract(data$gene_symbol, ">.*?<"))
-    
     write.table(data, file, row.names=F, sep=",", quote=F)
   }  
+)
+
+#hotnet2 heat file
+output$downloadHotnetGeneList <- downloadHandler(
+  filename = function() { paste('target', 'genes', 'heatscores', paste(input$selectedTargetDBs, collapse="_"), input$margin, input$method, input$normalization, '.txt', sep='_') },
+  content = function(file) {
+    data <- mirna.targets()
+    data <- data %>% group_by(gene_symbol) %>% summarize(pvalue=sum(pvalue)) %>% mutate(pvalue=-log10(pvalue))
+    write.table(data, file, col.names = F, row.names = F, sep="\t", quote = F)
+  }
 )
 
 #indicator matrix

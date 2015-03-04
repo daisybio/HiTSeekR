@@ -5,22 +5,51 @@ experiments <- reactive({
   else return(experiments)
 })
 
+#return readouts included in the selected data set
+readouts <- reactive({
+  readouts <- unique(as.character(processedData()$Readout))
+  if(is.null(readouts)) return(NULL)
+  else return(readouts)
+})
+
+normalizationChoices <- reactive({
+  methods <- c("Raw signal" = "Raw", "Centered by mean (centered)" = "centered", "Centered by median (rcentered)" = "rcentered", "z-score" = "zscore", "Robust z-score (rzscore)" = "rzscore", "B-score" = "Bscore")
+  controlBasedMethods <- c("Percentage of negative control (poc)" = "poc", "Normalized percentage inhibition (npi)" = "npi")
+  if(input$hasControls)
+    return(c(methods, controlBasedMethods))
+  else return(methods)
+})
+
+marginChoices <- reactive({
+  methods <- c("Standard deviation" ="SD", "Median absolute deviation" = "MAD", "Inter-quartile range" = "quartile")
+  controlBasedMethods <- c("Bayesian Statistics" = "Bayes")
+  if(input$hasControls)
+    return(c(methods, controlBasedMethods))
+  else return(methods)
+})
+
 output$uiOutput_hits_options <- renderUI({
   wellPanel(
+    tags$style(type="text/css", '#hitsOptionsPanel { max-width:1200px;}'),
+    id="hitsOptionsPanel",
   fluidRow(
-    column(4,
+    column(3,
       actionButton("updateNormalization", "Update Settings", styleclass="primary"),
-      checkboxInput("show.sem.in.hits", "Show replicate standard error of the mean", FALSE)
-    ),column(4,      
+      HTML("<br/><br/>"),
+      checkboxInput("show.sem.in.hits", "Show replicate standard error of the mean", FALSE),
+      checkboxInput("showFilterOptions", "Sample filter options", FALSE)                       
+    ),column(3,
       selectInput("experimentSelected", "Select experiment:", experiments(), experiments()[1]),
+      selectInput("readoutSelected", "Select readout:", readouts(), readouts()[1]),
       selectInput("normalization", "Raw Data / Normalization:", 
-                choices = c("Raw signal" = "Raw", "Percentage of negative control (poc)" = "poc", "Normalized percentage inhibition (npi)" = "npi", "Centered by mean (centered)" = "centered", "Centered by median (rcentered)" = "rcentered", "z-score" = "zscore", "Robust z-score (rzscore)" = "rzscore", "B-score" = "Bscore"))      
-    ),column(4,
-      selectInput("method", "Method for margin calculation:", choices = c("Bayesian Statistics" = "Bayes", "Standard deviation" ="SD", "Median absolute deviation" = "MAD", "Inter-quartile range" = "quartile")),
-      conditionalPanel(
-        condition = "input.method != 'Bayes'",
-        sliderInput("margin", "Margin:",  min = 0.5, max = 5, value = 2.5, step= 0.5)
-      ),
+                choices = normalizationChoices())      
+    ),column(3,
+      selectInput("method", "Method for margin calculation:", choices = marginChoices())
+    ),column(3,
+       conditionalPanel(
+         condition = "input.method != 'Bayes'",
+         sliderInput("margin", "Margin:",  min = 0.5, max = 5, value = 2.5, step= 0.5)
+       ),
       conditionalPanel(
         condition = "input.method == 'Bayes'",
         wellPanel(
@@ -30,16 +59,16 @@ output$uiOutput_hits_options <- renderUI({
         )
       )
     )
-  ), fluidRow(
-    checkboxInput("showFilterOptions", "Sample filter options", FALSE),               
-    conditionalPanel(
-      condition = "input.showFilterOptions",
-      helpText("Filter options:"),
-      textInput("exclude", "Exclude miRNAs by regular expression:", value=""),
-      actionButton("updateExclusion", "Update exclusion filter"),
-      textInput("include", "Include miRNAs in hit list by regular expression:", value=""),
-      actionButton("updateInclusion", "Update inclusion filter"),
-      helpText("For example, you can select all let-7 like this: let-7, or you can select several miRs like this: mir-(765|558)")
+  ),
+  fluidRow(
+    column(4,
+           conditionalPanel(
+             condition = "input.showFilterOptions",
+             helpText("Filter options:"),
+             textInput("exclude", "Exclude sample in hit list by regular expression:", value=""),
+             textInput("include", "Include sample in hit list by regular expression:", value=""),    
+             helpText("For example, you can select all let-7 like this: let-7, or you can select several miRs like this: mir-(765|558)")
+           ) 
     ))
  )
 })
