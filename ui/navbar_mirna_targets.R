@@ -28,7 +28,7 @@ output$uiOutput_mirna_targets <- renderUI({
     actionButton("mirna.target.permutation.button", "Start miRNA target permutation test"),
     numericInput("mirna.target.permutations", "Number of permutations", value=100, min=10, max=10000),    
     sliderInput("mirna.target.permutation.num.of.mirnas.cutoff", "Minimal number of miRNAs from hit list targeting a gene", value=1, min = 0, max=100, step=1),
-    sliderInput("mirna.target.permutation.padj.cutoff", "adjusted p-value threshold", min=-5, max=0, step=1, value=-3, ticks= c(0.00001, 0.0001, 0.001, 0.01, 0.1, 0)),
+    numericInput("mirna.target.permutation.padj.cutoff", "adjusted p-value threshold", min=0, max=1, value=0.05),
     dataTableOutput("mirna.target.permutation.table"),
     downloadButton("downloadTargetPermutationTestResult", "Download")
   ),

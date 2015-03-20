@@ -10,10 +10,12 @@ generateIndicatorMatrix <- function(mirna.targets){
   return(indicator.matrix)  
 }
 
-rbind.with.progress <- function(progress, permutations){  
+rbind.with.progress <- function(progress, steps){  
+    count <- 0
     function(...) {
-      new.entries <- (length(list(...)) - 1) / permutations
-      progress$inc(new.entries, detail = "please wait...")            
+      new.entries <- ((length(list(...)) - 1) / steps) * 0.5
+      count <<- count + new.entries
+      progress$inc(new.entries, detail = paste(count, "% done"))            
       rbind(...)
     }
 }
@@ -22,12 +24,6 @@ rnah.p.value.threshold <- reactive({
   if(is.null(input$rnah.p.value.threshold)) rnah.p.value.threshold <- NULL
   else rnah.p.value.threshold <- 10^input$rnah.p.value.threshold
   return(rnah.p.value.threshold)
-})
-
-mirna.target.permutation.padj.cutoff <- reactive({
-  if(is.null(input$mirna.target.permutation.padj.cutoff)) mirna.target.permutation.padj.cutoff <- NULL
-  else mirna.target.permutation.padj.cutoff <- 10^input$mirna.target.permutation.padj.cutoff
-  return(mirna.target.permutation.padj.cutoff)
 })
 
 ## find miRNA target genes ##
@@ -76,9 +72,9 @@ mirna.target.permutation <- reactive({
     #prepare progress bar
     progress <- shiny::Progress$new()
     on.exit(progress$close())
-    progress$set(message = "miRNA target permutation test")    
+    progress$set(message = "Generating random hit lists")    
     
-    #permutation loop
+    #randomization loop
     result <- foreach(i = 1:permutations, .combine=rbind.with.progress(progress, permutations),
                       .packages=c("dplyr", "RmiR", "foreach"), 
                       .export=c("generateRandomHitList", "getTargets")) %dopar%
@@ -96,10 +92,11 @@ mirna.target.permutation <- reactive({
     }
     #count for all permutations how often a gene was a target,
     #divide by the number of permutations to get an E-value
+    progress$set(message = "Summarizing results")    
     
     result <- result %>% group_by(gene_id) %>% summarise(n= sum(n)) %>% mutate(n = n / permutations) %>% dplyr::rename(expected = n)        
     
-    #combine original hit list with original target list to get number of distinct mirna families and miRNA names
+    #combine original hit list with original target list to get number of distinct mirna families and miRNA names    
     hit.list.targets.combined <- left_join(hit.list.targets, hit.list, by=c("mature_miRNA"= "mature_name"))  
     target.list.by.gene <- hit.list.targets.combined %>% group_by(gene_id, gene_symbol) %>% summarise(number_of_miRNAs = n_distinct(mature_miRNA), mirna_families = n_distinct(prefam_acc), mature_miRNA=paste(mature_miRNA, collapse = "/"))  
     
@@ -108,7 +105,14 @@ mirna.target.permutation <- reactive({
     final_result <- dplyr::select(final_result, gene_id, gene_symbol, number_of_miRNAs, expected_number_of_miRNAs=expected, mirna_families)        
     
     #calculate p-values using the Poisson distribution (assuming independence)
-    final_result <- final_result %>% mutate(p.value = ppois(number_of_miRNAs, lambda=expected_number_of_miRNAs, lower=FALSE))
+    progress$set(message = "Calculating p-values")
+    
+    final_result <- collect(final_result)
+    final_result$p.value <- foreach(row=iter(final_result, by="row"), .combine=c) %do%
+    {                        
+      with(row, ppois(number_of_miRNAs, lambda=expected_number_of_miRNAs, lower=FALSE))
+    }
+    progress$set(message = "Ajusting p-values")
     final_result$p.adj <- p.adjust(final_result$p.value, method="BH")
                                             
     return(final_result)
@@ -120,7 +124,7 @@ filtered.mirna.target.permutation <- reactive({
   if(is.null(result)) return(NULL)
      
   final_result <- result %>% filter(number_of_miRNAs > input$mirna.target.permutation.num.of.mirnas.cutoff) %>%
-    filter(p.adj < mirna.target.permutation.padj.cutoff())
+    filter(p.adj < input$mirna.target.permutation.padj.cutoff)
   return(final_result)
 })
 
