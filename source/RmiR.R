@@ -1,13 +1,14 @@
-library(org.Hs.eg.db)
-library(RmiR)
-library(dplyr)
-library(foreach)
+#library(org.Hs.eg.db)
+#library(RmiR)
+#library(dplyr)
+#library(foreach)
 
 getTargets <- function(hits, rnah.pvalue.threshold=0.001, get.gene.symbols=F, databases=NA){
   #repair ids
   hits <- na.omit(sub("mir", "miR", hits$mature_name))
-  miRNA.db <- src_sqlite(RmiR.Hs.miRNA_dbfile())
+  
   if("RNAhybrid_hsa" %in% databases) rnah.db <- src_sqlite("data/rnahybrid.sqlite3")
+  else miRNA.db <- src_sqlite(RmiR.Hs.miRNA_dbfile())
   
   query.result <- foreach(db=databases, .combine=rbind) %do% {
     if(db == "RNAhybrid_hsa"){

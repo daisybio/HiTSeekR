@@ -33,6 +33,20 @@ output$downloadTargets <- downloadHandler(
   }  
 )
 
+# miRNA target gene permutation test result download #
+output$downloadTargetPermutationTestResult <- downloadHandler(
+  filename = function() { paste('mirna', 'target','genes', 'permutation', 'test', 'result', 
+                                paste(input$selectedTargetDBs, collapse="_"), 
+                                input$margin, 
+                                input$method, 
+                                input$normalization, '.csv', sep='_') 
+                        },
+  content = function(file) {
+    data <- filtered.mirna.target.permutation()
+    write.table(data, file, row.names=F, sep=",", quote=F)
+  }  
+)
+
 #hotnet2 heat file
 output$downloadHotnetGeneList <- downloadHandler(
   filename = function() { paste('target', 'genes', 'heatscores', paste(input$selectedTargetDBs, collapse="_"), input$margin, input$method, input$normalization, '.txt', sep='_') },

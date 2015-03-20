@@ -1,3 +1,5 @@
+### Load required packages ###
+
 library(shiny)
 library(plyr)
 library(dplyr)
@@ -20,7 +22,9 @@ library(mirbase.db)
 library(htmlwidgets)
 library(networkD3)
 library(tidyr)
+library(org.Hs.eg.db)
 
+### Load all non-shiny source files ###
 source("source/heatmap.R")
 source("source/RmiR.R")
 source("source/go.analysis.R")
@@ -36,13 +40,26 @@ source("source/variance_based_hit_selection.R")
 source("source/plot.miRNA.target.enrichment.graph.R")
 source("source/find.mimat.from.alias.R")
 
+### Additional shiny options ###
 options(shiny.maxRequestSize=30*1024^2)
 
-# load mircancer database #
+### Load mircancer database #
 mircancer.database <- read.table("data/miRCancerSeptember2014.txt", sep="\t", header=T, quote="\"")
 
+### Shiny server ###
 shinyServer(function(input, output, session) {
   
+  ### Get parallel backend up and running ###
+  
+  if(require(doRedis)){  
+    queueID <- paste(sample(c(LETTERS[1:6],0:9),8,replace=TRUE),collapse="")
+    registerDoRedis(queueID)
+    startLocalWorkers(n=2, queue=queueID)
+  } else if(require(doParallel)){
+    cl <- makeCluster(2)
+    registerDoParallel(cl)
+  }
+    
   ### DATA PROCESSING ###
   
   #load the data
@@ -98,9 +115,16 @@ shinyServer(function(input, output, session) {
   ### User Interface ###
   
   source("ui/navbar_data_options.R", local = TRUE)
+  source("ui/navbar_quality_control.R", local = TRUE)
   source("ui/navbar_hits.R", local = TRUE)
   source("ui/navbar_consensus_hits.R", local = TRUE)
   source("ui/navbar_mirna_targets.R", local = TRUE)
   source("ui/gene_ontology.R", local = TRUE)
   source("ui/navbar_data.R", local = TRUE)
+  
+  ### Cleanup, close parallel backend clusters if necessary ###
+  cancel.onSessionEnded <- session$onSessionEnded(function() {    
+    if(require(doRedis)) removeQueue(queueID)
+    else if(require(doParallel)) stopCluster(cl)
+  })
 }) 

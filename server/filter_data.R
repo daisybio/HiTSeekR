@@ -35,7 +35,7 @@ data <- reactive({
   if(input$screenType == "miRNA")
   {
     #update progress bar
-    updateProgress(message = "Querying mirbase", value=0.6)
+    progress$set(message = "Querying mirbase", value=0.6)
     
     fam <- as.data.frame(mirbaseFAMILY)
     

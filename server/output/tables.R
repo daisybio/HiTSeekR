@@ -32,10 +32,11 @@ output$consensusHitList <- renderChart2({
   dTable(data, sPaginationType='full_numbers')
 })
 
-# mRNA targets #
+# miRNA targets #
 output$mirna.targets.table <- renderDataTable(mirna.targets(), escape=FALSE)
 
-#
+# miRNA target permutation test results table
+output$mirna.target.permutation.table <- renderDataTable(filtered.mirna.target.permutation(), escape=FALSE)
 
 # Family hit rate # 
 output$family.hitrate <- renderDataTable(family.hitrate(), escape=FALSE)

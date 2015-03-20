@@ -7,10 +7,11 @@ prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.li
   #kpm.res <<- kpm.result
   #ind.m <<- indicator.matrix
   #hit.l <<- hit.list
-  
+  browser()
   #get list of edges
   edges <- lapply(kpm.result$resultGraphs, function(x){return(lapply(x$edges, function(y){c(as.numeric(y$source), as.numeric(y$target))}))})
   
+  if(length(edges) == 0) stop("No results were returned. Try different K and L settings.")
   #get union graph id
   unionGraph <- foreach(i = 1:length(kpm.result$resultGraphs)) %do%
   {
@@ -110,7 +111,7 @@ plot.miRNA.target.enrichment.graph.igraph <- function(kpm.result, indicator.matr
   
   #add colors (based on overlap count)
   g.colors <- node.ids[V(g)$name,"color"]
-  g.colors[is.na(g.colors)] <- "#80B1D3"
+  g.colors[is.na(g.colors)] <- "#87898a"
   V(g)$color <- g.colors
   
   #return(list(g, target.interactions))
@@ -123,6 +124,7 @@ plot.miRNA.target.enrichment.graph.igraph <- function(kpm.result, indicator.matr
   
   #color miRNAs according to suppressors / promoters
   category <- left_join(data.frame(name = node.names), hit.list, by=c("name"="mature_name"))$category
+  V(g)$color[which(category == "promotor")] <- "#80B1D3"
   V(g)$color[which(category == "suppressor")] <- "#FB8072"
   V(g)$color[which(category == "included")] <- "#FDB462"
   

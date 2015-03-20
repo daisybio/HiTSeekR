@@ -41,7 +41,7 @@ shinyUI(navbarPage(
     ),
     uiOutput("uiOutput_data")
   ),
-  tabPanel("Quality Control", plotOutput("controlPlot", height=800), plotOutput("rowAndColumn", height=800)),  
+  tabPanel("Quality Control", uiOutput("uiOutput_quality_control")),  
   tabPanel("Hit Discovery", shinyalert("hits_error"), uiOutput("uiOutput_hits_options"), uiOutput("uiOutput_hits")),        
   tabPanel("Consensus Hits", uiOutput("uiOutput_consensus_hits")),
   tabPanel("microRNAs", 

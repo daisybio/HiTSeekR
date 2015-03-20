@@ -6,6 +6,12 @@ accTypes <- reactive({
   #return(c("RefSeq", "Entrez", "MIMAT", "MI"))
 })
 
+#Are controls included?
+hasCtrls <- reactive({
+  if(is.null(input$hasCtrls)) return(FALSE)
+  else return(input$hasCtrls)
+})
+
 #return available control types found in data
 ctrlTypes <- reactive({
   data <- rawData()

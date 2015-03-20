@@ -6,19 +6,16 @@ base64EncFile <- function(fileName){
   return(base64(readChar(fileName, file.info(fileName)$size)))
 }
 
-setup.KPM <- function(list.of.indicator.matrices, graphFile, 
-                      algorithm="Greedy", strategy="GLONE", 
+setup.KPM <- function(list.of.indicator.matrices, 
+                      algorithm="Greedy", strategy="GLONE", graphID=1,
                       removeBENs=FALSE, range, 
                       Kmin=0, Lmin=0, Kmax=0, Lmax=0, Kstep=1, Lstep=1, 
                       ATTACHED_TO_ID, 
                       computed.pathways=20, 
-                      with.perturbation=FALSE){
-  
-  #create tempfiles
-  tmp.file <- tempfile()
+                      with.perturbation=FALSE){  
   
   #base64 encode files
-  datasetList <- datasetList.KPM(list.of.indicator.matrices, list(tmp.file), ATTACHED_TO_ID)
+  datasetList <- datasetList.KPM(list.of.indicator.matrices,ATTACHED_TO_ID)
   
   #create a run id
   RNAice_RUN_ID <- paste(sample(c(LETTERS[1:6],0:9),6,replace=TRUE),collapse="")
@@ -31,15 +28,16 @@ setup.KPM <- function(list.of.indicator.matrices, graphFile,
         algorithm=algorithm,
         strategy=strategy,
         removeBENs=tolower(as.character(removeBENs)),
-        unmapped_nodes="Add to positive list",
+        unmapped_nodes="Add to negative list",
         computed_pathways=computed.pathways,
-        graphName=basename(graphFile),             
+        graphID=graphID,
         l_samePercentage="false",
         samePercentage_val=0,
         k_values=list(c(val=Kmin, val_step=Kstep, val_max=Kmax, use_range=tolower(as.character(range)), isPercentage="false")),
-        l_values=list(      
-          c(val=Lmin, val_step=Lstep, val_max=Lmax, use_range=tolower(as.character(range)), isPercentage="false", datasetName=basename(tmp.file))
-        )), 
+        l_values=list(
+          c(val=Lmin, val_step=Lstep, val_max=Lmax, use_range=tolower(as.character(range)), isPercentage="false", datasetName=paste("dataset", 1, sep=""))
+        )
+        ), 
       withPerturbation=tolower(as.character(with.perturbation)),
       perturbation=list(c( # perturbation can be left out, if withPeturbation parameter is set to false.
         technique="Node-swap",
@@ -52,45 +50,45 @@ setup.KPM <- function(list.of.indicator.matrices, graphFile,
       attachedToID=ATTACHED_TO_ID,
       positiveNodes="",
       negativeNodes=""
-    ))
+    ))  
   return(list(KPMsettings, datasetList))
 }
 
-datasetList.KPM <- function(list.of.indicator.matrices, list.of.tmp.files, ATTACHED_TO_ID)
-{
-  counter <- 1
+datasetList.KPM <- function(list.of.indicator.matrices, ATTACHED_TO_ID)
+{  
+  counter <- 0
   datasetList <- foreach(indicator.matrix = list.of.indicator.matrices) %do% {
-    tmp.file <- list.of.tmp.files[[counter]]
+    txt.con <- textConnection("tmp.file", "w")    
+    
+    write.table(indicator.matrix, txt.con, sep="\t",quote=F)    
+    enc.file <- base64(tmp.file)
+    close(txt.con)
     counter <- counter + 1
-    
-    write.table(indicator.matrix, tmp.file, sep="\t",quote=F)    
-    enc.file <- base64EncFile(tmp.file)
-    
-    c(name=basename(tmp.file), attachedToID=ATTACHED_TO_ID, contentBase64=enc.file)
+    c(name=paste("dataset", counter, sep=""), attachedToID=ATTACHED_TO_ID, contentBase64=enc.file)
   }
   
   return(toJSON(datasetList))
 }
 
 call.KPM <- function(indicator.matrices, ATTACHED_TO_ID=NULL, url="http://localhost:8080/kpm-web/",...){
-  
+  browser()
   # generate random UUID:
   if(is.null(ATTACHED_TO_ID))
   ATTACHED_TO_ID = paste(sample(c(LETTERS[1:6],0:9),32,replace=TRUE),collapse="")
   #PPI network for KPM
   #graphFile <- "data/biogrid_entrez.sif"
   #graphFile <- "data/graph-ulitsky-entrez.sif"
-  graphFile <- "data/graph-hprd-entrez.sif"
-  graph <- base64EncFile(graphFile)
-  graph <- toJSON(c(name=basename(graphFile), attachedToID=ATTACHED_TO_ID, contentBase64=graph))
+  #graphFile <- "data/graph-hprd-entrez.sif"
+  #graph <- base64EncFile(graphFile)
+  #graph <- toJSON(c(name=basename(graphFile), attachedToID=ATTACHED_TO_ID, contentBase64=graph))
   
   #KPM settings:
-  kpmSetup <- setup.KPM(indicator.matrices, ATTACHED_TO_ID=ATTACHED_TO_ID, graphFile, ...)
+  kpmSetup <- setup.KPM(indicator.matrices, ATTACHED_TO_ID=ATTACHED_TO_ID, ...)
     
   result <- NULL
   print(sprintf("url: %s", url))
   print(sprintf("kpmSettings: %s", kpmSetup[[1]]))  
-  result <- sendToKpmServiceAsync(url, kpmSetup, graph)
+  result <- sendToKpmServiceAsync(url, kpmSetup, NULL)
 
   return(result)
 }
@@ -111,7 +109,7 @@ withTryCatch <- function(surroundedFunc){
 sendToKpmServiceAsync <- function(url, kpmSetup, inputGraph){
   withTryCatch(function(){    
     url <- paste(url, "requests/kpmAsyncJSON", sep="")    
-    result <- postForm(url, kpmSettings=kpmSetup[[1]], datasets=kpmSetup[[2]], graph=inputGraph)
+    result <- postForm(url, kpmSettings=kpmSetup[[1]], datasets=kpmSetup[[2]])#, graph=inputGraph)
     
     jsonResult <- fromJSON(result)
     print(jsonResult["comment"])   

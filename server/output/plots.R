@@ -1,3 +1,12 @@
+#dummy progress bar
+dummyProgressBar <- function(){
+  # Create a Progress object
+  progress <- shiny::Progress$new()
+  progress$set(message = "Generating plot", value = 0.1)
+  # Close the progress when this reactive exits (even if there's an error)
+  return(progress)
+}
+
 #format integers for plots
 formatIntegerForPlot <- function(data, columnToFormat){    
     maxNumber <- max(as.integer(data[,columnToFormat]))
@@ -122,31 +131,51 @@ output$scatterPlot <- renderPlot({
   else sel.normalization <- input$normalization  
   q <- ggplot(exp.data, aes_string(x="wellCount", y=sel.normalization, color="Plate", shape="Replicate")) + geom_point() + geom_line(stat="hline", yintercept="mean", color="black", aes(group=interaction(Plate, Replicate))) 
   q <- q + theme_bw()
-  if("Experiment" %in% colnames(exp.data)) q <- q + facet_wrap(~Experiment, ncol=1, scales="free")
+  q <- q + facet_grid(Readout~Experiment, scale="free")
+  q <- q + guides(color=guide_legend(nrow=10, byrow=TRUE))
+  print(q)
+})
+
+# Control plot for average plate values
+output$plateMeanPlot <- renderPlot({
+  exp.data <- processedData()
+  if(is.null(exp.data)) return(NULL)
+  plateMeanInfoFileName <- "help/plateMeanInfo.html"
+  plateMeanInfoText <- readChar(plateMeanInfoFileName, file.info(plateMeanInfoFileName)$size)
+  showshinyalert(session, "plateMeanInfo", plateMeanInfoText, "info")
+  progress <- dummyProgressBar()
+  on.exit(progress$close())
+  
+  q <- qplot(x=Plate, y=Raw, data=exp.data, geom="boxplot", color=Plate, shape=Replicate)
+  q <- q + theme_bw() + facet_grid(Readout~Experiment, scale="free_y") + guides(color=guide_legend(nrow=10, byrow=TRUE))
   print(q)
 })
 
 # Plot for control performance (box plots) #
-output$controlPlot <- renderPlot({
-  data <- processedData()
-  q <- ggplot(subset(data, !is.na(Control)), aes_string(x="Sample", y=input$normalization, color="Plate", shape="Replicate")) + geom_boxplot()
-  
+output$controlPlot <- renderPlot({  
+  if(hasCtrls()) return(NULL)
+  exp.data <- processedData()
+  if(is.null(exp.data)) return(NULL)
+  progress <- dummyProgressBar()
+  on.exit(progress$close())
+  plot.data <- filter(exp.data, !is.na(Control), tolower(Control) != "sample")
+  q <- ggplot(plot.data, aes_string(x="Control", y="Raw", color="Plate", shape="Replicate")) + geom_boxplot()
+  q <- q + theme_bw() + facet_grid(Readout~Experiment, scale="free_y") 
+  q <- q + guides(color=guide_legend(nrow=10, byrow=TRUE))
   print(q)
 })
 
 # Plot for row and column effects over whole screen #
 output$rowAndColumn <- renderPlot({
-  p1 <- qplot(x=Row, y=centered, data=processedData(), geom="bar", stat="summary", fun.y="mean", fill=Replicate, position="dodge", main="Row Mean") + scale_y_continuous(labels=percent)
-  p2 <- qplot(x=Column, y=centered, data=processedData(), geom="bar", stat="summary", fun.y="mean", fill=Replicate, position="dodge", main="Column Mean") + scale_y_continuous(labels=percent)
+  exp.data <- processedData()
+  if(is.null(exp.data)) stop("Please process the input data first")
+  progress <- dummyProgressBar()
+  on.exit(progress$close())
+  p1 <- qplot(x=Row, y=centered, data=exp.data, geom="bar", stat="summary", fun.y="mean", fill=Replicate, position="dodge", main="Row Mean") + scale_y_continuous(labels=percent)
+  p2 <- qplot(x=Column, y=centered, data=exp.data, geom="bar", stat="summary", fun.y="mean", fill=Replicate, position="dodge", main="Column Mean") + scale_y_continuous(labels=percent)
+  p1 <- p1 + theme_bw() + facet_grid(Readout~Experiment) + scale_fill_brewer(palette="Accent")
+  p2 <- p2 + theme_bw() + facet_grid(Readout~Experiment) + scale_fill_brewer(palette="Accent")
   print(grid.arrange(p1,p2))
-})
-
-# Plot for comparison of normalization methods in plate viewer #
-output$normalizationComparison <- renderPlot({
-  data <- processedData()
-  data$signal <- NULL
-  p2 <- qplot(x=wellCount, y=value, data=melt(subset(data, Plate==input$plateSelected), id.vars=c("Plate", "Well.position", "wellCount", "Replicate", "Sample", "Accession", "Sample", "Control", "Row", "Column")), color=Replicate, main="Comparison of different normalization methods") + facet_wrap(~variable, scales="free", ncol=3) + geom_smooth(method="loess")
-  print(p2)
 })
 
 KPM.modify.hits <- reactive({

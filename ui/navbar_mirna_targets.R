@@ -24,6 +24,14 @@ output$uiOutput_mirna_targets <- renderUI({
              downloadButton('downloadHotnetGeneList', 'Download hotnet2 heat scores')
              
     ),
+  tabPanel("miRNA target permutation test", 
+    actionButton("mirna.target.permutation.button", "Start miRNA target permutation test"),
+    numericInput("mirna.target.permutations", "Number of permutations", value=100, min=10, max=10000),    
+    sliderInput("mirna.target.permutation.num.of.mirnas.cutoff", "Minimal number of miRNAs from hit list targeting a gene", value=1, min = 0, max=100, step=1),
+    sliderInput("mirna.target.permutation.padj.cutoff", "adjusted p-value threshold", min=-5, max=0, step=1, value=-3, ticks= c(0.00001, 0.0001, 0.001, 0.01, 0.1, 0)),
+    dataTableOutput("mirna.target.permutation.table"),
+    downloadButton("downloadTargetPermutationTestResult", "Download")
+  ),
   #tabPanel("Interaction Graph", plotOutput("interactionGraph")),
   tabPanel("Target Gene Enrichment", uiOutput("uiOutput_KPM"), mainPanel(
     shinyalert("kpm_status"),    
@@ -53,7 +61,10 @@ output$uiOutput_KPM <- renderUI({
     textInput("kpm_URL", "KPM-Web URL:", "http://localhost:8080/kpm-web/"),  
     selectInput("kpm_strategy", "Strategy:", c("GLONE", "INES")),    
     selectInput("kpm_algorithm", "Algorithm:", list("Greedy"="Greedy", "Exact (FPT)"="Exact", "Ant Colony Optimization" = "ACO")),
+    selectInput("kpm_network", "Network", KPM.network.list()),
     checkboxInput("kpm_ben_removal", "Remove border exception nodes?", TRUE),
+    checkboxInput("random.miRNA.test", "Repeat with random miRNA set to estimate p-values", FALSE),
+    numericInput("random.miRNA.iterations", "Iterations", min=10, max=1e6, value=10),
     checkboxInput("kpm_ranged", "ranged K and L?", FALSE),
     conditionalPanel("!input.kpm_ranged",
       conditionalPanel("input.kpm_strategy!='GLONE'",

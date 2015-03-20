@@ -1,13 +1,34 @@
 #per session attached to id for KPM
 ATTACHED_TO_ID <- paste(sample(c(LETTERS[1:6],0:9),32,replace=TRUE),collapse="")
 
+KPM.network.list <- reactive({
+  if(is.null(input$kpm_URL)) return(NULL)
+  
+  tryCatch({
+    kpm.url <- paste(input$kpm_URL, "requests/graphsAsJSON/", sep="")    
+    result <- getURL(kpm.url)
+    jsonResult <- fromJSON(result)
+    networks <- foreach(network = jsonResult, .combine=append) %do% {network[[1]]} 
+    names(networks) <- foreach(network = jsonResult, .combine=append) %do% {network[[2]]} 
+    return(networks)
+  }, error = function(e) return(NULL))  
+})
+
 KPM.run <- reactive({
   input$startKPMButton
   isolate({
+    if(input$kpm_ranged && input$random.miRNA.test) stop("miRNA target permutation test is limited to specific K and L")
     showshinyalert(session, "kpm_status", "Generating indicator matrix", "info")  
     indicator.matrix <- targets.indicator.matrix()
+    list.of.ind.matrices <- list(indicator.matrix)
+    
+    if(input$random.miRNA.test){
+      showshinyalert(session, "kpm_status", "Generating matrices for random miRNAs", "info")    
+      list.of.ind.matrices <- append(list.of.ind.matrices, list.of.random.mirna.indicator.matrices())
+    }
+    
     showshinyalert(session, "kpm_status", "Sending data to KPM", "info")
-    #browser()
+    
     if(input$kpm_ranged)
     {
       Kmin <- input$kpm_lower_K
@@ -17,11 +38,14 @@ KPM.run <- reactive({
       Kmin <- input$kpm_K
       Lmin <- input$kpm_L
     }
-    result <- call.KPM(list(indicator.matrix), 
+    
+    result <- foreach(ind.matrix = list.of.ind.matrices) %dopar%{
+                    call.KPM(list(ind.matrix), 
                        url=input$kpm_URL, 
                        ATTACHED_TO_ID=ATTACHED_TO_ID, 
                        strategy=input$kpm_strategy, 
                        algorithm=input$kpm_algorithm, 
+                       graphID=input$kpm_network,
                        removeBENs=input$kpm_ben_removal, 
                        range=input$kpm_ranged,
                        Kmin=Kmin, 
@@ -32,7 +56,9 @@ KPM.run <- reactive({
                        Lstep=input$kpm_step_L,
                        with.perturbation=input$kpm_perturbation,
                        computed.pathways=input$kpm_pathways)
-    return(result)
+              }
+    kpm.result <<- result
+    return(result[[1]])
   })
 })
 
