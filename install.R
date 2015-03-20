@@ -1,9 +1,21 @@
-#these are the required packages for running RNAice
-install.packages(c("shiny", "qgraph", "ggplot2","grid","gridExtra", "scales", "devtools", "data.table", "DBI", "gplots", "VennDiagram"))
+### installation ###
 
-library(devtools)
-install_github('rCharts', 'ramnathv', ref='dev')
+install.packages(c("shiny", "plyr", "dplyr", "ggplot2", 
+                   "gplots", "scales", "gridExtra", 
+                   "reshape2", "stringr", "VennDiagram", "qgraph",
+                   "iterators", "foreach", "mirbase.db", "htmlwidgets",
+                   "networkD3", "tidyr", "devtools"))
+require(devtools)
+install_github('rCharts', 'ramnathv')
+install_github("AnalytixWare/ShinySky")
 
 source("http://bioconductor.org/biocLite.R")
 biocLite("org.Hs.eg.db")
 biocLite("RmiR")
+biocLite("RTCA")
+
+### for parallelization ###
+install.packages("doRedis")
+
+#or
+#install.packages("doParallel")

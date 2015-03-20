@@ -58,7 +58,7 @@ output$uiOutput_KPM <- renderUI({
   
   elements <- list(
     HTML('<img src="KPM_banner.png"/><br/><br/>'),
-    textInput("kpm_URL", "KPM-Web URL:", "http://localhost:8080/kpm-web/"),  
+    #textInput("kpm_URL", "KPM-Web URL:", "http://localhost:8080/kpm-web/"),  
     selectInput("kpm_strategy", "Strategy:", c("GLONE", "INES")),    
     selectInput("kpm_algorithm", "Algorithm:", list("Greedy"="Greedy", "Exact (FPT)"="Exact", "Ant Colony Optimization" = "ACO")),
     selectInput("kpm_network", "Network", KPM.network.list()),

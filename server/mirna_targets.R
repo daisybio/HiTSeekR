@@ -109,7 +109,7 @@ mirna.target.permutation <- reactive({
     
     #calculate p-values using the Poisson distribution (assuming independence)
     final_result <- final_result %>% mutate(p.value = ppois(number_of_miRNAs, lambda=expected_number_of_miRNAs, lower=FALSE))
-    final_result$p.adj <- p.adjust(final_result$p.value)
+    final_result$p.adj <- p.adjust(final_result$p.value, method="BH")
                                             
     return(final_result)
   })

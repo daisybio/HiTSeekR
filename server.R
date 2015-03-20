@@ -1,5 +1,7 @@
-### Load required packages ###
+### Configuration ###
+source("config.R")
 
+### Load required packages ###
 library(shiny)
 library(plyr)
 library(dplyr)
@@ -54,9 +56,10 @@ shinyServer(function(input, output, session) {
   if(require(doRedis)){  
     queueID <- paste(sample(c(LETTERS[1:6],0:9),8,replace=TRUE),collapse="")
     registerDoRedis(queueID)
-    startLocalWorkers(n=2, queue=queueID)
+    setChunkSize(value = 50)
+    startLocalWorkers(n=number.of.cores, queue=queueID)
   } else if(require(doParallel)){
-    cl <- makeCluster(2)
+    cl <- makeCluster(number.of.cores)
     registerDoParallel(cl)
   }
     

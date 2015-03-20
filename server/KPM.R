@@ -1,11 +1,9 @@
 #per session attached to id for KPM
 ATTACHED_TO_ID <- paste(sample(c(LETTERS[1:6],0:9),32,replace=TRUE),collapse="")
 
-KPM.network.list <- reactive({
-  if(is.null(input$kpm_URL)) return(NULL)
-  
+KPM.network.list <- reactive({  
   tryCatch({
-    kpm.url <- paste(input$kpm_URL, "requests/graphsAsJSON/", sep="")    
+    kpm.url <- paste(keypathwayminer.url, "requests/graphsAsJSON/", sep="")    
     result <- getURL(kpm.url)
     jsonResult <- fromJSON(result)
     networks <- foreach(network = jsonResult, .combine=append) %do% {network[[1]]} 
@@ -41,7 +39,7 @@ KPM.run <- reactive({
     
     result <- foreach(ind.matrix = list.of.ind.matrices) %dopar%{
                     call.KPM(list(ind.matrix), 
-                       url=input$kpm_URL, 
+                       url=keypathwayminer.url, 
                        ATTACHED_TO_ID=ATTACHED_TO_ID, 
                        strategy=input$kpm_strategy, 
                        algorithm=input$kpm_algorithm, 
@@ -76,12 +74,12 @@ output$KPM.test <- renderPrint({
 })
 
 quest.progress.url <- function(){
-  kpm.url <- paste(input$kpm_URL, "requests/quests?attachedToId=", sep="")
+  kpm.url <- paste(keypathwayminer.url, "requests/quests?attachedToId=", sep="")
   paste("Click <a target='_blank' href='", kpm.url, ATTACHED_TO_ID, "&hideTitle=false", "'>here</a> to follow the progress of your run in KPM web", sep="")
 }
 
 quest.result.url <- function(){
-  kpm.url <- paste(input$kpm_URL, "requests/quests?attachedToId=", sep="")
+  kpm.url <- paste(keypathwayminer.url, "requests/quests?attachedToId=", sep="")
   paste("Click <a target='_blank' href='", kpm.url, ATTACHED_TO_ID, "&hideTitle=false", "'>here</a> to see the results of your run in KPM web", sep="")  
 }
 
@@ -91,7 +89,7 @@ check.KPM.result <- function(){
   if(input$startKPMButton == 0) return(FALSE)
   
   #get current running status from KPM web
-  quest.status <- getKpmRunStatus(input$kpm_URL, currentQuest())
+  quest.status <- getKpmRunStatus(keypathwayminer.url, currentQuest())
   if(is.null(quest.status)) return(FALSE)
   
   #update status
@@ -109,7 +107,7 @@ check.KPM.result <- function(){
 }
 
 get.KPM.result <- function(){
-  return(getKpmResults(input$kpm_URL, currentQuest()))
+  return(getKpmResults(keypathwayminer.url, currentQuest()))
 }
 
 currentQuest <- reactive({
