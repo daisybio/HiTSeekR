@@ -46,7 +46,7 @@ source("source/find.mimat.from.alias.R")
 options(shiny.maxRequestSize=30*1024^2)
 
 ### Load mircancer database #
-mircancer.database <- read.table("data/miRCancerSeptember2014.txt", sep="\t", header=T, quote="\"")
+mircancer.database <- read.table("data/mirCancerSeptember2014.txt", sep="\t", header=T, quote="\"")
 
 ### Shiny server ###
 shinyServer(function(input, output, session) {
