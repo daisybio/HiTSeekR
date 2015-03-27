@@ -66,16 +66,38 @@ output$downloadIndicatorMatrix <- downloadHandler(
   }
 )
 
-# GO enrichment graph #
-output$dlGnOntGraph <- downloadHandler(
-  filename = function() { return("GO.pdf")},
+# Gene set analysis with htsanalyzer #
+output$htsanalyzer.results.download.GO_CC <- downloadHandler(
+  filename = function() { return(paste(input$htsanalyzer.resultType, "_GO_CC.txt"))},
   content = function(file) {
-    data <- goEnrichment()
-    pdf(file)
-    showSigOfNodes(attr(data, "topGO"), score(attr(data, input$goSelectedMethod)), firstSigNodes = input$goSelectedNodes, useInfo=input$goUseInfo)
-    dev.off()
+    data <- htsanalyzer.results()[["GO_CC"]]
+    write.table(data, file, sep="\t", quote=F)
   }
-)
+) 
+  
+output$htsanalyzer.results.download.GO_MF <- downloadHandler(
+  filename = function() { return(paste(input$htsanalyzer.resultType, "_GO_MF.txt"))},
+  content = function(file) {
+    data <- htsanalyzer.results()[["GO_MF"]]
+    write.table(data, file, sep="\t", quote=F)
+  }
+  ) 
+
+output$htsanalyzer.results.download.GO_BP <- downloadHandler(
+  filename = function() { return(paste(input$htsanalyzer.resultType, "_GO_BP.txt"))},
+  content = function(file) {
+    data <- htsanalyzer.results()[["GO_BP"]]
+    write.table(data, file, sep="\t", quote=F)
+  }
+  ) 
+
+output$htsanalyzer.results.download.PW_KEGG <- downloadHandler(
+  filename = function() { return(paste(input$htsanalyzer.resultType, "_PW_KEGG.txt"))},
+  content = function(file) {
+    data <- htsanalyzer.results()[["PW_KEGG"]]
+    write.table(data, file, sep="\t", quote=F)
+  }
+  ) 
 
 # GO enrichment table #
 output$dlGnOntTbl <- downloadHandler(

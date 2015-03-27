@@ -1,31 +1,51 @@
 # consensus hit list with all hits
-outliers.all <- reactive({
-  hits <- data.frame()
-  my.data <- data()
-  input$updateNormalization
+outliers.all <- reactive({  
+  exp.data <- data()
+  #outl <- foreach(exp = unique(as.character(exp.data$Experiment)), .combine=rbind) %do%{
+  exp.data <- subset(exp.data, Experiment==input$experimentSelected & Readout==input$readoutSelected)
   
-  for(method in input$multiNormalizations)
+  if(input$method=="Bayes" && is.null(negCtrl())) stop("negative control missing")
+  
+  progress <- shiny::Progress$new()
+  progress$set(message = "Generating hit lists...", value = 0)
+  on.exit(progress$close())
+  
+  #don't need to calculate default normalization twice
+  normalizations <- input$multiNormalizations
+  default.normalization <- input$normalization
+  normalizations <- setdiff(normalizations, default.normalization)
+  
+  hits <- isolate({
+    foreach(normalization = input$multiNormalizations, .combine=rbind) %do% 
+    {      
+      result <- find.hits.call(exp.data, input$method, input$margin, negCtrl(), normalization, NULL)
+      result$method <- normalization
+      return(result)
+    }
+  })
+  
+  #add default method hits
+  if(default.normalization %in% input$multiNormalizations)
   {
-    my.data$signal <- my.data[[method]]
-    outl <- isolate(find.hits(my.data, input$method, input$margin, withControls=input$includeControls))
-    outl$method <- method
-    
-    outl[outl[[method]] > mean(my.data[[method]], na.rm=T),"category"] <- "promotor"
-    outl[outl[[method]] < mean(my.data[[method]], na.rm=T),"category"] <- "suppressor"
-    
-    hits <- rbind(hits, outl)
+    default.hits <- hit.detect()
+    default.hits$method <- default.normalization
+    hits <- rbind(hits, default.hits)
   }
   
-  return(ddply(hits, .(Sample, method, category), summarise, count=1))
+  #count how often a sample is recognized as hit
+  hits <- hits %>% count(Experiment, Readout, Plate, Well.position, Sample, method, category) 
+  return(hits)
 })
 
 # reformat consensus hit list and apply threshold #
 consensusHitList <- reactive({
-  consensus <- ddply(outliers.all(), .(Sample, category), summarise, method=paste(method, collapse="/"), count=length(count))
-  consensus <- subset(consensus, count >= input$multiThreshold)
-  consensus <- merge(consensus, data(), by="Sample")
-  consensus <- subset(consensus, select =c(2, 1, seq(3,(ncol(consensus)))))
-  consensus$signal <- NULL
-  consensus$signal.sem <- NULL
+  hits <- outliers.all()
+    
+  consensus <- hits %>% group_by(Experiment, Readout, Plate, Sample, Well.position) %>% 
+    summarise(method=paste(method, collapse="/"), count=sum(n)) %>% 
+    filter(count >= input$multiThreshold)
+  
+  consensus <- left_join(consensus, data(), by=c("Experiment", "Readout", "Plate", "Sample", "Well.position"))
+  
   return(consensus)
 })

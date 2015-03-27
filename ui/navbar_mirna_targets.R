@@ -63,27 +63,29 @@ output$uiOutput_KPM <- renderUI({
     selectInput("kpm_algorithm", "Algorithm:", list("Greedy"="Greedy", "Exact (FPT)"="Exact", "Ant Colony Optimization" = "ACO")),
     selectInput("kpm_network", "Network", KPM.network.list()),
     checkboxInput("kpm_ben_removal", "Remove border exception nodes?", TRUE),
-    checkboxInput("random.miRNA.test", "Repeat with random miRNA set to estimate p-values", FALSE),
-    numericInput("random.miRNA.iterations", "Iterations", min=10, max=1e6, value=10),
-    checkboxInput("kpm_ranged", "ranged K and L?", FALSE),
-    conditionalPanel("!input.kpm_ranged",
-      conditionalPanel("input.kpm_strategy!='GLONE'",
+    checkboxInput("miRNA.permutation.filter.in.kpm", "Filter for genes that are significant after the miRNA target permutation test", FALSE),      
+    conditionalPanel(condition="input['miRNA.permutation.filter.in.kpm']",
+      checkboxInput("miRNA.permutation.pos.list.in.kpm", "Add genes that are significant after the miRNA target permutation test to positive list", FALSE)
+    ),    
+    #checkboxInput("kpm_ranged", "ranged K and L?", FALSE),
+    #conditionalPanel("!input.kpm_ranged",
+    conditionalPanel(condition="input.kpm_strategy!='GLONE'",
         numericInput("kpm_K", "K (# node exceptions)", 1, min = 1, max = 100)        
-      ),
-      numericInput("kpm_L", "L (# case exceptions)", 1, min = 1, max = 1000)
     ),
-    conditionalPanel("input.kpm_ranged",
-      conditionalPanel("input.kpm_strategy!='GLONE'",
-        numericInput("kpm_lower_K", "Lower limit for K", min=0, value=0),
-        numericInput("kpm_upper_K", "Upper limit for K", min=0, value=5),
-        numericInput("kpm_step_K", "Step size for K", min=1, value=1)
-      ),      
-      numericInput("kpm_lower_L", "Lower limit for L", min=0, value=0),
-      numericInput("kpm_upper_L", "Upper limit for L", min=1, value=10),
-      numericInput("kpm_step_L", "Step size for L", min=1, value=1)
-    ),
+    numericInput("kpm_L", "L (# case exceptions)", 1, min = 1, max = 1000),
+    #),
+    #conditionalPanel("input.kpm_ranged",
+    #  conditionalPanel("input.kpm_strategy!='GLONE'",
+    #    numericInput("kpm_lower_K", "Lower limit for K", min=0, value=0),
+    #    numericInput("kpm_upper_K", "Upper limit for K", min=0, value=5),
+    #    numericInput("kpm_step_K", "Step size for K", min=1, value=1)
+    #  ),      
+    #  numericInput("kpm_lower_L", "Lower limit for L", min=0, value=0),
+    #  numericInput("kpm_upper_L", "Upper limit for L", min=1, value=10),
+    #  numericInput("kpm_step_L", "Step size for L", min=1, value=1)
+    #),
     sliderInput("kpm_pathways", "Number of pathways", min = 1, max = 100, value=20),
-    checkboxInput("kpm_perturbation", "Perturbe network?", FALSE),
+    #checkboxInput("kpm_perturbation", "Perturbe network?", FALSE),
     actionButton("startKPMButton", "Start KPM"), downloadButton('downloadIndicatorMatrix')
   )
   do.call(sidebarPanel, elements)

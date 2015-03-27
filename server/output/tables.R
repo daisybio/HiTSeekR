@@ -1,21 +1,21 @@
 # Hit List #
-formattedTable <- reactive({  
-  data <- outliers()
-  if(is.null(data)) return(NULL)
+formattedTable <- function(exp.data, show.sem){  
   
-  if(!input$show.sem.in.hits)
-    data <- data %>% dplyr::select(-ends_with("_sem")) 
+  if(is.null(exp.data)) return(NULL)
   
-  if("mature_from" %in% colnames(data))
-    data <- data %>% dplyr::select(-one_of("mature_from", "mature_to", "evidence", "experiment", "similarity"))
+  if(!show.sem)
+    exp.data <- exp.data %>% dplyr::select(-ends_with("_sem")) 
   
-  data[data$category %in% c("promotor"),"category"] <- "<div style='background:#80B1D3; text-align:center; border-radius: 15px; width:25px; height:25px;'>P</div>"
-  data[data$category %in% c("suppressor"),"category"] <- "<div style='background:#FB8072; text-align:center; border-radius: 15px; width:25px; height:25px;'>S</div>"
-  data[data$category %in% c("included"),"category"] <- "<div style='background:#FDB462; text-align:center; border-radius: 15px; width:25px; height:25px;'>I</div>"
-  return(as.data.frame(data))
-})
+  if("mature_from" %in% colnames(exp.data))
+    exp.data <- exp.data %>% dplyr::select(-one_of("mature_from", "mature_to", "evidence", "experiment", "similarity"))
+  
+  exp.data[exp.data$category %in% c("promotor"),"category"] <- "<div style='background:#80B1D3; text-align:center; border-radius: 15px; width:25px; height:25px;'>P</div>"
+  exp.data[exp.data$category %in% c("suppressor"),"category"] <- "<div style='background:#FB8072; text-align:center; border-radius: 15px; width:25px; height:25px;'>S</div>"
+  exp.data[exp.data$category %in% c("included"),"category"] <- "<div style='background:#FDB462; text-align:center; border-radius: 15px; width:25px; height:25px;'>I</div>"
+  return(as.data.frame(exp.data))
+}
 
-output$table_hits <- renderDataTable(formattedTable(), escape=FALSE)
+output$table_hits <- renderDataTable(formattedTable(outliers(), input$show.sem.in.hits), escape=FALSE)
 
 # Raw data
 output$table_rawData <- renderDataTable(rawData(), escape=FALSE)
@@ -24,13 +24,7 @@ output$table_rawData <- renderDataTable(rawData(), escape=FALSE)
 output$table_processedData <- renderDataTable(processedData(), escape=FALSE)
 
 # Consensus hit list #
-output$consensusHitList <- renderChart2({
-  data <- consensusHitList()
-  data[data$category %in% c("promotor"),"category"] <- "<div style='background:#80B1D3; text-align:center; border-radius: 15px; width:25px; height:25px;'>P</div>"
-  data[data$category %in% c("suppressor"),"category"] <- "<div style='background:#FB8072; text-align:center; border-radius: 15px; width:25px; height:25px;'>S</div>"
-  
-  dTable(data, sPaginationType='full_numbers')
-})
+output$consensusHitList <- renderDataTable(formattedTable(consensusHitList(), input$show.sem.in.hits), escape=FALSE)
 
 # miRNA targets #
 output$mirna.targets.table <- renderDataTable(mirna.targets(), escape=FALSE)
@@ -41,10 +35,11 @@ output$mirna.target.permutation.table <- renderDataTable(filtered.mirna.target.p
 # Family hit rate # 
 output$family.hitrate <- renderDataTable(family.hitrate(), escape=FALSE)
 
-# GO enrichment analysis based on mRNA targets #
-output$goEnrichmentTable <- renderChart2({
-    dTable(goEnrichment(), sPaginationType='full_numbers')
-})
+# HTSAnalyzer results #
+output$htsanalyzer.results.table.GO_CC <- renderDataTable(htsanalyzer.results()[["GO_CC"]], escape=FALSE)
+output$htsanalyzer.results.table.GO_MF <- renderDataTable(htsanalyzer.results()[["GO_MF"]], escape=FALSE)
+output$htsanalyzer.results.table.GO_BP <- renderDataTable(htsanalyzer.results()[["GO_BP"]], escape=FALSE)
+output$htsanalyzer.results.table.PW_KEGG <- renderDataTable(htsanalyzer.results()[["PW_KEGG"]], escape=FALSE)
 
 # mirCancerDB #
 output$mircancer.table <- renderDataTable({

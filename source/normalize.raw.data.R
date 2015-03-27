@@ -25,11 +25,7 @@ normalizeRawData <- function(plates, control.based=F, pos.ctrl=NULL, neg.ctrl=NU
   
   if(is.function(updateProgress)) updateProgress(detail="Bscore", value=0.6)
   plates.norm <- do(plates.norm, Bscore(.))
-  #library(plyr)
-  #plates.norm <- ddply(plates.norm, .(Plate, Replicate), Bscore)
-  #plates.norm <- posEffectNorm(plates.norm)
-  #plate comparison
-  
+    
   #sort
   if(is.function(updateProgress)) updateProgress(detail="Sorting", value=0.8)
   plates.norm <- plates.norm %>% arrange(Experiment, Plate, Row, Column, Replicate) 

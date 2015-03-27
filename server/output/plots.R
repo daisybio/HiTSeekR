@@ -17,9 +17,11 @@ formatIntegerForPlot <- function(data, columnToFormat){
 
 # bar chart to visualize how many normalizations report a given hit #
 output$normcomparison <- renderChart({
-  data <- outliers.all()
-  data <- subset(data, Sample %in% consensusHitList()$Sample)
-  p3 <- rPlot(x="Sample", y="count", color='method', data = data, type = 'bar')
+  exp.data <- outliers.all()
+  consensus <- consensusHitList()
+  
+  exp.data <- filter(exp.data, Sample %in% consensus$Sample)
+  p3 <- rPlot(x="Sample", y="n", color='method', data = exp.data, type = 'bar')
   p3$addParams(dom='normcomparison', width="800", height="600")
   return(p3)
 })
@@ -44,6 +46,7 @@ output$consensusVennDiagram <- renderPlot({
 output$heatmapPlot <- renderPlot({  
   plot.data <- data()
   hits <- outliers()
+  
   my.heatmap(plot.data, input$normalization, input$margin, input$method, hits, showSampleLabels=input$showLabelsOnHeatmap, signalColumn=input$normalization)
 })
 

@@ -22,7 +22,7 @@ normalizationChoices <- reactive({
 
 marginChoices <- reactive({
   methods <- c("Standard deviation" ="SD", "Median absolute deviation" = "MAD", "Inter-quartile range" = "quartile")
-  controlBasedMethods <- c("Bayesian Statistics" = "Bayes")
+  controlBasedMethods <- c("Bayesian Statistics" = "Bayes", "SSMD" = "SSMD", "robbust SSMD" = "rSSMD")
   if(input$hasControls)
     return(c(methods, controlBasedMethods))
   else return(methods)
@@ -34,17 +34,17 @@ output$uiOutput_hits_options <- renderUI({
     id="hitsOptionsPanel",
   fluidRow(
     column(3,
-      actionButton("updateNormalization", "Update Settings", styleclass="primary"),
-      HTML("<br/><br/>"),
-      checkboxInput("show.sem.in.hits", "Show replicate standard error of the mean", FALSE),
-      checkboxInput("showFilterOptions", "Sample filter options", FALSE)                       
+      #actionButton("updateNormalization", "Update Settings", styleclass="primary"),
+      #HTML("<br/><br/>"),
+        checkboxInput("show.sem.in.hits", "Show replicate standard error of the mean", FALSE),
+        checkboxInput("showFilterOptions", "Sample filter options", FALSE)                       
     ),column(3,
-      selectInput("experimentSelected", "Select experiment:", experiments(), experiments()[1]),
-      selectInput("readoutSelected", "Select readout:", readouts(), readouts()[1]),
-      selectInput("normalization", "Raw Data / Normalization:", 
-                choices = normalizationChoices())      
+        selectInput("experimentSelected", "Select experiment:", experiments(), experiments()[1]),
+        selectInput("readoutSelected", "Select readout:", readouts(), readouts()[1])
     ),column(3,
-      selectInput("method", "Method for margin calculation:", choices = marginChoices())
+        selectInput("normalization", "Normalization:", 
+                   choices = normalizationChoices()),      
+        selectInput("method", "Hit detection method:", choices = marginChoices())
     ),column(3,
        conditionalPanel(
          condition = "input.method != 'Bayes'",

@@ -14,11 +14,11 @@ setup.KPM <- function(list.of.indicator.matrices,
                       computed.pathways=20, 
                       with.perturbation=FALSE){  
   
-  #base64 encode files
-  datasetList <- datasetList.KPM(list.of.indicator.matrices,ATTACHED_TO_ID)
-  
   #create a run id
   RNAice_RUN_ID <- paste(sample(c(LETTERS[1:6],0:9),6,replace=TRUE),collapse="")
+  
+  #base64 encode files
+  datasetList <- datasetList.KPM(list.of.indicator.matrices,ATTACHED_TO_ID, RNAice_RUN_ID)
   
   # setup the json settings:
   KPMsettings <- toJSON(
@@ -35,7 +35,7 @@ setup.KPM <- function(list.of.indicator.matrices,
         samePercentage_val=0,
         k_values=list(c(val=Kmin, val_step=Kstep, val_max=Kmax, use_range=tolower(as.character(range)), isPercentage="false")),
         l_values=list(
-          c(val=Lmin, val_step=Lstep, val_max=Lmax, use_range=tolower(as.character(range)), isPercentage="false", datasetName=paste("dataset", 1, sep=""))
+          c(val=Lmin, val_step=Lstep, val_max=Lmax, use_range=tolower(as.character(range)), isPercentage="false", datasetName=paste(RNAice_RUN_ID, 1, sep=""))
         )
         ), 
       withPerturbation=tolower(as.character(with.perturbation)),
@@ -54,7 +54,7 @@ setup.KPM <- function(list.of.indicator.matrices,
   return(list(KPMsettings, datasetList))
 }
 
-datasetList.KPM <- function(list.of.indicator.matrices, ATTACHED_TO_ID)
+datasetList.KPM <- function(list.of.indicator.matrices, ATTACHED_TO_ID, RNAice_RUN_ID)
 {  
   counter <- 0
   datasetList <- foreach(indicator.matrix = list.of.indicator.matrices) %do% {
@@ -64,18 +64,18 @@ datasetList.KPM <- function(list.of.indicator.matrices, ATTACHED_TO_ID)
     enc.file <- base64(tmp.file)
     close(txt.con)
     counter <- counter + 1
-    c(name=paste("dataset", counter, sep=""), attachedToID=ATTACHED_TO_ID, contentBase64=enc.file)
+    c(name=paste(RNAice_RUN_ID, counter, sep=""), attachedToID=ATTACHED_TO_ID, contentBase64=enc.file)
   }
   
   return(toJSON(datasetList))
 }
 
-call.KPM <- function(indicator.matrices, ATTACHED_TO_ID=NULL, url="http://localhost:8080/kpm-web/",...){
-  browser()
+call.KPM <- function(indicator.matrices, ATTACHED_TO_ID=NULL, url="http://localhost:8080/kpm-web/",...){  
   # generate random UUID:
   if(is.null(ATTACHED_TO_ID))
   ATTACHED_TO_ID = paste(sample(c(LETTERS[1:6],0:9),32,replace=TRUE),collapse="")
-  #PPI network for KPM
+  
+  #PPI network for KPM if we wanted to use a non-default one
   #graphFile <- "data/biogrid_entrez.sif"
   #graphFile <- "data/graph-ulitsky-entrez.sif"
   #graphFile <- "data/graph-hprd-entrez.sif"

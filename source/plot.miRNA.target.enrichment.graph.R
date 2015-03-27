@@ -7,7 +7,7 @@ prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.li
   #kpm.res <<- kpm.result
   #ind.m <<- indicator.matrix
   #hit.l <<- hit.list
-  browser()
+  #browser()
   #get list of edges
   edges <- lapply(kpm.result$resultGraphs, function(x){return(lapply(x$edges, function(y){c(as.numeric(y$source), as.numeric(y$target))}))})
   

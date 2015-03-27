@@ -25,6 +25,12 @@ library(htmlwidgets)
 library(networkD3)
 library(tidyr)
 library(org.Hs.eg.db)
+library(HTSanalyzeR)
+library(GSEABase)
+library(org.Dm.eg.db)
+library(GO.db)
+library(KEGG.db)
+library(RCurl)
 
 ### Load all non-shiny source files ###
 source("source/heatmap.R")
@@ -41,6 +47,8 @@ source("source/bayesian_hit_selection.R")
 source("source/variance_based_hit_selection.R")
 source("source/plot.miRNA.target.enrichment.graph.R")
 source("source/find.mimat.from.alias.R")
+source("source/htsanalyzer.foreach.R")
+source("source/htsanalyzer.gsea.optimized.R")
 
 ### Additional shiny options ###
 options(shiny.maxRequestSize=30*1024^2)
@@ -97,10 +105,8 @@ shinyServer(function(input, output, session) {
   ## mirCancerDB ##
   source("server/mircancer.R", local = TRUE)
   
-  ## gene ontology enrichment analysis ##
-  goEnrichment <- reactive({
-    goEnrichmentAnalysis(targets(), goUpOrDown=input$goUpOrDown, goDomain=input$goDomain, goScoringThreshold=input$goSignThreshold, orderMethod=input$goOrderMethod, topNodes=input$goTopNodes)
-  })
+  ## HTSanalyzer ##
+  source("server/htsanalyzer.R", local = TRUE)
   
   ### Plots ###
   
@@ -122,7 +128,7 @@ shinyServer(function(input, output, session) {
   source("ui/navbar_hits.R", local = TRUE)
   source("ui/navbar_consensus_hits.R", local = TRUE)
   source("ui/navbar_mirna_targets.R", local = TRUE)
-  source("ui/gene_ontology.R", local = TRUE)
+  source("ui/navbar_gsea.R", local = TRUE)
   source("ui/navbar_data.R", local = TRUE)
   
   ### Cleanup, close parallel backend clusters if necessary ###

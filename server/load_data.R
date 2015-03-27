@@ -1,6 +1,11 @@
 #load data
 rawData <- reactive({
-  
+  if(input$getFromPubChemButton > 0)
+  {
+    library(RCurl)
+    raw <- getURL(paste("https://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid=", input$pubchem_aid, "&q=expdata_csvsave", sep=""))
+    data <- read.csv(text = raw)
+  }
   if(is.null(input$file)){
     if(input$dataset == "BCSC")
       data <- read.delim("data/BCSC.txt", header=T)
@@ -30,7 +35,7 @@ rawData <- reactive({
 })
 
 datasetName <- reactive({
-  if(!is.null(input$file)){
+  if(!is.null(input$file) || input$getFromPubChemButton > 0){
     updateSelectInput(session, "dataset", c(demo.data.sets, "CUSTOM"="CUSTOM"), "CUSTOM")
     return("CUSTOM")
   } 

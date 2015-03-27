@@ -12,8 +12,8 @@ find.hits <- function(plates, method, margin=2, withControls=F, signalColumn="Ra
     data <- plates
   }
   else
-  {
-    data <- filter(plates, is.na(Control))
+  {    
+    data <- filter(plates, tolower(Control) == "sample" | is.na(Control))
   }
   if(method=="SD")
   {

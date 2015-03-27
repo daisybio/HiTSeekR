@@ -13,9 +13,9 @@ generateIndicatorMatrix <- function(mirna.targets){
 rbind.with.progress <- function(progress, steps){  
     count <- 0
     function(...) {
-      new.entries <- ((length(list(...)) - 1) / steps) * 0.5
+      new.entries <- ((length(list(...)) - 1) / steps) 
       count <<- count + new.entries
-      progress$inc(new.entries, detail = paste(count, "% done"))            
+      progress$set(count, detail = paste(round(count * 100,2), "% done"))            
       rbind(...)
     }
 }
@@ -145,5 +145,10 @@ list.of.random.mirna.indicator.matrices <- reactive({
 #indicator_matrix 
 targets.indicator.matrix <- reactive({
   mi.targets <- mirna.targets()
+  
+  if(input$miRNA.permutation.filter.in.kpm)
+  { if(is.null(filtered.mirna.target.permutation())) stop("No significant genes found. Run permutation test or relax filter criteria.")
+    mi.targets <- mi.targets %>% filter(mi.targets$gene_id %in% filtered.mirna.target.permutation()$gene_id)  
+  }
   generateIndicatorMatrix(mi.targets)
 })

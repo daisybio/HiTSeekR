@@ -23,10 +23,11 @@ data <- reactive({
 
   #function to calculate standard error of the mean
   sem <- function(x){x <- na.omit(x); return(sd(x)/length(x))}
-    
-  #merge replicates
+  
+  merge.funs <- funs(mean(., na.rm=T), sem(.))
+  
   #data <- data %>% filter(!is.na(Raw))
-  data <- data %>% group_by(Experiment, Readout, Plate, Well.position, Sample, Accession, Well.position, Control) %>% summarise_each(funs(mean(., na.rm=T), sem(.)), c(-Replicate, -wellCount))  
+  data <- data %>% group_by(Experiment, Readout, Plate, Row, Column, Sample, Accession, Well.position, Control) %>% summarise_each(merge.funs, c(-Replicate, -wellCount))  
   
   #fix column names and get rid of NaNs
   colnames(data) <- str_replace(colnames(data), "_mean", "")

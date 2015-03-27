@@ -21,14 +21,19 @@ shinyUI(navbarPage(
     fluidRow(
       column(4,
         conditionalPanel(condition="input.file==null",
-             selectInput("dataset", "Select a demo dataset or...", choices = demo.data.sets)
+             selectInput("dataset", "Select a demo dataset", choices = demo.data.sets)
         )), 
       column(4,
-            fileInput("file", "Upload a new data set", multiple=FALSE)
+            fileInput("file", "Upload a new data set", multiple=FALSE),
+            selectInput("fileSeparator", 
+                        "Column separator", 
+                        c("tab"= "\t", "comma"= ",", "semicolon"=";"))
         ), 
       column(4,
-        selectInput("fileSeparator", "Column separator", c("tab"= "\t", "comma"= ",", "semicolon"=";"))))
-        ),                     
+        numericInput("pubchem_aid", label = "PubChem AID",value = 743456),     
+        actionButton("getFromPubChemButton", "Download from PubChem")      
+        )
+      )),                     
     checkboxInput("showColOptions", "Show file input options", FALSE),
     actionButton("startButton", "Process raw data", styleclass="primary"),    
     hr(),
@@ -43,10 +48,25 @@ shinyUI(navbarPage(
   ),
   tabPanel("Quality Control", uiOutput("uiOutput_quality_control")),  
   tabPanel("Hit Discovery", shinyalert("hits_error"), uiOutput("uiOutput_hits_options"), uiOutput("uiOutput_hits")),        
-  tabPanel("Consensus Hits", uiOutput("uiOutput_consensus_hits")),
-  tabPanel("microRNAs", 
+  tabPanel("Consensus Hits", 
+           uiOutput("uiOutput_consensus_hits_options"), 
+           mainPanel(uiOutput("uiOutput_consensus_hits"))
+  ),
+  tabPanel("microRNA targets", 
            shinyalert("mirna_target_status"), 
            uiOutput("uiOutput_mirna_targets")
   ),
-  tabPanel("Systems Biology", uiOutput("uiOutput_geneOntology"))
+  tabPanel("Drug targets", HTML("Drug target database will soon be shown here")),
+  tabPanel("Gene set analysis", 
+           uiOutput("uiOutput_htsanalyzerOptions"), 
+           mainPanel(
+             selectInput("htsanalyzer.resultType", "Select results", 
+                c("Hypergeometric Test"= "HyperGeo.results", 
+                 "Gene set enrichment analysis" = "GSEA.results",
+                 "Significant p-values in both" = "Sig.pvals.in.both",
+                 "Significant adjusted p-values in both" = "Sig.adj.pvals.in.both")
+            ), 
+            uiOutput("uiOutput_htsanalyzer")
+          )
+  )
 ))
