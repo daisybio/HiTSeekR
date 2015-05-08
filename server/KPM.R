@@ -13,7 +13,7 @@ KPM.network.list <- reactive({
 })
 
 KPM.run <- reactive({
-  input$startKPMButton
+  if(input$startKPMButton == 0) return(NULL)
   isolate({
     #if(input$kpm_ranged && input$random.miRNA.test) stop("miRNA target permutation test is limited to specific K and L")
     showshinyalert(session, "kpm_status", "Generating indicator matrix", "info")      
@@ -64,8 +64,7 @@ KPM.run <- reactive({
 
 output$KPM.test <- renderPrint({
   
-  if(input$startKPMButton == 0){
-    showshinyalert(session, "kpm_status", "Press the start button to initiate a remote KeyPathwayMiner analysis", "info")      
+  if(input$startKPMButton == 0){         
     return(NULL)
   }
   else{
@@ -88,7 +87,9 @@ quest.result.url <- function(){
 check.KPM.result <- function(){
 
   #KPM hasn't been executed yet
-  if(input$startKPMButton == 0) return(FALSE)
+  if(input$startKPMButton == 0){    
+    return(FALSE)
+  } 
   
   #get current running status from KPM web
   quest.status <- getKpmRunStatus(keypathwayminer.url, currentQuest())
@@ -118,6 +119,10 @@ currentQuest <- reactive({
 })
 
 KPM.result <- reactive({
+  if(input$startKPMButton == 0){
+    showshinyalert(session, "kpm_status", "Press the start button to initiate a remote KeyPathwayMiner analysis", "info") 
+    return(NULL)
+  } 
   KPM.finished <- check.KPM.result()
   if(KPM.finished) return(get.KPM.result())
   else{

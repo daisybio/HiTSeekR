@@ -2,18 +2,28 @@ htsanalyzer <- reactive({
   if(is.null(input$startHTSanalyzer)) return(NULL)
   if(input$startHTSanalyzer == 0) return(NULL)
   
-    isolate({
-      browser()
+  #prepare progress bar
+  progress <- shiny::Progress$new()
+  on.exit(progress$close())
+  progress$set(message = "Preparing input data")    
+  
+  isolate({      
       if(input$screenType == "miRNA")              
-      {                              
-          gene.ids <- as.character(unique(mirna.targets()$gene_id))
+      {                     
+          #get potential target genes from RNAhybrid. remove first entry (NA)
+          pot.targets <- getRNAhybridTargetCounts()
+          
+          gene.ids <- collect(pot.targets)$gene[-1]
           all.samples.vector <- rep(1, length(gene.ids))
           names(all.samples.vector) <- gene.ids          
-        if(input$htsanalyzer.miRNA.list == "miRNA_permutation")
+        if(input$htsanalyzer.miRNA.list == "miRNA_targets"){
+          hit.list <- mirna.targets()
+          hit.list <- as.character(hit.list$gene_id)
+        }else if(input$htsanalyzer.miRNA.list == "miRNA_permutation")
         {
           if(is.null(filtered.mirna.target.permutation())) stop("You need to perform a miRNA target permutation test first.")
           hit.list <- filtered.mirna.target.permutation()
-          hit.list <- as.character(hit.list$gene.id)
+          hit.list <- as.character(hit.list$gene_id)
         } else if(input$htsanalyzer.miRNA.list == "miRNA_KPM")
         {
           if(is.null(KPM.result())) stop("You need to perform a KeyPathwayMiner enrichment analysis first.")
@@ -34,7 +44,7 @@ htsanalyzer <- reactive({
       
       if(input$screenType == "miRNA") doGSEA <- FALSE
       else doGSEA <- input$htsanalyzer.doGSEA
-      
+      progress$set(message = "Performing tests...")    
       gsca <- new("GSCA", listOfGeneSetCollections=ListGSC, geneList=all.samples.vector, hits=hit.list)
       gsca <- preprocess(gsca, species=input$htsanalyzer.species, initialIDs="Entrez.gene", keepMultipleMappings=TRUE, duplicateRemoverMethod="average", orderAbsValue=FALSE)
       gsca <- analyze(gsca, para=list(pValueCutoff=input$htsanalyzer.pval.cutoff, 

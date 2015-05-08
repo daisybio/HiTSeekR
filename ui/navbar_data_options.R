@@ -40,7 +40,7 @@ posCtrl <- reactive({
 output$uiOutput_data_options <- renderUI({
   
   elements <- list(column(4,
-                          selectInput("screenType", "Type of screen", c("Gene (e.g. siRNA)" = "siRNA", "miRNA (e.g. inhibitor)" = "miRNA")),
+                          selectInput("screenType", "Type of screen", c("Gene (e.g. siRNA)" = "siRNA", "miRNA (e.g. inhibitor)" = "miRNA", "drugs", "Small compounds (e.g. drugs)")),
                           selectInput("sampleCol", "Sample Name Column", dataColumns()),
                           selectInput("plateCol", "Plate Column", dataColumns()),
                           selectInput("positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol")),

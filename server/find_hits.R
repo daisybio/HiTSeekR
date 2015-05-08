@@ -91,6 +91,7 @@ hit.detect <- reactive({
 })
 
 outliers <- reactive({
+  if(is.null(processedData())) return(NULL)
   outl <- hit.detect()
   
   #inclusion filter
@@ -151,18 +152,19 @@ input$htsanalyzer.useConsensus
 })
 
 family.hitrate <- reactive({ 
+ library(dplyr)
  all.data <- data()
- all.data <- all.data %>% group_by(prefam_acc) %>% summarise(library_count=n_distinct(mirna_id)) 
+ all.data <- all.data %>% dplyr::group_by(prefam_acc) %>% dplyr::summarise(library_count=dplyr::n_distinct(mirna_id)) 
  hits <- outliers()
 
  result <- formattedTable(hits, FALSE)
  result <- within(result, hits <- paste(category, Sample))
- result <- result %>% group_by(prefam_acc, id) %>% summarise(hits_count=n(),
+ result <- result %>% dplyr::group_by(prefam_acc, id) %>% dplyr::summarise(hits_count=n(),
                 distinct_hits_count=n_distinct(mirna_id), 
                 samples=paste(hits, collapse="")
  )
  
- final_result <- left_join(result, all.data, by="prefam_acc")
+ final_result <- dplyr::left_join(result, all.data, by="prefam_acc")
  final_result <- final_result %>% mutate(family_coverage=distinct_hits_count/library_count)
  final_result <- final_result %>% filter(library_count > input$family_size_cutoff, family_coverage > (input$family_coverage_cutoff/100))
  if(nrow(final_result) == 0) stop("no families found")

@@ -45,6 +45,7 @@ output$consensusVennDiagram <- renderPlot({
 # Heatmap #
 output$heatmapPlot <- renderPlot({  
   plot.data <- data()
+  plot.data <- subset(plot.data, Experiment == input$experimentSelected  & Readout == input$readoutSelected)
   hits <- outliers()
   
   my.heatmap(plot.data, input$normalization, input$margin, input$method, hits, showSampleLabels=input$showLabelsOnHeatmap, signalColumn=input$normalization)
@@ -196,11 +197,15 @@ KPM.modify.hits <- reactive({
 #using igraph
 output$KPM.plot.d3 <- renderForceNetwork({
   hits <- KPM.modify.hits()
-  plot.miRNA.target.enrichment.graph.d3(KPM.result(),targets.indicator.matrix(), hits, input$highlight.kpm_d3)  
+  kpm.res <- KPM.result()
+  if(is.null(kpm.res)) return(NULL)
+  plot.miRNA.target.enrichment.graph.d3(kpm.res,targets.indicator.matrix(), hits, input$highlight.kpm_d3)  
 })
 
 #interactive using d3
 output$KPM.plot.igraph <- renderPlot({
   hits <- KPM.modify.hits()
-  plot.miRNA.target.enrichment.graph.igraph(KPM.result(),targets.indicator.matrix(), hits)
+  kpm.res <- KPM.result()
+  if(is.null(kpm.res)) return(NULL)
+  plot.miRNA.target.enrichment.graph.igraph(kpm.res,targets.indicator.matrix(), hits)
 })

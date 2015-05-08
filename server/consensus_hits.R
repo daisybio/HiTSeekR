@@ -1,6 +1,7 @@
 # consensus hit list with all hits
 outliers.all <- reactive({  
-  exp.data <- data()
+  exp.data <- data()  
+  
   #outl <- foreach(exp = unique(as.character(exp.data$Experiment)), .combine=rbind) %do%{
   exp.data <- subset(exp.data, Experiment==input$experimentSelected & Readout==input$readoutSelected)
   
@@ -33,7 +34,7 @@ outliers.all <- reactive({
   }
   
   #count how often a sample is recognized as hit
-  hits <- hits %>% count(Experiment, Readout, Plate, Well.position, Sample, method, category) 
+  hits <- hits %>% dplyr::count(Experiment, Readout, Plate, Well.position, Sample, method, category) 
   return(hits)
 })
 
@@ -41,11 +42,11 @@ outliers.all <- reactive({
 consensusHitList <- reactive({
   hits <- outliers.all()
     
-  consensus <- hits %>% group_by(Experiment, Readout, Plate, Sample, Well.position) %>% 
-    summarise(method=paste(method, collapse="/"), count=sum(n)) %>% 
+  consensus <- hits %>% dplyr::group_by(Experiment, Readout, Plate, Sample, Well.position) %>% 
+    dplyr::summarise(method=paste(method, collapse="/"), count=sum(n)) %>% 
     filter(count >= input$multiThreshold)
-  
-  consensus <- left_join(consensus, data(), by=c("Experiment", "Readout", "Plate", "Sample", "Well.position"))
+  exp.data <- data()
+  consensus <- dplyr::left_join(consensus, exp.data, by=c("Experiment", "Readout", "Plate", "Sample", "Well.position"))
   
   return(consensus)
 })

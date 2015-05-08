@@ -128,8 +128,11 @@ shinyServer(function(input, output, session) {
   source("ui/navbar_hits.R", local = TRUE)
   source("ui/navbar_consensus_hits.R", local = TRUE)
   source("ui/navbar_mirna_targets.R", local = TRUE)
-  source("ui/navbar_gsea.R", local = TRUE)
   source("ui/navbar_data.R", local = TRUE)
+  source("ui/navbar_gene_set.R", local = TRUE)
+  source("ui/navbar_enable_tabs.R", local = TRUE)
+  
+  shinyjs::disable("qc")
   
   ### Cleanup, close parallel backend clusters if necessary ###
   cancel.onSessionEnded <- session$onSessionEnded(function() {    

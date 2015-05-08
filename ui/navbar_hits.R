@@ -80,6 +80,11 @@ output$uiOutput_hits <- renderUI({
   
  elements <- list(    
    #tabPanel("Scatter Plots", uiOutput("scatterPlotTagList")),
+   tabPanel("Hits List", 
+            dataTableOutput("table_hits"),
+            downloadButton('downloadHits', 'Download hit list')
+   ),
+   tabPanel("Hits Plot", tags$div(showOutput("scatterPlotHits", "dimple"))),
    tabPanel("Plate Viewer",
             sidebarPanel(
               sliderInput("plateSelected", "Select a plate:", min=min(plates), max=max(plates), value=min(plates), step=1),
@@ -96,20 +101,6 @@ output$uiOutput_hits <- renderUI({
            checkboxInput("showLabelsOnHeatmap", "Show sample labels in heatmap", FALSE)
   ),
   plotOutput("heatmapPlot", height=800)
-  ),                
-  tabPanel("Hits Plot", tags$div(showOutput("scatterPlotHits", "dimple"))),
-  tabPanel("Hits List", 
-           dataTableOutput("table_hits"),
-           downloadButton('downloadHits', 'Download hit list')
-  ),
-  tabPanel("miRNA family coverage", 
-           shinyalert("miRNA_family_info", click.hide = TRUE),
-           wellPanel(fluidRow(
-            column(6, sliderInput("family_size_cutoff", "Family size cutoff:", min=0, max=20, value=0)),
-            column(6, sliderInput("family_coverage_cutoff", "Family coverage cutoff:", min=0, max=100, value=0))
-           )),
-           dataTableOutput("family.hitrate"))
- )  
- 
+  ))                 
  do.call(tabsetPanel, elements)
 })

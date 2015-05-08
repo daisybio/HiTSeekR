@@ -19,6 +19,8 @@ getTargets <- function(hits, rnah.pvalue.threshold=0.001, get.gene.symbols=F, da
     
     miRNA.targets <- miRNA.targets %>% filter(mature_miRNA %in% hits) 
     miRNA.targets <- collect(miRNA.targets)
+    miRNA.targets$gene_id <- as.integer(miRNA.targets$gene_id)
+    
     #get gene symbols and add them to the result table
     if(nrow(miRNA.targets) > 0 & get.gene.symbols){      
       gene_ids <- unique(miRNA.targets$gene_id)
@@ -34,7 +36,23 @@ getTargets <- function(hits, rnah.pvalue.threshold=0.001, get.gene.symbols=F, da
   #else 
   return(query.result)
 }
-  
+
+getRNAhybridTargetCounts <- function(genes=NULL)
+{
+  rnah.db <- src_sqlite("data/rnahybrid.sqlite3")
+  mirna.counts <- tbl(rnah.db, "mircounts05")
+  if(is.null(genes)) return(dplyr::select(mirna.counts, gene))
+  else return(mirna.counts %>% filter(gene %in% genes))  
+}
+
+getRNAhybridNumOfmiRNAs <- function(){
+assign('n_distinct', function(x) {build_sql("COUNT(DISTINCT ", x, ")")}, envir=base_agg)
+rnah.db <- src_sqlite("data/rnahybrid.sqlite3")
+mirna.targets <- tbl(rnah.db, "rnah")
+result <- as.data.frame(mirna.targets %>% dplyr::summarise(n_distinct(mature_miRNA)))
+return(result[1,1])
+}
+
 getRNAhybridTargets <- function(outliers, group.miRNAs=T, group.miRNAs.threshold=2, pvalue.threshold = 0.1){
     #repair ids
     outliers <- sub("mir", "miR", outliers$Sample)
