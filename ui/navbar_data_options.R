@@ -27,12 +27,18 @@ negCtrl <- reactive({
   if(is.null(input$negCtrl)){
     return(dataOptionDefaults()[["negCtrls"]])
   }
+  else{
+    input$negCtrl
+  }
 })
 
 #select a positive control
 posCtrl <- reactive({
   if(is.null(input$posCtrl)){
     return(dataOptionDefaults()[["posCtrls"]])
+  }
+  else{
+    input$posCtrl
   }
 })
 
@@ -61,7 +67,9 @@ output$uiOutput_data_options <- renderUI({
            checkboxInput("hasControls", "Are controls included?", FALSE),
            conditionalPanel(condition = "input.hasControls",
            selectInput("controlCol", "Control Column", dataColumns()),        
-           uiOutput("uiOutput_controls"))
+           uiOutput("uiOutput_controls")),
+           checkboxInput("log2normalize", "Log2 transform signal data", FALSE),
+           checkboxInput("computeBscore", "Compute B-score", FALSE)
   )
   )
   do.call(fluidRow, elements)
@@ -69,7 +77,7 @@ output$uiOutput_data_options <- renderUI({
 
 #make an update of the data import options if necessary
 dataUpdateObserver <- observe({
-  datasetName()
+  datasetName()  
   isolate({
     updateSelectInput(session, "screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA inhibitor / mimics" = "miRNA", "compound screen" = "compound"), dataOptionDefaults()[["screenType"]])
     updateSelectInput(session, "sampleCol", "Sample Name Column", dataColumns(), dataOptionDefaults()[["sampleCol"]])

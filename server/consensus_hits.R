@@ -1,9 +1,7 @@
 # consensus hit list with all hits
 outliers.all <- reactive({  
   exp.data <- data()  
-  
-  #outl <- foreach(exp = unique(as.character(exp.data$Experiment)), .combine=rbind) %do%{
-  exp.data <- subset(exp.data, Experiment==input$experimentSelected & Readout==input$readoutSelected)
+  rep.data <- processedData()
   
   if(input$method=="Bayes" && is.null(negCtrl())) stop("negative control missing")
   
@@ -17,11 +15,17 @@ outliers.all <- reactive({
   normalizations <- setdiff(normalizations, default.normalization)
   
   hits <- isolate({
-    foreach(normalization = input$multiNormalizations, .combine=rbind) %do% 
-    {      
-      result <- find.hits.call(exp.data, input$method, input$margin, negCtrl(), normalization, NULL)
-      result$method <- normalization
-      return(result)
+    foreach(exp = input$experimentSelected, .combine=rbind) %do%{
+      foreach(rdt = input$readoutSelected, .combine=rbind) %do% {
+        foreach(normalization = input$multiNormalizations, .combine=rbind) %do% 
+        {      
+          exp.d <- dplyr::filter(exp.data, Experiment == exp, Readout == rdt)
+          rep.d <- dplyr::filter(rep.data, Experiment == exp, Readout == rdt)
+          result <- find.hits.call(exp.d, rep.d, input$method, input$margin, negCtrl(), normalization, NULL)
+          result$method <- normalization
+          return(result)
+        }
+      }
     }
   })
   

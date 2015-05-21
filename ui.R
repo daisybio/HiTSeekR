@@ -29,7 +29,7 @@ elts <- list(
     shinyalert("general_status")
   ),
   id="mainNavbar",  
-  tabPanel("Data",wellPanel(
+  tabPanel("Input",wellPanel(
     tags$style(type="text/css", '#loadOptionsPanel { max-width:800px;}'),
     id="loadOptionsPanel",
     fluidRow(
@@ -58,8 +58,9 @@ elts <- list(
                        uiOutput("uiOutput_data_options")
                      )
     ),
-    uiOutput("uiOutput_data")
+    dataTableOutput("table_rawData")
   ),  
+  tabPanel("Data", uiOutput("uiOutput_dataWellPanel"),uiOutput("uiOutput_data")),
   tabPanel("Quality Control", id="qc", uiOutput("uiOutput_quality_control")),
   tabPanel("Hit Discovery", shinyalert("hits_error"), uiOutput("uiOutput_hits_options"), uiOutput("uiOutput_hits")),        
   tabPanel("Consensus Hits", 

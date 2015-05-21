@@ -4,6 +4,7 @@ observe({
     #enable quality control, hit list 
     session$sendCustomMessage(type = "enableNavTab", "2")
     session$sendCustomMessage(type = "enableNavTab", "3")
+    session$sendCustomMessage(type = "enableNavTab", "4")
   }
 })
 
@@ -11,17 +12,17 @@ observe({
   if(input$mainNavbar == "Hit Discovery")
   { 
     #consensus hits based on hit discovery settings
-    session$sendCustomMessage(type = "enableNavTab", "4")
+    session$sendCustomMessage(type = "enableNavTab", "5")
     
     #enable remaining tabs depending on screen type
     if(input$screenType == "miRNA"){
-      session$sendCustomMessage(type = "enableNavTab", "5")  
+      session$sendCustomMessage(type = "enableNavTab", "6")  
     }
     else if(input$screenType == "drugs"){
-      session$sendCustomMessage(type = "enableNavTab", "6")  
+      session$sendCustomMessage(type = "enableNavTab", "7")  
     }   
     else{
-      session$sendCustomMessage(type = "enableNavTab", "7")  
+      session$sendCustomMessage(type = "enableNavTab", "8")  
     }
   }
 })
@@ -29,7 +30,7 @@ observe({
 observe({
   if(input$mainNavbar == "microRNAs")
   {
-    session$sendCustomMessage(type = "enableNavTab", "7")  
+    session$sendCustomMessage(type = "enableNavTab", "8")  
   }
   else return(NULL)
 })
@@ -37,7 +38,7 @@ observe({
 observe({
   if(input$mainNavbar == "Small Compounds")
   {
-    session$sendCustomMessage(type = "enableNavTab", "7")  
+    session$sendCustomMessage(type = "enableNavTab", "8")  
   }
   else return(NULL)
 })

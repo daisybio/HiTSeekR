@@ -13,11 +13,33 @@ output$scatterPlotTagList <- renderUI({
   }
 })
 
+output$uiOutput_dataWellPanel <- renderUI({
+  slt <- selectInput("dataSelectedNormalization", "Normalization", normalizationChoices(), "Raw")
+  do.call(wellPanel, list(slt))
+})
+
 output$uiOutput_data <- renderUI({ 
-elements <- list(
-  tabPanel("Raw Data", dataTableOutput("table_rawData")),
+  exp.data <- processedData()
+  plates <- unique(as.character(exp.data$Plate))
+  replicates <- unique(as.character(exp.data$Replicate))
+elements <- list(  
   tabPanel("Processed Data", dataTableOutput("table_processedData")),
-  tabPanel("Scatter Plots",  uiOutput("scatterPlotTagList"))
+  tabPanel("Scatter Plots",  uiOutput("scatterPlotTagList")),
+  tabPanel("Signal Distribution", plotOutput("signalDistPlot")),
+  tabPanel("QQ Plot", plotOutput("signalqqPlot")),
+  tabPanel("Plate Viewer",
+           sidebarPanel(
+             selectInput("plateSelected", "Select a plate:", plates, plates[1]),
+             selectInput("replicateSelected", "Select a replicate (heatmap):", replicates, replicates[1]),
+             selectInput("heatmapExperimentSelected", "Select an experiment:", experiments(), experiments()[1]),
+             selectInput("heatmapReadoutSelected", "Select a readout:", readouts(), readouts()[1])             
+           ),mainPanel(
+             tags$script(src = "https://code.highcharts.com/modules/heatmap.js"),
+             showOutput("intHeatmapPlot", "highcharts"),
+             showOutput("intPlateScatterPlot", "highcharts")
+           )
+  )
+  
 )
 
 do.call(tabsetPanel, elements)

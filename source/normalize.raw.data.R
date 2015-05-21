@@ -1,9 +1,9 @@
-normalizeRawData <- function(plates, control.based=F, pos.ctrl=NULL, neg.ctrl=NULL, updateProgress=NULL){
+normalizeRawData <- function(plates, control.based=F, pos.ctrl=NULL, neg.ctrl=NULL, updateProgress=NULL, compute.B=TRUE){
   library(dplyr)
   
   if(is.function(updateProgress)) updateProgress(detail="Plate based", value=0.2)
-  #applying normalization strategies
-  plates.norm <- plates %>% group_by(Experiment, Readout, Plate, Replicate) %>% mutate(
+  #applying normalization strategies  
+  plates.norm <- plates %>% group_by(Experiment, Readout, Plate, Replicate) %>% dplyr::mutate(
                        rzscore=(Raw - median(Raw, na.rm=T))/mad(Raw, na.rm=T),
                        zscore=(Raw - mean(Raw, na.rm=T))/sd(Raw, na.rm=T), 
                        centered=Raw/mean(Raw, na.rm=T),
@@ -15,17 +15,18 @@ normalizeRawData <- function(plates, control.based=F, pos.ctrl=NULL, neg.ctrl=NU
        
     if(!is.null(neg.ctrl))
     {
-      plates.norm <- plates.norm %>% mutate(poc=(Raw / mean(Raw[Control==neg.ctrl], na.rm=T)))
+      plates.norm <- plates.norm %>% dplyr::mutate(poc=(Raw / mean(Raw[Control==neg.ctrl], na.rm=T)))
     }
     if(!is.null(neg.ctrl) && !is.null(pos.ctrl)){
-      plates.norm <- plates.norm %>% mutate(npi=(mean(Raw[Control==neg.ctrl], na.rm=T) - Raw) 
+      plates.norm <- plates.norm %>% dplyr::mutate(npi=(mean(Raw[Control==neg.ctrl], na.rm=T) - Raw) 
                        / (mean(Raw[Control==neg.ctrl], na.rm=T) - mean(Raw[Control==pos.ctrl], na.rm=T)))
     }
   }                
   
-  if(is.function(updateProgress)) updateProgress(detail="Bscore", value=0.6)
-  plates.norm <- do(plates.norm, Bscore(.))
-    
+  if(compute.B){
+    if(is.function(updateProgress)) updateProgress(detail="Bscore", value=0.6)
+    plates.norm <- do(plates.norm, Bscore(.))
+  }
   #sort
   if(is.function(updateProgress)) updateProgress(detail="Sorting", value=0.8)
   plates.norm <- plates.norm %>% arrange(Experiment, Plate, Row, Column, Replicate) 

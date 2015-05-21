@@ -70,11 +70,11 @@ output$uiOutput_gene_set_analysis <- renderUI({
     ),
     tabPanel("De novo network enrichment", uiOutput("uiOutput_KPM"), mainPanel(    
       shinyalert("kpm_status"),    
-      textOutput("ind.matrix.props"),    
-      checkboxInput("kpm_debug", "Show debug console", FALSE),
-      conditionalPanel("input.kpm_debug", 
-                       verbatimTextOutput("KPM.test")
-      ),
+      #textOutput("ind.matrix.props"),    
+      #checkboxInput("kpm_debug", "Show debug console", FALSE),
+      #conditionalPanel("input.kpm_debug", 
+      #                 verbatimTextOutput("KPM.test")
+      #),
       checkboxInput("kpm_d3", "Force directed network?", FALSE),
       conditionalPanel("input.kpm_d3",
                        sliderInput("highlight.kpm_d3", "Highlight genes in green that appear in more than x solution", min=1, max=20, value=5),
@@ -94,18 +94,23 @@ output$uiOutput_KPM <- renderUI({
   elements <- list(
     HTML('<img src="KPM_banner.png"/><br/><br/>'),
     #textInput("kpm_URL", "KPM-Web URL:", "http://localhost:8080/kpm-web/"),  
+    if(input$screenType=="miRNA")
+    {
+      selectInput("KPM.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation", "network enrichment genes"="miRNA_KPM"), "miRNA_permutation")
+    } else
+    {  
+      selectInput("KPM.useConsensus", "Use consensus hit list for target identification?", c("hit list", "consensus hit list"))                    
+    },
     selectInput("kpm_strategy", "Strategy:", c("GLONE", "INES")),    
-    selectInput("kpm_algorithm", "Algorithm:", list("Greedy"="Greedy", "Exact (FPT)"="Exact", "Ant Colony Optimization" = "ACO")),
+    selectInput("kpm_algorithm", "Algorithm:", list("Greedy"="Greedy")), #"Exact (FPT)"="Exact", "Ant Colony Optimization" = "ACO")),
     selectInput("kpm_network", "Network", KPM.network.list()),
-    checkboxInput("kpm_ben_removal", "Remove border exception nodes?", TRUE),
-    checkboxInput("miRNA.permutation.filter.in.kpm", "Filter for genes that are significant after the miRNA target permutation test", FALSE),      
-    conditionalPanel(condition="input['miRNA.permutation.filter.in.kpm']",
-                     checkboxInput("miRNA.permutation.pos.list.in.kpm", "Add genes that are significant after the miRNA target permutation test to positive list", FALSE)
+    conditionalPanel(condition="input.kpm_strategy=='INES'",
+      checkboxInput("kpm_ben_removal", "Remove border exception nodes?", TRUE)
     ),    
     #checkboxInput("kpm_ranged", "ranged K and L?", FALSE),
     #conditionalPanel("!input.kpm_ranged",
     conditionalPanel(condition="input.kpm_strategy!='GLONE'",
-                     numericInput("kpm_K", paste("K (# node exceptions)"), 1, min = 1, max = 100)        
+         numericInput("kpm_K", paste("K (# node exceptions)"), 1, min = 1, max = 100)        
     ),
     numericInput("kpm_L", paste("L (# case exceptions)"), 1, min = 1, max = 1000),
     #),

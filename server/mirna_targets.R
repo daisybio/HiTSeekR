@@ -67,11 +67,20 @@ mirna.target.permutation <- reactive({
   isolate({
     #get hit list and mirna targets
     hit.list <- selectedHitList()
+    hit.list <- formattedTable(hit.list, FALSE)
+    hit.list <- within(hit.list, Sample <- paste(category, Sample))
+    
+    if(input$accessionColType == "MI")
+    {
+      mimat <- as.data.frame(mirbaseMATURE)
+      hit.list <- left_join(hit.list, mimat, by=c("mirna_id"))
+    }
+    
     hit.list.targets <- as.data.frame(mirna.targets())
     
     #combine original hit list with original target list to get number of distinct mirna families and miRNA names    
     hit.list.targets.combined <- left_join(hit.list.targets, hit.list, by=c("mature_miRNA"= "mature_name"))  
-    target.list.by.gene <- hit.list.targets.combined %>% group_by(gene_id, gene_symbol) %>% dplyr::summarise(number_of_miRNAs = n_distinct(mature_miRNA), mirna_families = n_distinct(prefam_acc), mature_miRNA=paste(mature_miRNA, collapse = "/"))  
+    target.list.by.gene <- hit.list.targets.combined %>% group_by(gene_id, gene_symbol) %>% dplyr::summarise(number_of_miRNAs = n_distinct(mature_miRNA), mirna_families = n_distinct(prefam_acc), Samples=paste(Sample, collapse="\n"), mature_miRNA=paste(mature_miRNA, collapse = "/"))  
     
     #focus only on genes that are targets of the original hit list
     genes.of.interest <- unique(hit.list.targets$gene_id)
@@ -167,12 +176,11 @@ list.of.random.mirna.indicator.matrices <- reactive({
 #indicator_matrix 
 targets.indicator.matrix <- reactive({
   mi.targets <- mirna.targets()  
-  if(!is.null(input$miRNA.permutation.filter.in.kpm))
-  { if(input$miRNA.permutation.filter.in.kpm)
-    { if(is.null(filtered.mirna.target.permutation())) stop("No high confidence genes found with current settings. Relax filter criteria and repeat.")
-      confidence.genes <- filtered.mirna.target.permutation()
-      mi.targets <- mi.targets %>% filter(mi.targets$gene_id %in% confidence.genes$gene_id)  
-    }
+  if(input$KPM.miRNA.list == "miRNA_targets")
+  { 
+    if(is.null(filtered.mirna.target.permutation())) stop("No high confidence genes found with current settings. Relax filter criteria and repeat.")
+    confidence.genes <- filtered.mirna.target.permutation()
+    mi.targets <- mi.targets %>% filter(mi.targets$gene_id %in% confidence.genes$gene_id)  
   }
   generateIndicatorMatrix(mi.targets)
 })

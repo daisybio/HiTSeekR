@@ -1,1 +1,6 @@
-demo.data.sets <- c("BCSC/MaSC miRNA inhibitors" = "BCSC", "Melanoma-Inhibiting miRNAs" = "A375_MTS", "Drosophila M. Kc167 genome-wide siRNA screen"="DM_Kc167")
+demo.data.sets <- c("RNAi screen identifies Caspase4 as factor for TNFa signalling" = "TNFa_Casp4",
+                    "miRNA mimics screen for vorinostat resistance genes" = "HCC_vorinostat_miRNA",
+                    "RNAi screen for vorinostat resistance genes" = "HCC_vorinostat_siRNA",                    
+                    "BCSC/MaSC miRNA inhibitors" = "BCSC", 
+                    "Melanoma-Inhibiting miRNAs" = "A375_MTS", 
+                    "Drosophila M. Kc167 genome-wide siRNA screen"="DM_Kc167")

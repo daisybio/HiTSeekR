@@ -42,22 +42,48 @@ output$consensusVennDiagram <- renderPlot({
   else textplt("this feature only supports up to 5 normalization methods")
 })
 
+output$signalDistPlot <- renderPlot({
+  plot.data <- processedData()
+  p <- ggplot(plot.data, aes_string(x=input$dataSelectedNormalization, fill="Replicate")) 
+  p <- p + geom_density(alpha=.3)
+  p <- p + theme_bw() + facet_grid(Experiment ~ Readout)
+  return(p)  
+})
+
+output$signalqqPlot <- renderPlot({
+  plot.data <- processedData()
+  if(input$hasControls)
+    opts <- aes_string(sample = input$dataSelectedNormalization, color="Control")
+  else opts <- aes_string(sample = input$dataSelectedNormalization)
+  p <- ggplot(plot.data, opts) + stat_qq()
+  p <- p + theme_bw() + facet_grid(Experiment ~ Readout)
+  
+  return(p)  
+})
+
 # Heatmap #
 output$heatmapPlot <- renderPlot({  
   plot.data <- data()
+  ncol <- length(unique(plot.data$Plate))
   plot.data <- subset(plot.data, Experiment == input$experimentSelected  & Readout == input$readoutSelected)
   hits <- outliers()
   
-  my.heatmap(plot.data, input$normalization, input$margin, input$method, hits, showSampleLabels=input$showLabelsOnHeatmap, signalColumn=input$normalization)
+  my.heatmap(plot.data, input$normalization, input$margin, input$method, hits, 
+             showSampleLabels=input$showLabelsOnHeatmap, 
+             signalColumn=input$normalization, 
+             ncol=floor(sqrt(ncol)))
 })
 
 output$intHeatmapPlot <- renderChart2({
   plot.data <- processedData()
-  plot.data <- subset(plot.data, Plate == input$plateSelected & Experiment == input$experimentSelected  & Replicate == input$replicateSelected)
-  plot.data <- plot.data[,c("Column", "Row", input$normalization, "Sample", "Accession")]
+  plot.data <- subset(plot.data, Plate == input$plateSelected & 
+                        Experiment == input$heatmapExperimentSelected  & 
+                        Replicate == input$replicateSelected &
+                        Readout == input$heatmapReadoutSelected)
+  plot.data <- plot.data[,c("Column", "Row", input$dataSelectedNormalization, "Sample", "Accession")]
   colnames(plot.data)[1:3] <- c("x", "y", "value")
   plot.data <- arrange(plot.data, x, y)
-  p <- highcharts.heatmap(as.data.frame(plot.data), input$normalization, useWithShiny = T)  
+  p <- highcharts.heatmap(as.data.frame(plot.data), input$dataSelectedNormalization, useWithShiny = T)  
   
   return(p)
 })
@@ -81,15 +107,17 @@ output$scatterPlotHits <- renderChart({
 
 output$intPlateScatterPlot <- renderChart2({
   plot.data <- data()
-  plot.data <- subset(plot.data, Plate==input$plateSelected & Experiment == input$experimentSelected)
+  plot.data <- subset(plot.data, Plate==input$plateSelected & 
+                        Experiment == input$heatmapExperimentSelected &
+                        Readout == input$heatmapReadoutSelected)
   levels(plot.data$Control) <- c(levels(plot.data$Control), "Sample")
   plot.data[is.na(plot.data$Control), "Control"] <- "Sample"
   
   plot.data <- as.data.frame(plot.data)
   plot.data$Well.index <- seq(1, nrow(plot.data))
-  plot.data <- plot.data[,c("Well.index", input$normalization, paste(input$normalization, "_sem", sep=""), "Control", "Accession", "Sample")]
+  plot.data <- plot.data[,c("Well.index", input$dataSelectedNormalization, paste(input$dataSelectedNormalization, "_sem", sep=""), "Control", "Accession", "Sample")]
   
-  p <- highcharts.scatterplot.plate(plot.data, show.error=input$show.sem.in.hits)
+  p <- highcharts.scatterplot.plate(plot.data, show.error=TRUE)
   p$exporting(enabled=TRUE)
   return(p)
 })
@@ -131,13 +159,62 @@ output$intScatterPlot <- renderChart({
 output$scatterPlot <- renderPlot({
   exp.data <- processedData()
   if(is.null(exp.data)) return(NULL)
-  if(is.null(input$normalization)) sel.normalization <- "Raw"
+  if(is.null(input$dataNormalizationSelected)) sel.normalization <- "Raw"
   else sel.normalization <- input$normalization  
   q <- ggplot(exp.data, aes_string(x="wellCount", y=sel.normalization, color="Plate", shape="Replicate")) + geom_point() + geom_line(stat="hline", yintercept="mean", color="black", aes(group=interaction(Plate, Replicate))) 
   q <- q + theme_bw()
-  q <- q + facet_grid(Readout~Experiment, scale="free")
+  q <- q + facet_grid(Readout~Experiment, scales="free")
   q <- q + guides(color=guide_legend(nrow=10, byrow=TRUE))
+  q <- q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   print(q)
+})
+
+#control plot showing the separability of the positive and negative controls via SSMD
+output$controlPerformancePlot <- renderPlot({
+  exp.data <- processedData()    
+  negCtrls <- negCtrl()
+  posCtrls <- posCtrl()
+  ctrls <- c(negCtrls, posCtrls)
+  ctrl.data <- exp.data %>% filter(Control %in% ctrls)
+  if(is.na(unique(ctrl.data$Sample))) ctrl.data$Sample <- ctrl.data$Control
+  ctrl.data <- ungroup(ctrl.data)
+  result <- ctrl.data %>% dplyr::group_by(Experiment, Readout, Plate, Replicate) %>% do(ssmd(., negCtrls, "Raw", summarise.results=FALSE))    
+  result <- as.data.frame(result)
+  result <- result %>% filter(Sample != NEG.CTRL)
+  
+  p <- qplot(data=result, x=Plate, y=SSMD, size=I(3), color=Sample, shape=Replicate)  
+  p <- p + facet_grid(Experiment + Readout ~ NEG.CTRL, scales="free") + theme_bw()
+  p <- p + guides(color=guide_legend(nrow=10, byrow=TRUE))  
+  p <- p + annotate("rect", xmin=0, xmax=length(unique(result$Plate))+1, ymin=-3, ymax=3, alpha=0.2, fill="red") 
+  p <- p + annotate("rect", xmin=0, xmax=length(unique(result$Plate))+1, ymin=-3, ymax=-6, alpha=0.2, fill="orange") 
+  p <- p + annotate("rect", xmin=0, xmax=length(unique(result$Plate))+1, ymin=3, ymax=6, alpha=0.2, fill="orange") 
+  p <- p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  return(p)
+})
+
+output$replicateCorrPlot <- renderPlot({
+  exp.data <- processedData()
+  exp.data$Replicate <- as.character(exp.data$Replicate)
+  combinations.of.replicates <- combn(unique(exp.data$Replicate),2)
+  
+  list.of.plots <- foreach(reps = iter(combinations.of.replicates, by="col")) %do%{
+    
+    repA <- dplyr::filter(exp.data, Replicate == reps[1]) %>% dplyr::select(Plate,Experiment, Readout, Well.position, Raw) %>% dplyr::rename(repA = Raw)
+    repB <- dplyr::filter(exp.data, Replicate == reps[2]) %>% dplyr::select(Plate,Experiment, Readout, Well.position, Raw) %>% dplyr::rename(repB = Raw)
+    
+    plot.data <- dplyr::select(repA, Plate,Experiment, Readout, Well.position)
+    plot.data <- dplyr::left_join(plot.data, repA, by=c("Plate", "Experiment", "Readout", "Well.position"))
+    plot.data <- dplyr::left_join(plot.data, repB, by=c("Plate", "Experiment", "Readout", "Well.position"))
+    
+    p <- qplot(data=plot.data, x=repA, y=repB, xlab=reps[1], ylab=reps[2], color=Plate)
+    p <- p + facet_grid(Experiment ~ Readout)
+    p <- p + stat_smooth_func(geom="text",method="lm",hjust=0,parse=TRUE, aes(color=NULL), show_guide=F) 
+    p <- p + geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) 
+    p <- p + geom_abline(intercept=0, slope=1, color="grey")    
+    p <- p + guides(color=guide_legend(nrow=10, byrow=TRUE))+ theme_bw()
+    return(p)
+  }
+  do.call(grid.arrange, list.of.plots)
 })
 
 # Control plot for average plate values
@@ -152,6 +229,7 @@ output$plateMeanPlot <- renderPlot({
   
   q <- qplot(x=Plate, y=Raw, data=exp.data, geom="boxplot", color=Plate, shape=Replicate)
   q <- q + theme_bw() + facet_grid(Readout~Experiment, scale="free_y") + guides(color=guide_legend(nrow=10, byrow=TRUE))
+  q <- q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   print(q)
 })
 
@@ -165,7 +243,8 @@ output$controlPlot <- renderPlot({
   plot.data <- filter(exp.data, !is.na(Control), tolower(Control) != "sample")
   q <- ggplot(plot.data, aes_string(x="Control", y="Raw", color="Plate", shape="Replicate")) + geom_boxplot()
   q <- q + theme_bw() + facet_grid(Readout~Experiment, scale="free_y") 
-  q <- q + guides(color=guide_legend(nrow=10, byrow=TRUE))
+  q <- q + guides(color=guide_legend(nrow=10, byrow=TRUE))  
+  q <- q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   print(q)
 })
 
@@ -183,7 +262,7 @@ output$rowAndColumn <- renderPlot({
 })
 
 KPM.modify.hits <- reactive({
-  hits <- selectedHitList()
+  hits <- KPM.selectedHitList()
   
   if(input$accessionColType == "MI")
   {

@@ -1,34 +1,41 @@
-ssmd <- function(exp.data, method, margin, neg.ctrl, signalColumn)
-{    
-  neg.ctrls <- filter(exp.data, Control %in% neg.ctrl)
+ssmd <- function(exp.data, neg.ctrl, signalColumn, summarise.results=TRUE)
+{        
+  neg.ctrls <- dplyr::filter(exp.data, Control %in% neg.ctrl)
   if(nrow(neg.ctrls) == 0) stop("At least one plate is missing negative controls")
-  foreach(neg.ctrl = unique(neg.ctrls$Control), .combine=rbind) %do%
-  {    
-    neg.ctrl.data <- exp.data %>% filter(Control == neg.ctrl)
+  result <- foreach(nc = neg.ctrl, .combine=rbind) %do%
+  {      
+    neg.ctrl.data <- exp.data %>% dplyr::filter(Control == nc)
     if(nrow(neg.ctrl.data) < 3) stop("Cannot estimate variance in SSMD with < 3 negative control wells per plate")
     neg.ctrl.mean <- mean(neg.ctrl.data[[signalColumn]], na.rm=T)
     neg.ctrl.sd <- sd(neg.ctrl.data[[signalColumn]], na.rm=T)
     
-    calc.ssmd <- function(exp.data)
-    {
-      sampleSignal <- exp.data[[signalColumn]]
+    calc.ssmd <- function(x)
+    {      
+      sampleSignal <- x[[signalColumn]]
       
-      if(nrow(exp.data) == 1)
+      if(nrow(x) == 1)
       {        
         return ((sampleSignal - neg.ctrl.mean) / (sqrt(2) * neg.ctrl.sd))
       }
       else
       {
-        return ((mean(sampleSignal, na.rm=T) - neg.ctrl.mean) / sqrt((neg.ctrl.sd)^2 + sd(sampleSignal)^2))    
+        return ((mean(sampleSignal, na.rm=T) - neg.ctrl.mean) / sqrt((neg.ctrl.sd)^2 + sd(sampleSignal, na.rm=T)^2))    
       }
-    }
-    
-    exp.data <- exp.data %>% group_by(Sample, Well.position) %>% do(NEG.CTRL=neg.ctrl, SSMD=calc.ssmd(.))
-    return(exp.data)
+    }    
+    result <- as.data.frame(exp.data)
+    result <- result %>% dplyr::group_by(Sample) %>% 
+      dplyr::do(NEG.CTRL=nc, SSMD=calc.ssmd(.))       
+    return(na.omit(result))
   }
+  if(summarise.results)
+    result <- result %>% dplyr::group_by(Sample) %>% dplyr::summarise(SSMD = mean(unlist(SSMD), na.rm=T))
+  else{
+    result <- result %>% dplyr::mutate(SSMD = unlist(SSMD), NEG.CTRL = unlist(NEG.CTRL))
+  }
+  return(as.data.frame(result))
 }
 
-find.hits.call <- function(exp.data, method, margin, neg.ctrl, signalColumn, updateProgress){
+find.hits.call <- function(exp.data, rep.data, method, margin, neg.ctrl, signalColumn, updateProgress){
   
   if(method == "Bayes")
   {    
@@ -36,8 +43,12 @@ find.hits.call <- function(exp.data, method, margin, neg.ctrl, signalColumn, upd
     outl <- bayesianHitSelection(exp.data, neg.ctrl=neg.ctrl, signalColumn=signalColumn,alpha = 0.05, updateProgress=updateProgress)
   } 
   else if(method == "SSMD")
-  {
-    outl <- exp.data %>% group_by(Plate) %>% do(ssmd(., method, margin, neg.ctrl, signalColumn))
+  {        
+    result <- rep.data %>% group_by(Plate) %>% do(ssmd(., neg.ctrl, signalColumn))
+    outl <- exp.data
+    outl <- left_join(outl,result, by=c("Plate", "Sample"))
+    outl <- outl %>% filter(abs(SSMD) >= margin)    
+    outl <- as.data.frame(outl)
   }
   else{
     outl <- find.hits(exp.data, method, margin, signalColumn=signalColumn, updateProgress=updateProgress)    
@@ -63,8 +74,6 @@ observeBayesAbuse <- observe({
 
 # find screening hits, e.g. the outliers #
 hit.detect <- reactive({
-  
-  #input$updateNormalization
     
   if(input$method=="Bayes" && is.null(negCtrl())) stop("negative control missing")
   
@@ -78,15 +87,26 @@ hit.detect <- reactive({
       value <- value + (progress$getMax() - value) / 5
     }
     progress$set(value = value, detail = detail)
+  } 
+
+  merged.data <- data()
+  exp.data <- processedData() 
+  outl <- foreach(exp = input$experimentSelected, .combine=rbind) %do%{
+    foreach(rdt = input$readoutSelected, .combine=rbind) %do% {
+      it.data <- dplyr::filter(exp.data, Readout==rdt, Experiment==exp)
+      m.data <- dplyr::filter(merged.data, Readout==rdt, Experiment==exp)
+      
+      if(!is.null(input$referenceExperiment) && !is.null(input$referenceReadout)){            
+        if(exp == input$referenceExperiment && rdt == input$referenceReadout){
+          margin <- input$diffMargin   
+        }
+        else margin <- input$margin
+      }
+      
+      find.hits.call(m.data, it.data, input$method, margin, negCtrl(), input$normalization, updateProgress)      
+    }
   }  
     
-  if(input$method != "SSMD") exp.data <- data()
-  else exp.data <- processedData() #for SSMD we need the replicates
-  #outl <- foreach(exp = unique(as.character(exp.data$Experiment)), .combine=rbind) %do%{
-  exp.data <- subset(exp.data, Experiment==input$experimentSelected & Readout==input$readoutSelected)
-  
-  outl <- find.hits.call(exp.data, input$method, input$margin, negCtrl(), input$normalization, updateProgress)  
-  
   return(outl)
 })
 
@@ -97,12 +117,18 @@ outliers <- reactive({
   #inclusion filter
   
   if(input$method == "Bayes"){
+    bayes_hypothesis <- switch(input$effect,
+           "effect" = "p_effect",
+           "suppressor" =  "p_suppressor",
+           "promotor" = "p_promotor")
     exp.data <- outl
-    outl <- outl[outl[[input$bayes_hypothesis]] > input$bayes_pval_cutoff,]  
+    outl <- outl[outl[[bayes_hypothesis]] > input$bayes_pval_cutoff,]  
   }
   else{
-    exp.data <- data()
-    exp.data <- subset(exp.data, Experiment==input$experimentSelected)
+    exp.data <- data()    
+    exp.data <- dplyr::filter(exp.data, Experiment %in% input$experimentSelected, 
+                              Readout %in% input$readoutSelected)
+    if(input$effect != "effect") outl <- dplyr::filter(outl, category == input$effect)
   }
   if(nchar(input$include) > 0){
     if(length(grep(input$include, exp.data$Sample)) > 0){
@@ -122,7 +148,20 @@ outliers <- reactive({
   #fix column order
   outl <- outl[,c(ncol(outl), seq(1:(ncol(outl)-1)))]
   
-  return(outl)
+  #sort after signal
+  outl <- arrange_(outl, input$normalization)  
+  
+  #differential screening
+  if(input$differentialScreening){
+    if(length(input$experimentSelected) == 1 && length(input$readoutSelected) == 1)
+      stop("You have to select at least two different readouts or experiments to apply differential screening.")
+    else{      
+      refSet <- dplyr::filter(outl, Experiment == input$referenceExperiment, Readout == input$referenceReadout)
+      outl <- dplyr::anti_join(outl, refSet, by=c("Plate", "Well.position"))
+    }
+  }
+  
+  return(as.data.frame(outl))
 })
 
 #selected hit list in navbar_mirna_targets
@@ -132,24 +171,43 @@ selectedHitList <- reactive({
   return(data)
 })
 
+genes.indicator.matrix <- reactive({
+  if(input$KPM.useConsensus == "hit list") hits <- outliers()
+  else hits <- consensusHitList()
+  all.samples <- data()
+  
+  gene_ids <- na.omit(unique(all.samples$gene_id))
+  ind.matrix <- as.matrix(rep(0, length(gene_ids)))
+  row.names(ind.matrix) <- gene_ids
+  ind.matrix[which(gene_ids %in% hits$gene_id), 1] <- 1
+  
+  return(ind.matrix)
+})
+
 htsanalyzerHitList <- reactive({
   if(input$htsanalyzer.useConsensus== "hit list") data <- outliers()
   else data <- consensusHitList()
   return(data)
 })
 
-#update select depending on what is selected in navbar_gsea
-selectedHitListObserver <- observe({
-input$htsanalyzer.useConsensus
-  isolate({
-    if(!is.null(input$useConsensus) && 
-         input$htsanalyzer.useConsensus != input$useConsensus)
-      updateSelectInput(session, "useConsensus", 
-                      "Use normal hit list or consensus hit list for target identification?", 
-                      c("hit list", "consensus hit list"), 
-                      input$htsanalyzer.useConsensus)
-  })
+KPM.selectedHitList <- reactive({
+  if(input$KPM.useConsensus== "hit list") data <- outliers()
+  else data <- consensusHitList()
+  return(data)  
 })
+
+#update select depending on what is selected in navbar_gsea
+# selectedHitListObserver <- observe({
+# input$htsanalyzer.useConsensus
+#   isolate({
+#     if(!is.null(input$useConsensus) && 
+#          input$htsanalyzer.useConsensus != input$useConsensus)
+#       updateSelectInput(session, "useConsensus", 
+#                       "Use normal hit list or consensus hit list for target identification?", 
+#                       c("hit list", "consensus hit list"), 
+#                       input$htsanalyzer.useConsensus)
+#   })
+# })
 
 family.hitrate <- reactive({ 
  library(dplyr)

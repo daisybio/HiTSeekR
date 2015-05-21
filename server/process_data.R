@@ -3,7 +3,7 @@ processedData <- reactive({
 
   isolate({
   hideshinyalert(session, "general_status")
-  data <- rawData()
+  data <- rawData()  
   progress <- shiny::Progress$new()
   progress$set(message = "Processing...", value = 0)
   on.exit(progress$close())
@@ -63,8 +63,8 @@ processedData <- reactive({
   }
   else if(input$positionColType == "numeric")
   {
-    #TODO
-    stop("not implemented")
+    wellAlpha <- positionsToAlphaName(as.integer(data[,input$positionCol]))
+    rowCol <- alphaNames2Pos(wellAlpha)
   }
   else if(input$positionColType == "rowcol")
   {
@@ -84,15 +84,16 @@ processedData <- reactive({
   processedData <- data.frame(data$experimentCol, sampleCol, accessionCol, plateCol, wellAlpha, rowCol, data$replicateCol, controlCol, data$readoutCol, data$measurementCol)
   colnames(processedData) <- c("Experiment", "Sample", "Accession", "Plate", "Well.position", "Row", "Column", "Replicate", "Control", "Readout", "Raw")
   
+  if(input$log2normalize){
+    processedData$Raw <- log2(processedData$Raw)
+  }
+  
   if(input$hasControls)
   {  
-    result <- normalizeRawData(processedData, control.based=T, pos.ctrl=input$posCtrl, neg.ctrl=input$negCtrl, updateProgress=updateProgress)
+    result <- normalizeRawData(processedData, control.based=T, pos.ctrl=input$posCtrl, neg.ctrl=input$negCtrl, updateProgress=updateProgress, compute.B=input$computeBscore)
   }
-  #else if(!is.null(negCtrl()) && !is.null(posCtrl())){
-  #  result <- normalizeRawData(processedData, control.based=T, pos.ctrl=posCtrl(), neg.ctrl=negCtrl(), updateProgress=updateProgress)    
-  #}
   else{
-    result <- normalizeRawData(processedData, control.based=F, updateProgress=updateProgress)    
+    result <- normalizeRawData(processedData, control.based=F, updateProgress=updateProgress, compute.B=input$computeBscore)    
   }
   return(as.data.frame(result))
   })

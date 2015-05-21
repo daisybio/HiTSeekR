@@ -43,6 +43,7 @@ output$downloadTargetPermutationTestResult <- downloadHandler(
                         },
   content = function(file) {
     data <- filtered.mirna.target.permutation()
+    data <- data %>% dplyr::select(-Samples)
     write.table(data, file, row.names=F, sep=",", quote=F)
   }  
 )
@@ -61,8 +62,13 @@ output$downloadHotnetGeneList <- downloadHandler(
 output$downloadIndicatorMatrix <- downloadHandler(
   filename = function() { return("indicator_matrix.txt")},
   content = function(file) {
-    data <- targets.indicator.matrix()
-    write.table(data, file, sep="\t", quote=F)
+    if(input$screenType == "miRNA"){
+      data <- targets.indicator.matrix()
+    } else
+    {
+      data <- genes.indicator.matrix()
+    } 
+    write.table(data, file, sep="\t", quote=F, col.names=F)
   }
 )
 

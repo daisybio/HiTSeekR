@@ -12,6 +12,18 @@ rawData <- reactive({
     else if(input$dataset == "A375_MTS"){
       data <- read.table("data/A375_MTS.txt", header=T, sep="\t")
     }
+    else if(input$dataset == "HCC_vorinostat_siRNA")
+    {
+      data <- read.csv("data/AID_743454_data.csv", header=T)
+    }
+    else if(input$dataset == "HCC_vorinostat_miRNA")
+    {
+      data <- read.csv("data/AID_743456_data.csv", header=T)
+    }
+    else if(input$dataset == "TNFa_Casp4")
+    {
+      data <- read.delim("data/Caspase4_processed.txt", header=T, sep="\t")            
+    }
     else if(input$dataset == "DM_Kc167"){
       library(cellHTS2)
       experimentName <- "KcViab"

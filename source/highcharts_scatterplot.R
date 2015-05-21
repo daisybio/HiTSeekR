@@ -8,8 +8,7 @@ highcharts.scatterplot.plate <- function(plot.data, show.error=F){
         
     # create Highcharts object
     p <- Highcharts$new()
-    
-    # use type='heatmap' for heat maps
+        
     p$chart(zoomType = "x")    
     p$xAxis(min = min(plot.data$x), max = max(plot.data$x))
     p$yAxis(min = min(plot.data$y), max = max(plot.data$y))

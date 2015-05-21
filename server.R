@@ -33,6 +33,7 @@ library(KEGG.db)
 library(RCurl)
 
 ### Load all non-shiny source files ###
+source("source/wellPositionToAlphaName.R")
 source("source/heatmap.R")
 source("source/RmiR.R")
 source("source/go.analysis.R")
@@ -49,6 +50,7 @@ source("source/plot.miRNA.target.enrichment.graph.R")
 source("source/find.mimat.from.alias.R")
 source("source/htsanalyzer.foreach.R")
 source("source/htsanalyzer.gsea.optimized.R")
+source("source/ggplot_smooth_func.R")
 
 ### Additional shiny options ###
 options(shiny.maxRequestSize=30*1024^2)

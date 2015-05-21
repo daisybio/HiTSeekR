@@ -60,7 +60,7 @@ datasetList.KPM <- function(list.of.indicator.matrices, ATTACHED_TO_ID, RNAice_R
   datasetList <- foreach(indicator.matrix = list.of.indicator.matrices) %do% {
     txt.con <- textConnection("tmp.file", "w")    
     
-    write.table(indicator.matrix, txt.con, sep="\t",quote=F)    
+    write.table(indicator.matrix, txt.con, sep="\t",quote=F, col.names=F)    
     enc.file <- base64(tmp.file)
     close(txt.con)
     counter <- counter + 1

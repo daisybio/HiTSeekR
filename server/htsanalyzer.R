@@ -21,7 +21,7 @@ htsanalyzer <- reactive({
           hit.list <- as.character(hit.list$gene_id)
         }else if(input$htsanalyzer.miRNA.list == "miRNA_permutation")
         {
-          if(is.null(filtered.mirna.target.permutation())) stop("You need to perform a miRNA target permutation test first.")
+          if(is.null(filtered.mirna.target.permutation())) stop("You need to compute high confidence miRNA targets first.")
           hit.list <- filtered.mirna.target.permutation()
           hit.list <- as.character(hit.list$gene_id)
         } else if(input$htsanalyzer.miRNA.list == "miRNA_KPM")
@@ -30,14 +30,16 @@ htsanalyzer <- reactive({
           hit.list <- KPM.result()
           hit.list <- as.character(hit.list$gene.id) 
         }        
-      } else{
+      } else{        
         all.samples <- data()
+        all.samples <- all.samples %>% dplyr::filter(Experiment %in% input$experimentSelected, Readout %in% input$readoutSelected)
+                
         hit.list <- htsanalyzerHitList()
         hit.list <- na.omit(hit.list$gene_id)
         
         all.samples.vector <- all.samples[,input$normalization]
         names(all.samples.vector) <- all.samples$gene_id
-        all.samples.vector <- all.samples.vector[-which(is.na(all.samples$gene_id))]
+        #all.samples.vector <- all.samples.vector[-which(is.na(all.samples$gene_id))]
       }    
       
       ListGSC <- geneSets()

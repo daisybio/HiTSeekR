@@ -3,12 +3,18 @@ formattedTable <- function(exp.data, show.sem){
   
   if(is.null(exp.data)) return(NULL)
   
-  if(!show.sem)
-    exp.data <- exp.data %>% dplyr::select(-ends_with("_sem")) 
+  if(!show.sem){
+    test.remove <- exp.data %>% dplyr::select(-ends_with("_sem")) 
+    if(ncol(test.remove) > 0)
+    {
+      exp.data <- exp.data %>% dplyr::select(-ends_with("_sem")) 
+    }
+  }
   
   if("mature_from" %in% colnames(exp.data))
     exp.data <- exp.data %>% dplyr::select(-one_of("mature_from", "mature_to", "evidence", "experiment", "similarity"))
   
+  if(nrow(exp.data) == 0) stop("No hits were found with the current settings")
   exp.data[exp.data$category %in% c("promotor"),"category"] <- "<div style='background:#80B1D3; text-align:center; border-radius: 15px; width:25px; height:25px;'>P</div>"
   exp.data[exp.data$category %in% c("suppressor"),"category"] <- "<div style='background:#FB8072; text-align:center; border-radius: 15px; width:25px; height:25px;'>S</div>"
   exp.data[exp.data$category %in% c("included"),"category"] <- "<div style='background:#FDB462; text-align:center; border-radius: 15px; width:25px; height:25px;'>I</div>"
@@ -30,7 +36,10 @@ output$consensusHitList <- renderDataTable(formattedTable(consensusHitList(), in
 output$mirna.targets.table <- renderDataTable(mirna.targets(), escape=FALSE)
 
 # miRNA target permutation test results table
-output$mirna.target.permutation.table <- renderDataTable(filtered.mirna.target.permutation(), escape=FALSE)
+output$mirna.target.permutation.table <- renderDataTable({
+  if(is.null(filtered.mirna.target.permutation())) return(NULL)
+  filtered.mirna.target.permutation() %>% dplyr::select(-mature_miRNA)
+  }, escape=FALSE)
 
 # Family hit rate # 
 output$family.hitrate <- renderDataTable(family.hitrate(), escape=FALSE)

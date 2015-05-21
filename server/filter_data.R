@@ -40,7 +40,7 @@ data <- reactive({
     
     fam <- as.data.frame(mirbaseFAMILY)
     
-    mergeRows <- function(y){
+    mergeRows <- function(y){      
       if(length(unique(y)) > 1) return(paste(y, collapse="/"))
       else return(y[1])
     }     
@@ -57,6 +57,7 @@ data <- reactive({
       mimat <- as.data.frame(mirbaseMATURE)
       result <- left_join(mimat, fam, by="mirna_id")
       data <- left_join(data, result, by=c("Accession" = "mature_acc"))
+      
       data <- data %>% group_by(Experiment, Readout, Plate, Well.position) %>% summarise_each(funs(mergeRows))      
     }    
     else if(input$accessionColType=="MI"){
@@ -77,6 +78,28 @@ data <- reactive({
       library(org.Dm.eg.db)
       flybaseCG <- as.data.frame(org.Dm.egFLYBASECG)
       data <- left_join(data, flybaseCG, by=c("Accession" = "flybase_cg_id"))
+    }
+    else if(input$accessionColType == "Entrez"){
+      data$gene_id <- as.character(data$Accession)
+    }
+    else if(input$accessionColType == "Ensembl"){
+      ensembl <- as.data.frame(org.Hs.egENSEMBL2EG)
+      data <- dplyr::left_join(data, ensembl, by=c("Accession" = "ensembl_id")) %>% dplyr::rename(gene_symbol=alias_symbol)      
+    }
+    else if(input$accessionColType == "GeneSymbol"){
+      aliassymbol <- as.data.frame(org.Hs.egSYMBOL)
+      data <- dplyr::left_join(data, aliassymbol, by=c("Accession" = "symbol"))       
+    }
+    
+    else{
+      stop("accession type not supported")
+    }
+    if(input$accessionColType != "FlybaseCG"){      
+      genesymbol <- as.data.frame(org.Hs.egSYMBOL)
+      symbols <- dplyr::ungroup(data) %>% dplyr::select(gene_id)
+      symbols <- dplyr::left_join(symbols, genesymbol, by=c("gene_id")) %>% dplyr::rename(gene_symbol=symbol)           
+      symbols <- symbols %>% dplyr::distinct() %>% dplyr::group_by(gene_id) %>% dplyr::summarise(gene_symbol = paste(gene_symbol, collapse="/"))
+      data <- dplyr::left_join(data, symbols, by="gene_id")
     }
   }
   
