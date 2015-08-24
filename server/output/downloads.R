@@ -33,6 +33,15 @@ output$downloadTargets <- downloadHandler(
   }  
 )
 
+# drug targets #
+output$downloadDrugTargets <- downloadHandler(
+  filename = function() { paste('drug', 'target','genes', paste(input$selectedTargetDBs, collapse="_"), input$margin, input$method, input$normalization, '.csv', sep='_') },
+  content = function(file) {
+    data <- drug.targets()
+    write.table(data, file, row.names=F, sep=",", quote=F)
+  }  
+)
+
 # miRNA target gene permutation test result download #
 output$downloadTargetPermutationTestResult <- downloadHandler(
   filename = function() { paste('mirna', 'target','genes', 'permutation', 'test', 'result', 

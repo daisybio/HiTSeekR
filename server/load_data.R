@@ -1,10 +1,17 @@
 #load data
 rawData <- reactive({
   if(input$getFromPubChemButton > 0)
-  {
-    library(RCurl)
-    raw <- getURL(paste("https://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid=", input$pubchem_aid, "&q=expdata_csvsave", sep=""))
-    data <- read.csv(text = raw)
+  {    
+    tryCatch({
+      library(RCurl)
+      raw <- getURL(paste("https://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid=", input$pubchem_aid, "&q=expdata_csvsave", sep=""))
+      if(grepl("err message:", raw)){
+        stop(raw)
+      }
+      data <- read.csv(text = raw)
+    }, 
+    warning = function(w){ showshinyalert(session, "general_status", paste("potential problem when reading file:", w$message), "warning")},
+    error = function(e){ showshinyalert(session, "general_status", paste("error reading file:", e$message), "danger") })
   }
   if(is.null(input$file)){
     if(input$dataset == "BCSC")
@@ -24,6 +31,9 @@ rawData <- reactive({
     {
       data <- read.delim("data/Caspase4_processed.txt", header=T, sep="\t")            
     }
+    else if(input$dataset == "KRAS_synleth_compound"){
+      data <- read.delim("data/KRasSyntheticLethal_CellTiterGlo(1054.0014)_screeningdata.txt", header=T, sep="\t", fill=T)
+    }
     else if(input$dataset == "DM_Kc167"){
       library(cellHTS2)
       experimentName <- "KcViab"
@@ -40,9 +50,12 @@ rawData <- reactive({
   }
   else{
     file <- input$file
-    data <- read.table(file$datapath, header=T, sep=input$fileSeparator)
+    tryCatch({
+    data <- read.table(file$datapath, header=T, sep=input$fileSeparator, fill=T)
+    }, 
+    warning = function(w){ showshinyalert(session, "general_status", paste("potential problem when reading file:", w$message), "warning")},
+    error = function(e){ showshinyalert(session, "general_status", paste("error reading file:", e$message), "danger") })
   }
-  
   return(data)
 })
 

@@ -1,11 +1,11 @@
 library(shiny)
-require(rCharts)
-require(ggplot2)
-require(grid)
-require(gridExtra)
-require(scales)
-require(RmiR)
-require(shinysky)
+library(rCharts)
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(scales)
+library(RmiR)
+library(shinysky)
 
 elts <- list(
   title=HTML('<img style="height:40px; margin-top: -7px;" src="RNAice.png"/>'),
@@ -71,7 +71,9 @@ elts <- list(
            shinyalert("mirna_target_status"), 
            uiOutput("uiOutput_mirna_targets")
   ),
-  tabPanel("Small Compounds", HTML("Drug target database will soon be shown here")),
+  tabPanel("Small Compounds", 
+           uiOutput("uiOutput_drug_targets")
+  ),
   tabPanel("Genes", 
            uiOutput("uiOutput_gene_set_analysis")
   )

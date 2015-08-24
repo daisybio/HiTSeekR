@@ -3,6 +3,7 @@ accTypes <- reactive({
   if(is.null(input$screenType)) return(NULL)
   else if(input$screenType == "siRNA") return(c("RefSeq", "Entrez", "GeneSymbol", "FlybaseCG"))
   else if(input$screenType == "miRNA") return(c("MI", "MIMAT", "mature_name"))
+  else if(input$screenType == "compound") return(c("PubChem_SID", "PubChem_CID", "Chembank"))
   #return(c("RefSeq", "Entrez", "MIMAT", "MI"))
 })
 
@@ -46,7 +47,7 @@ posCtrl <- reactive({
 output$uiOutput_data_options <- renderUI({
   
   elements <- list(column(4,
-                          selectInput("screenType", "Type of screen", c("Gene (e.g. siRNA)" = "siRNA", "miRNA (e.g. inhibitor)" = "miRNA", "drugs", "Small compounds (e.g. drugs)")),
+                          selectInput("screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA (e.g. inhibitor)" = "miRNA", "compound", "Small compounds (e.g. drugs)")),
                           selectInput("sampleCol", "Sample Name Column", dataColumns()),
                           selectInput("plateCol", "Plate Column", dataColumns()),
                           selectInput("positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol")),
@@ -79,7 +80,7 @@ output$uiOutput_data_options <- renderUI({
 dataUpdateObserver <- observe({
   datasetName()  
   isolate({
-    updateSelectInput(session, "screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA inhibitor / mimics" = "miRNA", "compound screen" = "compound"), dataOptionDefaults()[["screenType"]])
+    updateSelectInput(session, "screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA inhibitor / mimics" = "miRNA", "Compound screen" = "compound"), dataOptionDefaults()[["screenType"]])
     updateSelectInput(session, "sampleCol", "Sample Name Column", dataColumns(), dataOptionDefaults()[["sampleCol"]])
     updateSelectInput(session, "plateCol", "Plate Column", dataColumns(), dataOptionDefaults()[["plateCol"]])
     updateSelectInput(session, "positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol"), dataOptionDefaults()[["posColType"]])

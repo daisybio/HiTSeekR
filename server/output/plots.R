@@ -65,7 +65,7 @@ output$signalqqPlot <- renderPlot({
 output$heatmapPlot <- renderPlot({  
   plot.data <- data()
   ncol <- length(unique(plot.data$Plate))
-  plot.data <- subset(plot.data, Experiment == input$experimentSelected  & Readout == input$readoutSelected)
+  plot.data <- dplyr::filter(plot.data, Experiment == input$heatmapExperimentSelected, Readout == input$heatmapReadoutSelected)
   hits <- outliers()
   
   my.heatmap(plot.data, input$normalization, input$margin, input$method, hits, 
@@ -134,18 +134,21 @@ observe({
   
   for(experiment in unique(exp.data$Experiment))
   {
-    local({
-      plotData <- subset(exp.data, Experiment == experiment)
-      plotName <- paste(experiment, "IntScatterPlot", sep="")
-      output[[plotName]] <- renderChart({         
-        formatted.plotData <-formatIntegerForPlot(plotData, "Plate")
-        p <- hPlot(y= sel.normalization, x = "wellCount", data = formatted.plotData, type = "scatter", group = "Plate")
-        #p$params$series[[1]]$data <- toJSONArray(formatted.plotData, json=F)
-        #p$tooltip(formatter = "#! function(){ return this.point.x + ',k' + this.point.Sample + this.point.y;} !#")
-        p$addParams(dom=plotName)      
-        return(p)
+    for(readout in unique(exp.data$Readout))
+    {
+      local({
+        plotData <- dplyr::filter(exp.data, Experiment == experiment, Readout == readout)
+        plotName <- paste(experiment, readout, "IntScatterPlot", sep="")
+        output[[plotName]] <- renderChart({         
+          formatted.plotData <-formatIntegerForPlot(plotData, "Plate")
+          p <- hPlot(y= sel.normalization, x = "wellCount", data = formatted.plotData, type = "scatter", group = "Plate")
+          #p$params$series[[1]]$data <- toJSONArray(formatted.plotData, json=F)
+          #p$tooltip(formatter = "#! function(){ return this.point.x + ',k' + this.point.Sample + this.point.y;} !#")
+          p$addParams(dom=plotName)      
+          return(p)
+        })
       })
-    })
+    }
   }
 })
 
@@ -160,14 +163,28 @@ output$scatterPlot <- renderPlot({
   exp.data <- processedData()
   if(is.null(exp.data)) return(NULL)
   if(is.null(input$dataNormalizationSelected)) sel.normalization <- "Raw"
-  else sel.normalization <- input$normalization  
+  else sel.normalization <- input$normalization    
   q <- ggplot(exp.data, aes_string(x="wellCount", y=sel.normalization, color="Plate", shape="Replicate")) + geom_point() + geom_line(stat="hline", yintercept="mean", color="black", aes(group=interaction(Plate, Replicate))) 
   q <- q + theme_bw()
   q <- q + facet_grid(Readout~Experiment, scales="free")
   q <- q + guides(color=guide_legend(nrow=10, byrow=TRUE))
   q <- q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  q <- q + xlab("Well Count")    
+  
+  numOfPlates <- length(unique(exp.data$Plate))
+  q <- q + scale_color_manual(values=rep(brewer.pal(8,"Dark2"), length.out=numOfPlates))
   print(q)
 })
+
+getRainbowColors <- function(numOfCategories){
+  #col <-rainbow(numOfCategories)
+  col <- brewer.pal(8, "Dark2")
+  col.index <- ifelse(seq(col) %% 2, 
+                      seq(col), 
+                      (seq(ceiling(length(col)/2), length.out=length(col)) %% length(col)) + 1)
+  mixed <- col[col.index]
+  return(mixed)
+}
 
 #control plot showing the separability of the positive and negative controls via SSMD
 output$controlPerformancePlot <- renderPlot({
@@ -184,7 +201,7 @@ output$controlPerformancePlot <- renderPlot({
   
   p <- qplot(data=result, x=Plate, y=SSMD, size=I(3), color=Sample, shape=Replicate)  
   p <- p + facet_grid(Experiment + Readout ~ NEG.CTRL, scales="free") + theme_bw()
-  p <- p + guides(color=guide_legend(nrow=10, byrow=TRUE))  
+  p <- p + guides(color=guide_legend(nrow=10, byrow=TRUE))    
   p <- p + annotate("rect", xmin=0, xmax=length(unique(result$Plate))+1, ymin=-3, ymax=3, alpha=0.2, fill="red") 
   p <- p + annotate("rect", xmin=0, xmax=length(unique(result$Plate))+1, ymin=-3, ymax=-6, alpha=0.2, fill="orange") 
   p <- p + annotate("rect", xmin=0, xmax=length(unique(result$Plate))+1, ymin=3, ymax=6, alpha=0.2, fill="orange") 
@@ -212,6 +229,9 @@ output$replicateCorrPlot <- renderPlot({
     p <- p + geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) 
     p <- p + geom_abline(intercept=0, slope=1, color="grey")    
     p <- p + guides(color=guide_legend(nrow=10, byrow=TRUE))+ theme_bw()
+    
+    numOfPlates <- length(unique(exp.data$Plate))
+    p <- p + scale_color_manual(values=rep(getRainbowColors(8), length.out=numOfPlates))  
     return(p)
   }
   do.call(grid.arrange, list.of.plots)
@@ -230,6 +250,9 @@ output$plateMeanPlot <- renderPlot({
   q <- qplot(x=Plate, y=Raw, data=exp.data, geom="boxplot", color=Plate, shape=Replicate)
   q <- q + theme_bw() + facet_grid(Readout~Experiment, scale="free_y") + guides(color=guide_legend(nrow=10, byrow=TRUE))
   q <- q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  
+  numOfPlates <- length(unique(exp.data$Plate))
+  q <- q + scale_color_manual(values=rep(getRainbowColors(8), length.out=numOfPlates))  
   print(q)
 })
 
@@ -244,7 +267,7 @@ output$controlPlot <- renderPlot({
   q <- ggplot(plot.data, aes_string(x="Control", y="Raw", color="Plate", shape="Replicate")) + geom_boxplot()
   q <- q + theme_bw() + facet_grid(Readout~Experiment, scale="free_y") 
   q <- q + guides(color=guide_legend(nrow=10, byrow=TRUE))  
-  q <- q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  q <- q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  
   print(q)
 })
 

@@ -37,10 +37,15 @@ getTargets <- function(hits, rnah.pvalue.threshold=0.001, get.gene.symbols=F, da
   return(query.result)
 }
 
-getRNAhybridTargetCounts <- function(genes=NULL)
+getRNAhybridTargetCounts <- function(genes=NULL, pval.threshold)
 {
   rnah.db <- src_sqlite("data/rnahybrid.sqlite3")
-  mirna.counts <- tbl(rnah.db, "mircounts05")
+  dbname <- switch(as.character(pval.threshold), 
+                   "0.05" = "mircounts05",
+                   "0.01" = "mircounts01",
+                   "0.001" = "mircounts001",
+                   "1e-04" = "mircounts0001")
+  mirna.counts <- tbl(rnah.db, dbname)
   if(is.null(genes)) return(dplyr::select(mirna.counts, gene))
   else return(mirna.counts %>% filter(gene %in% genes))  
 }

@@ -20,6 +20,12 @@ rbind.with.progress <- function(progress, steps){
     }
 }
 
+selectedHitList <- reactive({
+  if(input$useConsensus == "hit list") data <- outliers()
+  else data <- consensusHitList()
+  return(data)
+})
+
 rnah.p.value.threshold <- reactive({
   if(is.null(input$rnah.p.value.threshold)) rnah.p.value.threshold <- NULL
   else rnah.p.value.threshold <- input$rnah.p.value.threshold
@@ -119,31 +125,23 @@ mirna.target.permutation <- reactive({
       #divide by the number of permutations to get an E-value
       progress$set(message = "Summarizing results")    
       
-      result <- result %>% group_by(gene_id) %>% dplyr::summarise(n= sum(n)) %>% mutate(n = n / permutations) %>% dplyr::rename(expected = n)              
+      result <- result %>% dplyr::group_by(gene_id) %>% dplyr::summarise(n= sum(n)) %>% mutate(n = n / permutations) %>% dplyr::rename(expected = n)              
       
       #combine information from the processed hit list with the result
-      final_result <- left_join(target.list.by.gene, result, by="gene_id")
-      final_result <- dplyr::select(final_result, gene_id, gene_symbol, number_of_miRNAs, expected_number_of_miRNAs=expected, mirna_families)        
-      
-      #calculate p-values using the Poisson distribution (assuming independence)
-      progress$set(message = "Calculating p-values")
-      
-      final_result <- collect(final_result)
-      final_result$p.value <- foreach(row=iter(final_result, by="row"), .combine=c) %do%
-      {                        
-        with(row, ppois(number_of_miRNAs, lambda=expected_number_of_miRNAs, lower=FALSE))
-      }
+      mirna.hit.counts <- left_join(target.list.by.gene, result, by="gene_id")
+      mirna.hit.counts <- dplyr::select(final_result, gene_id, gene_symbol, number_of_miRNAs, count=expected, mirna_families)        
     }
     else{      
       progress$set(message = "Performing hypergeometric tests")    
-      mirna.hit.counts <- getRNAhybridTargetCounts(genes.of.interest)      
+      mirna.hit.counts <- getRNAhybridTargetCounts(genes.of.interest, input$rnah.p.value.threshold)      
       mirna.hit.counts <- left_join(target.list.by.gene, mirna.hit.counts, by=c("gene_id" = "gene"), copy = TRUE)
+    }  
+    #universe and number of hits
+    universe.size <- 1242 #rnah.mirna.count()
+    hit.list.size <- length(unique(hit.list.targets$mature_miRNA))
       
-      universe.size <- 1242 #rnah.mirna.count()
-      hit.list.size <- length(unique(hit.list.targets$mature_miRNA))
-      
-      final_result <- mirna.hit.counts %>% mutate(p.value = phyper(number_of_miRNAs, count, universe.size - count, hit.list.size, lower.tail=FALSE))      
-    }
+    #calculate cumulative hypergeometric test, e.g. P(X >= k). We use number_of_miRNAs - 1, because otherwise it would be P(X > k)
+    final_result <- mirna.hit.counts %>% mutate(p.value = phyper(number_of_miRNAs-1, count, universe.size - count, hit.list.size, lower.tail=FALSE))          
     progress$set(message = "Ajusting p-values (BH)")
     final_result$p.adj <- p.adjust(final_result$p.value, method="BH")
                                             

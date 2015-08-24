@@ -66,7 +66,7 @@ shinyServer(function(input, output, session) {
   if(require(doRedis)){  
     queueID <- paste(sample(c(LETTERS[1:6],0:9),8,replace=TRUE),collapse="")
     registerDoRedis(queueID)
-    setChunkSize(value = 50)
+    setChunkSize(value = 1000)
     startLocalWorkers(n=number.of.cores, queue=queueID)
   } else if(require(doParallel)){
     cl <- makeCluster(number.of.cores)
@@ -101,6 +101,9 @@ shinyServer(function(input, output, session) {
   #miRNA targets
   source("server/mirna_targets.R", local = TRUE)
   
+  #drug targets
+  source("server/drug_targets.R", local = TRUE)
+  
   #KeyPathwayMiner
   source("server/KPM.R", local = TRUE)
   
@@ -130,6 +133,7 @@ shinyServer(function(input, output, session) {
   source("ui/navbar_hits.R", local = TRUE)
   source("ui/navbar_consensus_hits.R", local = TRUE)
   source("ui/navbar_mirna_targets.R", local = TRUE)
+  source("ui/navbar_drug_targets.R", local = TRUE)
   source("ui/navbar_data.R", local = TRUE)
   source("ui/navbar_gene_set.R", local = TRUE)
   source("ui/navbar_enable_tabs.R", local = TRUE)

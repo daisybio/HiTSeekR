@@ -18,7 +18,7 @@ observe({
     if(input$screenType == "miRNA"){
       session$sendCustomMessage(type = "enableNavTab", "6")  
     }
-    else if(input$screenType == "drugs"){
+    else if(input$screenType == "compound"){
       session$sendCustomMessage(type = "enableNavTab", "7")  
     }   
     else{

@@ -54,7 +54,7 @@ output$uiOutput_hits_options <- renderUI({
        selectInput("effect", "Effect:", choices = c("effect", "suppressor", "promotor")),
        conditionalPanel(
          condition = "input.method != 'Bayes'",
-         sliderInput("margin", "Margin:",  min = 0.5, max = 10, value = 2.5, step= 0.5)
+         sliderInput("margin", "Margin:",  min = 0, max = 20, value = 3, step= 0.5)
        ),
       conditionalPanel(
         condition = "input.method == 'Bayes'",
@@ -101,8 +101,11 @@ output$uiOutput_hits <- renderUI({
             downloadButton('downloadHits', 'Download hit list')
    ),
    tabPanel("Hits Plot", tags$div(showOutput("scatterPlotHits", "dimple"))),
-   tabPanel("Heatmap", fluidRow(               
-           checkboxInput("showLabelsOnHeatmap", "Show sample labels in heatmap", FALSE)
+   tabPanel("Heatmap", fluidRow(  
+            selectInput("heatmapExperimentSelected", "Select experiment:", input$experimentSelected),
+            selectInput("input$heatmapReadoutSelected", "Select readout:", input$readoutSelected),         
+            checkboxInput("showLabelsOnHeatmap", "Show sample labels in heatmap", FALSE)
+           
   ),
   plotOutput("heatmapPlot", height=800)
   ))                 

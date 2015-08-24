@@ -42,12 +42,13 @@ find.hits.call <- function(exp.data, rep.data, method, margin, neg.ctrl, signalC
     #bayesian hit detection
     outl <- bayesianHitSelection(exp.data, neg.ctrl=neg.ctrl, signalColumn=signalColumn,alpha = 0.05, updateProgress=updateProgress)
   } 
+  else if(margin == 0) outl <- exp.data
   else if(method == "SSMD")
   {        
-    result <- rep.data %>% group_by(Plate) %>% do(ssmd(., neg.ctrl, signalColumn))
+    result <- rep.data %>% dplyr::group_by(Plate) %>% do(ssmd(., neg.ctrl, signalColumn))
     outl <- exp.data
-    outl <- left_join(outl,result, by=c("Plate", "Sample"))
-    outl <- outl %>% filter(abs(SSMD) >= margin)    
+    outl <- dplyr::left_join(outl,result, by=c("Plate", "Sample"))
+    outl <- outl %>% dplyr::filter(abs(SSMD) >= margin)    
     outl <- as.data.frame(outl)
   }
   else{
@@ -101,8 +102,7 @@ hit.detect <- reactive({
           margin <- input$diffMargin   
         }
         else margin <- input$margin
-      }
-      
+      }      
       find.hits.call(m.data, it.data, input$method, margin, negCtrl(), input$normalization, updateProgress)      
     }
   }  
@@ -162,13 +162,6 @@ outliers <- reactive({
   }
   
   return(as.data.frame(outl))
-})
-
-#selected hit list in navbar_mirna_targets
-selectedHitList <- reactive({
-  if(input$useConsensus == "hit list") data <- outliers()
-  else data <- consensusHitList()
-  return(data)
 })
 
 genes.indicator.matrix <- reactive({

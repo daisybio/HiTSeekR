@@ -61,7 +61,7 @@ my.heatmap <- function(plates, signalType, margin, method, outliers, ncol=3, tit
   p2 <- p2 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.margin=unit(0.1, "lines"), panel.margin=unit(0, "lines"), plot.margin=unit(c(1, 1, 0.5, 0.5), "lines"), 
                   plot.title=element_text(size=18), strip.background=element_rect(fill="grey90", colour="grey50"))
   #p2 <- p2 + geom_dl(aes(label=Sample), method=list("smart.grid"), data=kIn1.outliers)
-  p2 <- p2 + scale_x_continuous(expand=c(0,0), breaks=seq(2,12,3));
-  p2 <- p2 + scale_y_reverse(expand=c(0,0), breaks=seq(2,12,3));
+  p2 <- p2 + scale_x_continuous(expand=c(0,0), breaks=seq(2,length(unique(plates$Plate)),3));
+  p2 <- p2 + scale_y_reverse(expand=c(0,0), breaks=seq(2,length(unique(plates$Plate)),3));
   print(p2);
 }

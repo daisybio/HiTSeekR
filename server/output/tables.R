@@ -35,6 +35,9 @@ output$consensusHitList <- renderDataTable(formattedTable(consensusHitList(), in
 # miRNA targets #
 output$mirna.targets.table <- renderDataTable(mirna.targets(), escape=FALSE)
 
+# Drug targets #
+output$drug.targets.table <- renderDataTable(drug.targets(), escape=FALSE)
+
 # miRNA target permutation test results table
 output$mirna.target.permutation.table <- renderDataTable({
   if(is.null(filtered.mirna.target.permutation())) return(NULL)

@@ -6,8 +6,10 @@ output$scatterPlotTagList <- renderUI({
   } 
   else{
     plots <- foreach(experiment = unique(exp.data$Experiment)) %do% {
-      plot.name <- paste(experiment, "IntScatterPlot", sep="")
-      showOutput(plot.name, "highcharts")
+      foreach(readout = unique(exp.data$Readout)) %do% {
+        plot.name <- paste(experiment, readout, "IntScatterPlot", sep="")
+        showOutput(plot.name, "highcharts")
+      }
     }
     do.call(tagList, plots)
   }
