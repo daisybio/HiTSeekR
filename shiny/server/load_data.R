@@ -15,24 +15,24 @@ rawData <- reactive({
   }
   if(is.null(input$file)){
     if(input$dataset == "BCSC")
-      data <- read.delim("data/BCSC.txt", header=T)
+      data <- read.delim(paste(data.folder, "BCSC.txt", sep=""), header=T)
     else if(input$dataset == "A375_MTS"){
-      data <- read.table("data/A375_MTS.txt", header=T, sep="\t")
+      data <- read.table(paste(data.folder, "A375_MTS.txt",sep=""), header=T, sep="\t")
     }
     else if(input$dataset == "HCC_vorinostat_siRNA")
     {
-      data <- read.csv("data/AID_743454_data.csv", header=T)
+      data <- read.csv(paste(data.folder, "AID_743454_data.csv", sep=""), header=T)
     }
     else if(input$dataset == "HCC_vorinostat_miRNA")
     {
-      data <- read.csv("data/AID_743456_data.csv", header=T)
+      data <- read.csv(paste(data.folder, "AID_743456_data.csv", sep=""), header=T)
     }
     else if(input$dataset == "TNFa_Casp4")
     {
-      data <- read.delim("data/Caspase4_processed.txt", header=T, sep="\t")            
+      data <- read.delim(paste(data.folder, "Caspase4_processed.txt", sep=""), header=T, sep="\t")            
     }
     else if(input$dataset == "KRAS_synleth_compound"){
-      data <- read.delim("data/KRasSyntheticLethal_CellTiterGlo(1054.0014)_screeningdata.txt", header=T, sep="\t", fill=T)
+      data <- read.delim(paste(data.folder, "KRasSyntheticLethal_CellTiterGlo(1054.0014)_screeningdata.txt", sep=""), header=T, sep="\t", fill=T)
     }
     else if(input$dataset == "DM_Kc167"){
       library(cellHTS2)

@@ -21,14 +21,14 @@ output$uiOutput_htsanalyzerOptions <- renderUI({
     {  
       selectInput("htsanalyzer.useConsensus", "Use consensus hit list for target identification?", c("hit list", "consensus hit list"))                    
     },
-    selectInput("htsanalyzer.species", "Species:", 
-                c("Drosophila melanogaster" = "Dm", 
-                  "Homo sapiens" = "Hs",
-                  "Rattus norvegicus" = "Rn",
-                  "Mus musculus" = "Mm",
-                  "Caenorhabditis elegans" = "Ce"
-                ), selected = "Hs"         
-    ),    
+#     selectInput("htsanalyzer.species", "Species:", 
+#                 c("Drosophila melanogaster" = "Dm", 
+#                   "Homo sapiens" = "Hs",
+#                   "Rattus norvegicus" = "Rn",
+#                   "Mus musculus" = "Mm",
+#                   "Caenorhabditis elegans" = "Ce"
+#                 ), selected = "Hs"         
+#     ),    
     checkboxGroupInput("htsanalyzer.geneset.types", "Select gene sets:", c("GO cellular compartment" = "GO_CC",
                                                                            "GO molecular function" = "GO_MF",
                                                                            "GO biological process" = "GO_BP",
@@ -37,18 +37,18 @@ output$uiOutput_htsanalyzerOptions <- renderUI({
     ),
     numericInput("htsanalyzer.pval.cutoff", "p-value cutoff", min = 0, max = 1, value= 0.05),
     numericInput("htsanalyzer.minimum.gene.set.size", "Minimal gene set size", min = 1, value = 10),    
-    if(input$screenType=="miRNA")
+    if(input$screenType %in% c("miRNA", "compound"))
     {
-      HTML("Note: gene set enrichment analysis is not available for miRNA target lists because a score is needed")      
-    } else
+      HTML("Note: gene set enrichment analysis is not available for miRNA or compound target lists.")      
+    } else 
     {  
       checkboxInput("htsanalyzer.doGSEA", "Perform gene set enrichtment analysis", TRUE)
     },
     conditionalPanel(condition = "input['htsanalyzer.doGSEA']",
                      numericInput("htsanalyzer.permutations", "Number of permutations for GSEA", min=10, max=1000, value=100)
     ),          
-    selectInput("htsanalyzer.adjust.method", "Method for p-value correction", p.adjust.methods, selected="BH"),
-    actionButton("startHTSanalyzer", "Start Analysis")
+    #selectInput("htsanalyzer.adjust.method", "Method for p-value correction", p.adjust.methods, selected="BH"),
+    actionButton("startHTSanalyzer", "Start Analysis", styleclass="primary")
   )
   do.call(sidebarPanel, elements)
 })

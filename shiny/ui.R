@@ -8,13 +8,18 @@ library(RmiR)
 library(shinysky)
 
 elts <- list(
-  title=HTML('<img style="height:40px; margin-top: -7px;" src="RNAice.png"/>'),
-  windowTitle="RNAice - RNAi comprehensive evaluation",
+  #title=HTML('<img style="height:40px; margin-top: -7px;" src="RNAice.png"/>'),
+  #windowTitle="RNAice - RNAi comprehensive evaluation",
+  title=HTML('<img style="height:40px; margin-top: -7px;" src="HiTSeekR.png"/>'),
+  windowTitle="High-throughput Screening Kit for R",
   header=tags$head(
     tags$script(
                 HTML('
                      Shiny.addCustomMessageHandler("enableNavTab", function(tab){
                       $(".nav li:nth-child(" + tab + ")").removeClass("disabled");      
+                     });
+                     Shiny.addCustomMessageHandler("disableNavTab", function(tab){
+                      $(".nav li:nth-child(" + tab + ")").addClass("disabled");      
                      });
                      $(document).ready(function(){
                       $(".nav li").attr("class", "disabled");
@@ -25,7 +30,9 @@ elts <- list(
                       $(".nav li:nth-child(1)").attr("class", "active");
                      });
                      ')),
-    tags$link(rel = "stylesheet", type = "text/css", href = "rnaice.css"),
+    #tags$link(rel = "stylesheet", type = "text/css", href = "rnaice.css"),
+    #tags$link(rel = "stylesheet", type = "text/css", href = "supernice.css"),
+    tags$link(rel = "stylesheet", type = "text/css", href = "HiTSeekR.css"),
     shinyalert("general_status")
   ),
   id="mainNavbar",  

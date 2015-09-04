@@ -1,13 +1,13 @@
 # Hit List #
-formattedTable <- function(exp.data, show.sem){  
+formattedTable <- function(exp.data, show.sd){  
   
   if(is.null(exp.data)) return(NULL)
   
-  if(!show.sem){
-    test.remove <- exp.data %>% dplyr::select(-ends_with("_sem")) 
+  if(!show.sd){
+    test.remove <- exp.data %>% dplyr::select(-ends_with("_sd")) 
     if(ncol(test.remove) > 0)
     {
-      exp.data <- exp.data %>% dplyr::select(-ends_with("_sem")) 
+      exp.data <- exp.data %>% dplyr::select(-ends_with("_sd")) 
     }
   }
   
@@ -21,7 +21,7 @@ formattedTable <- function(exp.data, show.sem){
   return(as.data.frame(exp.data))
 }
 
-output$table_hits <- renderDataTable(formattedTable(outliers(), input$show.sem.in.hits), escape=FALSE)
+output$table_hits <- renderDataTable(formattedTable(outliers(), input$show.sd.in.hits), escape=FALSE)
 
 # Raw data
 output$table_rawData <- renderDataTable(rawData(), escape=FALSE)
@@ -30,7 +30,7 @@ output$table_rawData <- renderDataTable(rawData(), escape=FALSE)
 output$table_processedData <- renderDataTable(processedData(), escape=FALSE)
 
 # Consensus hit list #
-output$consensusHitList <- renderDataTable(formattedTable(consensusHitList(), input$show.sem.in.hits), escape=FALSE)
+output$consensusHitList <- renderDataTable(formattedTable(consensusHitList(), input$show.sd.in.hits), escape=FALSE)
 
 # miRNA targets #
 output$mirna.targets.table <- renderDataTable(mirna.targets(), escape=FALSE)

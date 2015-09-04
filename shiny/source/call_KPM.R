@@ -8,23 +8,23 @@ base64EncFile <- function(fileName){
 
 setup.KPM <- function(list.of.indicator.matrices, 
                       algorithm="Greedy", strategy="GLONE", graphID=1,
-                      removeBENs=FALSE, range, 
+                      removeBENs=TRUE, range, 
                       Kmin=0, Lmin=0, Kmax=0, Lmax=0, Kstep=1, Lstep=1, 
                       ATTACHED_TO_ID, 
                       computed.pathways=20, 
                       with.perturbation=FALSE){  
   
   #create a run id
-  RNAice_RUN_ID <- paste(sample(c(LETTERS[1:6],0:9),6,replace=TRUE),collapse="")
+  hitseekr_RUN_ID <- paste(sample(c(LETTERS[1:6],0:9),6,replace=TRUE),collapse="")
   
   #base64 encode files
-  datasetList <- datasetList.KPM(list.of.indicator.matrices,ATTACHED_TO_ID, RNAice_RUN_ID)
+  datasetList <- datasetList.KPM(list.of.indicator.matrices,ATTACHED_TO_ID, hitseekr_RUN_ID)
   
   # setup the json settings:
   KPMsettings <- toJSON(
     list(
       parameters=c(
-        name=paste("RNAice run", RNAice_RUN_ID),
+        name=paste("HiTSeekR run", hitseekr_RUN_ID),
         algorithm=algorithm,
         strategy=strategy,
         removeBENs=tolower(as.character(removeBENs)),
@@ -35,7 +35,7 @@ setup.KPM <- function(list.of.indicator.matrices,
         samePercentage_val=0,
         k_values=list(c(val=Kmin, val_step=Kstep, val_max=Kmax, use_range=tolower(as.character(range)), isPercentage="false")),
         l_values=list(
-          c(val=Lmin, val_step=Lstep, val_max=Lmax, use_range=tolower(as.character(range)), isPercentage="false", datasetName=paste(RNAice_RUN_ID, 1, sep=""))
+          c(val=Lmin, val_step=Lstep, val_max=Lmax, use_range=tolower(as.character(range)), isPercentage="false", datasetName=paste(hitseekr_RUN_ID, 1, sep=""))
         )
         ), 
       withPerturbation=tolower(as.character(with.perturbation)),
@@ -54,17 +54,18 @@ setup.KPM <- function(list.of.indicator.matrices,
   return(list(KPMsettings, datasetList))
 }
 
-datasetList.KPM <- function(list.of.indicator.matrices, ATTACHED_TO_ID, RNAice_RUN_ID)
+datasetList.KPM <- function(list.of.indicator.matrices, ATTACHED_TO_ID, hitseekr_RUN_ID)
 {  
   counter <- 0
   datasetList <- foreach(indicator.matrix = list.of.indicator.matrices) %do% {
     txt.con <- textConnection("tmp.file", "w")    
     
     write.table(indicator.matrix, txt.con, sep="\t",quote=F, col.names=F)    
-    enc.file <- base64(tmp.file)
+    browser()
+    enc.file <- base64(paste(tmp.file, collapse="\n"))
     close(txt.con)
     counter <- counter + 1
-    c(name=paste(RNAice_RUN_ID, counter, sep=""), attachedToID=ATTACHED_TO_ID, contentBase64=enc.file)
+    c(name=paste(hitseekr_RUN_ID, counter, sep=""), attachedToID=ATTACHED_TO_ID, contentBase64=enc.file)
   }
   
   return(toJSON(datasetList))
@@ -138,6 +139,7 @@ getKpmRunStatus <- function(url, questId){
 
 getKpmResults <- function(url, questId){
   withTryCatch(function(){
+    
     url <- paste(url, "requests/kpmResults", sep="")
     print(sprintf("url: %s", url))
     

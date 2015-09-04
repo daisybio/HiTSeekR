@@ -73,8 +73,12 @@ output$downloadIndicatorMatrix <- downloadHandler(
   content = function(file) {
     if(input$screenType == "miRNA"){
       data <- targets.indicator.matrix()
-    } else
+    } 
+    else if(input$screenType == "compound")
     {
+      data <- drug.indicator.matrix()
+    }
+    else {
       data <- genes.indicator.matrix()
     } 
     write.table(data, file, sep="\t", quote=F, col.names=F)

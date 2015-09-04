@@ -56,7 +56,7 @@ source("source/ggplot_smooth_func.R")
 options(shiny.maxRequestSize=30*1024^2)
 
 ### Load mircancer database #
-mircancer.database <- read.table("data/mirCancerSeptember2014.txt", sep="\t", header=T, quote="\"")
+mircancer.database <- read.table(paste(data.folder, "miRCancerMarch2015.txt", sep=""), sep="\t", header=T, quote="\"")
 
 ### Shiny server ###
 shinyServer(function(input, output, session) {
@@ -65,10 +65,12 @@ shinyServer(function(input, output, session) {
   
   if(require(doRedis)){  
     queueID <- paste(sample(c(LETTERS[1:6],0:9),8,replace=TRUE),collapse="")
-    registerDoRedis(queueID)
-    setChunkSize(value = 1000)
-    startLocalWorkers(n=number.of.cores, queue=queueID)
+    registerDoRedis(queueID, host=redis.host, nodelay=FALSE)
+    setChunkSize(value = 50)
+    startLocalWorkers(n=number.of.cores, queue=queueID, host=redis.host, timeout=2, nodelay=FALSE)
   } else if(require(doParallel)){
+    if(number.of.cores == "auto") number.of.cores <- parallel::detectCores() 
+    if(number.of.cores < 1) number.of.cores = 1
     cl <- makeCluster(number.of.cores)
     registerDoParallel(cl)
   }

@@ -40,7 +40,7 @@ output$uiOutput_hits_options <- renderUI({
     column(3,
       #actionButton("updateNormalization", "Update Settings", styleclass="primary"),
       #HTML("<br/><br/>"),
-        checkboxInput("show.sem.in.hits", "Show replicate standard error of the mean", FALSE),
+        checkboxInput("show.sd.in.hits", "Show replicate standard deviation", FALSE),
         checkboxInput("showFilterOptions", "Sample filter options", FALSE),
         checkboxInput("differentialScreening", "Differential screening", FALSE)
     ),column(3,

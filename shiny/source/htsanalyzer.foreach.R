@@ -47,11 +47,22 @@ gseaScoresBatchForeach <- function (geneList, geneNames.perm, collectionOfGeneSe
                                                             1)])
     return(ES)
   }
-  scores <- foreach(i=1:length(collectionOfGeneSets), .export=c("paraCheck")) %dopar% 
+  scores <- foreach(i=1:length(collectionOfGeneSets), .export=c("paraCheck"), .combine=list.with.progress(progress, length(collectionOfGeneSets))) %dopar% 
 {
   gseaScoresBatchLocal(geneList, geneNames.perm = geneNames.perm, 
                        geneSet = as.integer(collectionOfGeneSets[[i]]), 
                        exponent = exponent, nPermutations = nPermutations)
 }
 return(scores)
+}
+
+list.with.progress <- function(progress, steps){  
+  count <- 0
+  function(...) {
+    new.entries <- ((length(list(...)) - 1) / steps) 
+    count <<- count + new.entries
+    if(!is.null(progress))
+    progress$set(count, detail = paste(round(count * 100,2), "% complete"))            
+    c(...)
+  }
 }

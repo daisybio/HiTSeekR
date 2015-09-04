@@ -7,7 +7,7 @@ getTargets <- function(hits, rnah.pvalue.threshold=0.001, get.gene.symbols=F, da
   #repair ids
   hits <- na.omit(sub("mir", "miR", hits$mature_name))
   
-  if("RNAhybrid_hsa" %in% databases) rnah.db <- src_sqlite("data/rnahybrid.sqlite3")
+  if("RNAhybrid_hsa" %in% databases) rnah.db <- src_sqlite(paste(data.folder, "rnahybrid.sqlite3", sep=""))
   else miRNA.db <- src_sqlite(RmiR.Hs.miRNA_dbfile())
   
   query.result <- foreach(db=databases, .combine=rbind) %do% {
@@ -39,7 +39,7 @@ getTargets <- function(hits, rnah.pvalue.threshold=0.001, get.gene.symbols=F, da
 
 getRNAhybridTargetCounts <- function(genes=NULL, pval.threshold)
 {
-  rnah.db <- src_sqlite("data/rnahybrid.sqlite3")
+  rnah.db <- src_sqlite(paste(data.folder, "rnahybrid.sqlite3", sep=""))
   dbname <- switch(as.character(pval.threshold), 
                    "0.05" = "mircounts05",
                    "0.01" = "mircounts01",

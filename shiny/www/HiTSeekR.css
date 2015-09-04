@@ -1,0 +1,21 @@
+
+.tab-content{
+margin-top: 20px;
+}
+
+.shiny-progress .progress {
+top: 0px;
+height:3px;
+}
+
+.shiny-progress .progress-text {
+  position: absolute;
+  right: 10px;
+  height: 24px;
+  width: 480px;
+  top: 50px;
+  background-color: #eef8ff;
+  margin: 0px;
+  padding: 2px 3px;
+  opacity: 0.85;
+}

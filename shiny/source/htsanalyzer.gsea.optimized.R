@@ -3,6 +3,8 @@
 
 my.collectionGsea <- function(collectionOfGeneSets, geneList, exponent=1, 
                               nPermutations=1000, minGeneSetSize=15, verbose=TRUE) {
+  progress$set(message = "Performing gene set enrichment analysis...")   
+  
   ##check input arguments
   paraCheck("gsc", collectionOfGeneSets)
   paraCheck("genelist", geneList)
@@ -58,8 +60,8 @@ my.collectionGsea <- function(collectionOfGeneSets, geneList, exponent=1,
                                        collectionOfGeneSets=collectionOfGeneSets[which(tagGeneSets)],
                                        exponent=exponent,nPermutations=nPermutations)
       sapply(1:n.tagGeneSets, function(i) {
-        scoresperm[i,]<<-unlist(scores[[i]][["scoresperm"]])
-        scoresObserved[i]<<-unlist(scores[[i]][["scoresObserved"]])
+        scoresperm[i,]<<-scores[[i*2]]
+        scoresObserved[i]<<-scores[[(i*2)-1]]
       }  		
       )
     } else {

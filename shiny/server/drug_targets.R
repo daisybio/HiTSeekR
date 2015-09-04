@@ -1,4 +1,4 @@
-selectedHitList <- reactive({
+compoundSelectedHitList <- reactive({
   if(input$drugUseConsensus == "hit list") data <- outliers()
   else data <- consensusHitList()
   return(data)
@@ -10,7 +10,7 @@ convertToCid <- function(data, type){
     return(data)
   }
   
-  compound.mapping.db <- src_sqlite("data//compound.mapping.sqlite3")
+  compound.mapping.db <- src_sqlite(paste(data.folder, "compound.mapping.sqlite3", sep=""))
   
   if(type == "Chembank")
   {
@@ -32,10 +32,12 @@ convertToCid <- function(data, type){
   stop("Do not know how to handle unknown compound / drug ID type.")
 }
 
+stitch.db <- src_sqlite(paste(data.folder, "stitch_hsa_protein_chemical_links_v4.0.sqlite3", sep=""))
+
 drug.targets <- reactive({
   
-  hits <- selectedHitList()
-  
+  hits <- compoundSelectedHitList()
+
   #convert ids to pubchem compound ids (CID) as used in STITCH
   hits <- convertToCid(hits, input$accessionColType)
   
@@ -43,16 +45,33 @@ drug.targets <- reactive({
   hits[!is.na(hits$PubChem_CID), "PubChem_CID"] <- paste("CID", formatC(as.integer(hits[!is.na(hits$PubChem_CID), "PubChem_CID"]), width=9, flag="0"), sep="")
   
   tryCatch({
-  stitch.db <- src_sqlite("data/stitch_hsa_protein_chemical_links_v4.0.sqlite3")
-  targets <- tbl(stitch.db, "hs")
-  hits.wo.nas <- na.omit(hits$PubChem_CID)
-  
-  targets <- filter(targets, PubChemID %in% hits.wo.nas)
-  hits <- hits %>% dplyr::select(Sample, PubChem_CID) 
-  hits <- left_join(hits, targets, by=c("PubChem_CID" = "PubChemID"), copy=T)
+    hits.wo.nas <- na.omit(hits$PubChem_CID)
+    targets <- tbl(stitch.db, "hs")
+    targets <- filter(targets, PubChemID %in% hits.wo.nas)
+    hits <- hits %>% dplyr::select(Sample, PubChem_CID) 
+    hits <- inner_join(hits, targets, by=c("PubChem_CID" = "PubChemID"), copy=T)
   }, error = function(e){ showshinyalert(session, "general_status", paste("error:", e$message), "danger") })
   
-  if(nrow(hits) == 0) stop("No target has been found. Try to reduce stringency to increase number of hits.")
+  if(nrow(hits) == 0) stop("No target has been found.")
   
   return(hits)
+})
+
+drug.target.genes <- reactive({
+  tryCatch({    
+    targets <- tbl(stitch.db, "hs")
+    return(as.data.frame(distinct(dplyr::select(targets, gene_id)))[-1,1])
+  }, error = function(e){ showshinyalert(session, "general_status", paste("error:", e$message), "danger") })
+  
+  if(nrow(hits) == 0) stop("Problem encountered when extracting putative drug target genes.")
+  
+  return(hits)    
+})
+
+#indicator_matrix 
+drug.indicator.matrix <- reactive({
+  dr.targets <- drug.targets()  
+  indicator.matrix <- as.data.frame.matrix(table(dr.targets[,c("gene_id", "PubChem_CID")]))
+  indicator.matrix[indicator.matrix > 1] <- 1
+  return(indicator.matrix)  
 })

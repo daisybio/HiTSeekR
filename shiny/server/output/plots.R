@@ -301,13 +301,13 @@ output$KPM.plot.d3 <- renderForceNetwork({
   hits <- KPM.modify.hits()
   kpm.res <- KPM.result()
   if(is.null(kpm.res)) return(NULL)
-  plot.miRNA.target.enrichment.graph.d3(kpm.res,targets.indicator.matrix(), hits, input$highlight.kpm_d3)  
+  plot.miRNA.target.enrichment.graph.d3(kpm.res,KPM.indicator.matrix(), hits, input$highlight.kpm_d3, input$screenType)  
 })
 
 #interactive using d3
-output$KPM.plot.igraph <- renderPlot({
+output$KPM.plot.igraph <- renderPlot({  
   hits <- KPM.modify.hits()
   kpm.res <- KPM.result()
   if(is.null(kpm.res)) return(NULL)
-  plot.miRNA.target.enrichment.graph.igraph(kpm.res,targets.indicator.matrix(), hits)
+  plot.miRNA.target.enrichment.graph.igraph(kpm.res,KPM.indicator.matrix(), hits, input$screenType)
 })

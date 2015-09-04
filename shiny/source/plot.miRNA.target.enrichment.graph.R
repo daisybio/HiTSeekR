@@ -2,7 +2,7 @@ library(foreach)
 library(reshape2)
 library(igraph)
 
-prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.list)
+prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.list, screenType)
 {
   #kpm.res <<- kpm.result
   #ind.m <<- indicator.matrix
@@ -22,6 +22,8 @@ prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.li
   unionGraph <- which(unlist(unionGraph))
   edges.df <- as.data.frame(t(as.data.frame(edges[[unionGraph]])))
   
+  if(nrow(edges.df) == 0) stop("No results were returned. Try different K and L settings.")
+  
   colnames(edges.df) <- c("source", "target")
   
   #remove edges that point to the node itself
@@ -30,35 +32,40 @@ prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.li
   #check if we have any edges left
   if(nrow(edges.df) == 0) stop("no edges found where source != target")
   
+  nodes <- kpm.result$resultGraphs[[unionGraph]]$nodes
+  
   #get node ids and overlap count
-  node.ids <- foreach(x = kpm.result$resultGraphs[[unionGraph]]$nodes, .combine=rbind) %do%
+  node.ids <- foreach(x = nodes, .combine=rbind) %do%
   {
     data.frame('id'=x$id, 'overlapCount'=x$overlapCount) 
   }
   node.ids[,1] <- as.character(node.ids[,1])
   row.names(node.ids) <- node.ids[,1]
   
-  #get miRNA interactions
-  target.interactions.matrix <- indicator.matrix[node.ids$id,]
-  target.interactions <- target.interactions.matrix
-  target.interactions$gene <- row.names(target.interactions)
-  target.interactions <- melt(target.interactions)
-  target.interactions <- subset(target.interactions, value==1)[,c(2,1)]
-  colnames(target.interactions) <- c("source", "target")
-  
-  #add miRNA interactions to edge and node data frame
-  edges.df.mirna <- rbind(edges.df, target.interactions)
-  node.ids <- rbind(node.ids, data.frame(id=target.interactions$source, overlapCount=1))
-  return(list(edges.df.mirna, node.ids))
+  if(screenType == "miRNA")
+  {
+    #get miRNA interactions
+    target.interactions.matrix <- indicator.matrix[node.ids$id,]
+    target.interactions <- target.interactions.matrix
+    target.interactions$gene <- row.names(target.interactions)
+    target.interactions <- melt(target.interactions)
+    target.interactions <- subset(target.interactions, value==1)[,c(2,1)]
+    colnames(target.interactions) <- c("source", "target")
+    
+    #add miRNA interactions to edge and node data frame
+    edges.df <- rbind(edges.df, target.interactions)
+    node.ids <- rbind(node.ids, data.frame(id=target.interactions$source, overlapCount=1))
+  }
+  return(list(edges.df, node.ids))
 }
 
-plot.miRNA.target.enrichment.graph.d3 <- function(kpm.result, indicator.matrix, hit.list, highlight=1)
+plot.miRNA.target.enrichment.graph.d3 <- function(kpm.result, indicator.matrix, hit.list, highlight=1, screenType)
 {
   if(is.null(kpm.result))
   {
     return(NULL)
   }
-  kpm.data <- prepare.kpm.output.for.plotting(kpm.result, indicator.matrix, hit.list)
+  kpm.data <- prepare.kpm.output.for.plotting(kpm.result, indicator.matrix, hit.list, screenType)
   edges.df.mirna <- kpm.data[[1]]
   
   #default edge weight
@@ -73,10 +80,13 @@ plot.miRNA.target.enrichment.graph.d3 <- function(kpm.result, indicator.matrix, 
   #library(org.Hs.eg.db)
   #node.ids$symbol <- left_join(node.ids, as.data.frame(org.Hs.egSYMBOL), by=c("id" = "gene_id"))$symbol  
   
-  #color miRNAs according to suppressors / promoters
-  categories <- left_join(node.ids, hit.list, by=c("id"="mature_name")) %>% group_by(id) %>% summarise(category=unique(category))
-  node.ids <- left_join(node.ids, categories,by="id")
-  node.ids[is.na(node.ids$category),"category"] <- "NA"
+  if(screenType == "miRNA")
+  {
+    #color miRNAs according to suppressors / promoters
+    categories <- left_join(node.ids, hit.list, by=c("id"="mature_name")) %>% group_by(id) %>% summarise(category=unique(category))
+    node.ids <- left_join(node.ids, categories,by="id")
+    node.ids[is.na(node.ids$category),"category"] <- "NA"
+  }
   #node.ids$category <- as.integer(factor(node.ids$category, levels=c("promotor", "included", "gene", "suppressor")))
   
   #color genes found multiple times
@@ -91,13 +101,13 @@ plot.miRNA.target.enrichment.graph.d3 <- function(kpm.result, indicator.matrix, 
                colourScale="d3.scale.ordinal().range(['#1f77b4', '#ff7f0e', '#2ca02c','#9b9e9b', '#d62728']).domain(['promotor', 'included', 'multiple', 'NA', 'suppressor']);")
 }
 
-plot.miRNA.target.enrichment.graph.igraph <- function(kpm.result, indicator.matrix, hit.list){
+plot.miRNA.target.enrichment.graph.igraph <- function(kpm.result, indicator.matrix, hit.list, screenType){
   
   if(is.null(kpm.result))
   {
     stop("Waiting for KPM results...")
   }
-  kpm.data <- prepare.kpm.output.for.plotting(kpm.result, indicator.matrix, hit.list)
+  kpm.data <- prepare.kpm.output.for.plotting(kpm.result, indicator.matrix, hit.list, screenType)
   edges.df.mirna <- kpm.data[[1]]
   node.ids <- kpm.data[[2]]
 
@@ -123,16 +133,26 @@ plot.miRNA.target.enrichment.graph.igraph <- function(kpm.result, indicator.matr
   V(g)$name[-which(is.na(symbols))] <- symbols[-which(is.na(symbols))]
   
   #color miRNAs according to suppressors / promoters
-  category <- left_join(data.frame(name = node.names), hit.list, by=c("name"="mature_name"))$category
-  V(g)$color[which(category == "promotor")] <- "#80B1D3"
-  V(g)$color[which(category == "suppressor")] <- "#FB8072"
-  V(g)$color[which(category == "included")] <- "#FDB462"
+  if(screenType == "miRNA"){
+    category <- left_join(data.frame(name = node.names), hit.list, by=c("name"="mature_name"))$category
+    V(g)$color[which(category == "promotor")] <- "#80B1D3"
+    V(g)$color[which(category == "suppressor")] <- "#FB8072"
+    V(g)$color[which(category == "included")] <- "#FDB462"
+  }
+  else if(screenType == "siRNA"){
+    category <- left_join(data.frame(name = node.names), hit.list, by=c("name" = "gene_id"))$category
+    V(g)$color[which(category == "promotor")] <- "#80B1D3"
+    V(g)$color[which(category == "suppressor")] <- "#FB8072"
+    V(g)$color[which(category == "included")] <- "#FDB462"
+  }
   
   #layout
-  layout <- layout.fruchterman.reingold(g, circular=T)
+  layout <- layout.fruchterman.reingold(g)
   
   #plot graph
   plot(g, layout=layout)
   
-  legend("right", legend=c("Included", "Suppressor", "Promoter", "Reocurring gene"), fill=c("#FDB462", "#FB8072", "#80B1D3", "green"))
+  if(screenType == "miRNA"){
+    legend("right", legend=c("Included", "Suppressor", "Promoter", "Reocurring gene"), fill=c("#FDB462", "#FB8072", "#80B1D3", "green"))
+  }
 }

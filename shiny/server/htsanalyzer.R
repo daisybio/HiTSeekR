@@ -30,7 +30,17 @@ htsanalyzer <- reactive({
           hit.list <- KPM.result()
           hit.list <- as.character(hit.list$gene.id) 
         }        
-      } else{        
+      }
+      else if(input$screenType == "compound")
+      {
+         hit.list <- drug.targets()
+         hit.list <- as.character(hit.list$gene_id)
+         drug.targets <- drug.target.genes()
+         browser()
+         all.samples.vector <- rep(1, length(drug.targets))
+         names(all.samples.vector) <- drug.targets
+      }
+      else{        
         all.samples <- data()
         all.samples <- all.samples %>% dplyr::filter(Experiment %in% input$experimentSelected, Readout %in% input$readoutSelected)
                 
@@ -44,13 +54,14 @@ htsanalyzer <- reactive({
       
       ListGSC <- geneSets()
       
-      if(input$screenType == "miRNA") doGSEA <- FALSE
+      if(input$screenType %in% c("miRNA", "compound")) doGSEA <- FALSE
       else doGSEA <- input$htsanalyzer.doGSEA
-      progress$set(message = "Performing tests...")    
+      progress$set(message = "Performing hypergeometric tests...")   
+      progress <<- progress
       gsca <- new("GSCA", listOfGeneSetCollections=ListGSC, geneList=all.samples.vector, hits=hit.list)
-      gsca <- preprocess(gsca, species=input$htsanalyzer.species, initialIDs="Entrez.gene", keepMultipleMappings=TRUE, duplicateRemoverMethod="average", orderAbsValue=FALSE)
+      gsca <- preprocess(gsca, species="Hs", initialIDs="Entrez.gene", keepMultipleMappings=TRUE, duplicateRemoverMethod="average", orderAbsValue=FALSE)
       gsca <- analyze(gsca, para=list(pValueCutoff=input$htsanalyzer.pval.cutoff, 
-                                      pAdjustMethod =input$htsanalyzer.adjust.method, 
+                                      pAdjustMethod = "BH",#input$htsanalyzer.adjust.method, 
                                       nPermutations=input$htsanalyzer.permutations, 
                                       minGeneSetSize=input$htsanalyzer.minimum.gene.set.size, 
                                       exponent=1), doGSEA=doGSEA)
@@ -77,7 +88,8 @@ htsanalyzer.results <- reactive({
 })
 
 geneSets <- reactive({
-  species <- input$htsanalyzer.species 
+  #species <- input$htsanalyzer.species #hardcoded for now
+  species <- "Hs"
   geneset.types <- input$htsanalyzer.geneset.types
   ontologies <- str_replace_all(string = setdiff(geneset.types, "PW_KEGG"), pattern = "GO_", replacement = "")
   ontologies <- foreach(ontology = ontologies) %do% GOGeneSets(species = species, ontologies=ontology)

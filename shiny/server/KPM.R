@@ -16,7 +16,10 @@ KPM.indicator.matrix <- reactive({
   if(input$screenType == "miRNA")              
   {                     
     return(targets.indicator.matrix())
-  } else 
+  } else if(input$screenType == "compound")
+  {
+    return(drug.indicator.matrix())
+  } else
   {        
     return(genes.indicator.matrix())
   }     
@@ -26,7 +29,7 @@ KPM.run <- reactive({
   if(input$startKPMButton == 0) return(NULL)
   isolate({
     #if(input$kpm_ranged && input$random.miRNA.test) stop("miRNA target permutation test is limited to specific K and L")
-    showshinyalert(session, "kpm_status", "Generating indicator matrix", "info")      
+    showshinyalert(session, "kpm_status", "Generating indicator matrix", "info")   
     indicator.matrix <- KPM.indicator.matrix()
     
     list.of.ind.matrices <- list(indicator.matrix)

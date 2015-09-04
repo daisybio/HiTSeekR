@@ -92,17 +92,19 @@ hit.detect <- reactive({
 
   merged.data <- data()
   exp.data <- processedData() 
+  
+  margin <- input$margin #here to trigger reactive update
+  
   outl <- foreach(exp = input$experimentSelected, .combine=rbind) %do%{
     foreach(rdt = input$readoutSelected, .combine=rbind) %do% {
       it.data <- dplyr::filter(exp.data, Readout==rdt, Experiment==exp)
-      m.data <- dplyr::filter(merged.data, Readout==rdt, Experiment==exp)
-      
-      if(!is.null(input$referenceExperiment) && !is.null(input$referenceReadout)){            
+      m.data <- dplyr::filter(merged.data, Readout==rdt, Experiment==exp)   
+      if(!is.null(input$referenceExperiment) && !is.null(input$referenceReadout) && input$differentialScreening){            
         if(exp == input$referenceExperiment && rdt == input$referenceReadout){
           margin <- input$diffMargin   
         }
         else margin <- input$margin
-      }      
+      }
       find.hits.call(m.data, it.data, input$method, margin, negCtrl(), input$normalization, updateProgress)      
     }
   }  

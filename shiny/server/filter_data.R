@@ -1,3 +1,18 @@
+# #faster standard deviation calculation
+# Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
+# cppFunction(' double sdC(NumericVector v){
+# double sum = std::accumulate(std::begin(v), std::end(v), 0.0);
+# double m =  sum / v.size();
+# 
+# double accum = 0.0;
+# std::for_each (std::begin(v), std::end(v), [&](const double d) {
+#     accum += (d - m) * (d - m);
+# });
+# 
+# double stdev = sqrt(accum / (v.size()-1));
+# return(stdev);              
+#               }')  
+
 #filter and summarise
 data <- reactive({
   #load data in "normalized" form with known column names
@@ -21,10 +36,10 @@ data <- reactive({
   #update progress bar
   updateProgress(detail = "Merging replicates", value=0.2)
 
-  #function to calculate standard error of the mean
-  sem <- function(x){x <- na.omit(x); return(sd(x)/length(x))}
-  
-  merge.funs <- funs(mean(., na.rm=T), sem(.))
+  if(input$show.sd.in.hits){
+    merge.funs <- funs(mean(., na.rm=T), sd(., na.rm=T))
+  }
+  else merge.funs <- funs(mean(., na.rm=T))
   
   #data <- data %>% filter(!is.na(Raw))
   data <- data %>% group_by(Experiment, Readout, Plate, Row, Column, Sample, Accession, Well.position, Control) %>% summarise_each(merge.funs, c(-Replicate, -wellCount))  
