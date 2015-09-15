@@ -1,7 +1,7 @@
 find.mimat <- function(namesToParse){
 
 #download latest aliases.txt from ftp://mirbase.org/pub/mirbase/CURRENT/aliases.txt.gz
-aliases <- read.delim("data/aliases.txt", header=F)
+aliases <- read.delim(paste(data.folder, "aliases.txt", sep=""), header=F)
 
 #we only want to look at mature ids
 aliases.mimat <- aliases[grep("MIMAT", aliases[,1]),]

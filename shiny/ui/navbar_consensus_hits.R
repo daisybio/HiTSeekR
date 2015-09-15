@@ -1,7 +1,7 @@
 output$uiOutput_consensus_hits_options <- renderUI({
   elements <- list(
-      checkboxGroupInput("multiNormalizations", "Selection for consensus normalization:", normalizationChoices(), selected=c("rcentered", "rzscore", "Bscore")),
-      sliderInput("multiThreshold", "Threshold for consensus normalization:", min = 1, max = 8, value= 3, step= 1)
+      checkboxGroupInput("multiNormalizations", "Selection for consensus normalization:", normalizationChoices(), selected=c("Raw", "zscore", "rzscore", "Bscore")),
+      sliderInput("multiThreshold", "Threshold for consensus normalization:", min = 1, max = 8, value= 2, step= 1)
   )
   do.call(sidebarPanel, elements)
 })

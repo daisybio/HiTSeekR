@@ -64,6 +64,7 @@ output$signalqqPlot <- renderPlot({
 # Heatmap #
 output$heatmapPlot <- renderPlot({  
   plot.data <- data()
+  
   ncol <- length(unique(plot.data$Plate))
   plot.data <- dplyr::filter(plot.data, Experiment == input$heatmapExperimentSelected, Readout == input$heatmapReadoutSelected)
   hits <- outliers()
@@ -88,10 +89,31 @@ output$intHeatmapPlot <- renderChart2({
   return(p)
 })
 
+renderChart3 <- function( expr, env = parent.frame(), quoted = FALSE ){
+  func <- shiny::exprToFunction(expr, env, quoted)
+  function() {
+    rChart_ <- func()
+    #cht_style <- sprintf("<style>.rChart {width: %spx; height: %spx} </style>", 
+    #                     rChart_$params$width, rChart_$params$height)
+    cht <- paste(
+      capture.output(cat(
+        rChart_$print()
+        ,render_template(
+          rChart_$templates$afterScript %||% 
+            "<script></script>"
+          , list(chartId = rChart_$params$dom, container = rChart_$container)
+        )
+        ,sep = ""
+      ))
+      , collapse = "\n")
+    HTML(paste(cht, collapse = "\n"))
+  }
+}
+
 # Interactive plots for screen hits #
-output$scatterPlotHits <- renderChart({
+output$scatterPlotHits <- renderChart3({
   outl <- outliers()
-  p1 <- dPlot(y=input$normalization, x=c("Sample", "Well.position"), z=paste(input$normalization, "_sem", sep=""), 
+  p1 <- dPlot(y=input$normalization, x=c("Sample", "Well.position"), z=paste(input$normalization, "_sd", sep=""), 
               data=outl, type="bubble", groups="category", height="800", width="100%",
               bounds = list(x=70, y=30, height="600", width="90%"))  
   p1$addParams(dom='scatterPlotHits')
@@ -100,8 +122,53 @@ output$scatterPlotHits <- renderChart({
     p1$defaultColors("#!d3.scale.ordinal().range(['#FB8072','#FDB462']).domain([0,1])!#")
   else if("included" %in% as.character(outl$category))
     p1$defaultColors("#!d3.scale.ordinal().range(['#FDB462','#80B1D3','#FB8072']).domain([0,1])!#")
-  if(input$show.sem.in.hits) p1$zAxis(type="addMeasureAxis", overrideMax = 2*max(outl[[paste(input$normalization, "_sem", sep="")]]))
+  p1$zAxis(type="addMeasureAxis", overrideMax = 2*max(outl[[paste(input$normalization, "_sd", sep="")]]))
   
+  p1$legend(
+    x = 580,
+    y = 0,
+    width = 50,
+    height = 200,
+    horizontalAlign = "left"
+  )
+  
+  numOfSamples <- length(unique(as.character(outl$Sample)))
+  if(numOfSamples > 500) stop("Too many hits to plot. Increase stringency.")
+  if(numOfSamples > 20){
+    numToSkip <- floor(numOfSamples / 20)
+    p1$setTemplate(afterScript = 
+     paste('<script>
+        var cleanAxis = function (axis, oneInEvery) {
+            // This should have been called after draw, otherwise do nothing
+            if (axis.shapes.length > 0) {
+                // Leave the first label
+                var del = 0;
+                // If there is an interval set
+                if (oneInEvery > 1) {
+                    // Operate on all the axis text
+                    axis.shapes.selectAll("text").each(function (d) {
+                        // Remove all but the nth label
+                        if (del % oneInEvery !== 0) {
+                            this.remove();
+                            // Find the corresponding tick line and remove
+                            axis.shapes.selectAll("line").each(function (d2) {
+                                if (d === d2) {
+                                    this.remove();
+                                }
+                            });
+                        }
+                    del += 1;
+                    });
+                }
+            }
+        };
+        
+        cleanAxis(myChart.axes[0], ', numToSkip, ');
+      </script>', sep="")
+    )
+  }
+  
+  #p1$setTemplate(afterScript = '<script>scatterPlotHits.axes[1].titleShape.text("Sample");scatterPlotHits.draw();</script>')
   return(p1)
 })
 
@@ -115,7 +182,7 @@ output$intPlateScatterPlot <- renderChart2({
   
   plot.data <- as.data.frame(plot.data)
   plot.data$Well.index <- seq(1, nrow(plot.data))
-  plot.data <- plot.data[,c("Well.index", input$dataSelectedNormalization, paste(input$dataSelectedNormalization, "_sem", sep=""), "Control", "Accession", "Sample")]
+  plot.data <- plot.data[,c("Well.index", input$dataSelectedNormalization, paste(input$dataSelectedNormalization, "_sd", sep=""), "Control", "Accession", "Sample")]
   
   p <- highcharts.scatterplot.plate(plot.data, show.error=TRUE)
   p$exporting(enabled=TRUE)
@@ -188,6 +255,19 @@ getRainbowColors <- function(numOfCategories){
 
 #control plot showing the separability of the positive and negative controls via SSMD
 output$controlPerformancePlot <- renderPlot({
+  progress <- shiny::Progress$new()
+  on.exit(progress$close())
+  
+  updateProgress <- function(value = NULL, detail = NULL) {
+    if (is.null(value)) {
+      value <- progress$getValue()
+      value <- value + (progress$getMax() - value) / 5
+    }
+    progress$set(value = value, detail = detail)
+  } 
+  
+  progress$set(message = "Generating plot...", value=0)
+  
   exp.data <- processedData()    
   negCtrls <- negCtrl()
   posCtrls <- posCtrl()
@@ -195,7 +275,12 @@ output$controlPerformancePlot <- renderPlot({
   ctrl.data <- exp.data %>% filter(Control %in% ctrls)
   if(is.na(unique(ctrl.data$Sample))) ctrl.data$Sample <- ctrl.data$Control
   ctrl.data <- ungroup(ctrl.data)
-  result <- ctrl.data %>% dplyr::group_by(Experiment, Readout, Plate, Replicate) %>% do(ssmd(., negCtrls, "Raw", summarise.results=FALSE))    
+  result <- ctrl.data %>% dplyr::group_by(Experiment, Readout, Plate, Replicate) 
+  
+  ssmdPlateCounter <<- 0
+  ssmdPlateMax <<- length(dplyr::group_size(result))
+  
+  result <- result %>% do(ssmd(., negCtrls, "Raw", summarise.results=FALSE, updateProgress = updateProgress))    
   result <- as.data.frame(result)
   result <- result %>% filter(Sample != NEG.CTRL)
   
@@ -241,11 +326,11 @@ output$replicateCorrPlot <- renderPlot({
 output$plateMeanPlot <- renderPlot({
   exp.data <- processedData()
   if(is.null(exp.data)) return(NULL)
-  plateMeanInfoFileName <- "help/plateMeanInfo.html"
-  plateMeanInfoText <- readChar(plateMeanInfoFileName, file.info(plateMeanInfoFileName)$size)
-  showshinyalert(session, "plateMeanInfo", plateMeanInfoText, "info")
   progress <- dummyProgressBar()
   on.exit(progress$close())
+  
+  if(input$showHelpPages)
+    showshinyalert(session, "plateMeanInfo", plateMeanInfoText, "info")
   
   q <- qplot(x=Plate, y=Raw, data=exp.data, geom="boxplot", color=Plate, shape=Replicate)
   q <- q + theme_bw() + facet_grid(Readout~Experiment, scale="free_y") + guides(color=guide_legend(nrow=10, byrow=TRUE))
@@ -277,6 +362,9 @@ output$rowAndColumn <- renderPlot({
   if(is.null(exp.data)) stop("Please process the input data first")
   progress <- dummyProgressBar()
   on.exit(progress$close())
+  if(input$showHelpPages)
+    showshinyalert(session, "rowColumnInfo", rowColumnInfoText, "info")
+  
   p1 <- qplot(x=Row, y=centered, data=exp.data, geom="bar", stat="summary", fun.y="mean", fill=Replicate, position="dodge", main="Row Mean") + scale_y_continuous(labels=percent)
   p2 <- qplot(x=Column, y=centered, data=exp.data, geom="bar", stat="summary", fun.y="mean", fill=Replicate, position="dodge", main="Column Mean") + scale_y_continuous(labels=percent)
   p1 <- p1 + theme_bw() + facet_grid(Readout~Experiment) + scale_fill_brewer(palette="Accent")
@@ -285,14 +373,14 @@ output$rowAndColumn <- renderPlot({
 })
 
 KPM.modify.hits <- reactive({
-  hits <- KPM.selectedHitList()
+ hits <- KPM.selectedHitList()
   
-  if(input$accessionColType == "MI")
-  {
-    mimat <- as.data.frame(mirbaseMATURE)
-    hits <- left_join(hits, mimat, by=c("mirna_id"))
-  }
-  return(hits)
+ if(input$accessionColType == "MI")
+ {
+   mimat <- as.data.frame(mirbaseMATURE)
+   hits <- left_join(hits, mimat, by=c("mirna_id"))
+ }
+ return(hits)
 })
 
 #KPM miRNA target enrichment plot

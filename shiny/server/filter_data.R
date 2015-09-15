@@ -36,10 +36,7 @@ data <- reactive({
   #update progress bar
   updateProgress(detail = "Merging replicates", value=0.2)
 
-  if(input$show.sd.in.hits){
-    merge.funs <- funs(mean(., na.rm=T), sd(., na.rm=T))
-  }
-  else merge.funs <- funs(mean(., na.rm=T))
+  merge.funs <- funs(mean(., na.rm=T), sd(., na.rm=T))
   
   #data <- data %>% filter(!is.na(Raw))
   data <- data %>% group_by(Experiment, Readout, Plate, Row, Column, Sample, Accession, Well.position, Control) %>% summarise_each(merge.funs, c(-Replicate, -wellCount))  

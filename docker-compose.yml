@@ -1,11 +1,13 @@
 nginx:
- build: nginx/ 
+ build: nginx/
  ports:
   - "3838:80"
  links:
   - hitseekrA
   - hitseekrB
   - hitseekrC
+ volumes:
+  - ./nginx/nginx.conf:/opt/nginx/conf/nginx.conf
  restart: always
 hitseekrA:
  image: nanocan/hitseekr:0.1

@@ -26,7 +26,7 @@ normalizationChoices <- reactive({
 
 marginChoices <- reactive({
   methods <- c("Standard deviation" ="SD", "Median absolute deviation" = "MAD", "Inter-quartile range" = "quartile")
-  controlBasedMethods <- c("Bayesian Statistics" = "Bayes", "SSMD" = "SSMD", "robbust SSMD" = "rSSMD")
+  controlBasedMethods <- c("Bayesian Statistics" = "Bayes", "SSMD" = "SSMD", "robust SSMD" = "rSSMD")
   if(input$hasControls)
     return(c(methods, controlBasedMethods))
   else return(methods)
@@ -40,7 +40,11 @@ output$uiOutput_hits_options <- renderUI({
     column(3,
       #actionButton("updateNormalization", "Update Settings", styleclass="primary"),
       #HTML("<br/><br/>"),
-        checkboxInput("show.sd.in.hits", "Show replicate standard deviation", FALSE),
+        checkboxInput("showSamplePosition", "Show sample position", FALSE),      
+        checkboxInput("showAllScores", "Show all computed scores", FALSE),      
+        conditionalPanel(condition = "input.replicateCol && input.showAllScores",
+                         checkboxInput("show.sd.in.hits", "Show replicate standard deviation", FALSE)
+        ),
         checkboxInput("showFilterOptions", "Sample filter options", FALSE),
         checkboxInput("differentialScreening", "Differential screening", FALSE)
     ),column(3,
@@ -59,8 +63,8 @@ output$uiOutput_hits_options <- renderUI({
       conditionalPanel(
         condition = "input.method == 'Bayes'",
         wellPanel(
-        sliderInput("bayes_pval_cutoff", "p-value cutoff (>)", min=0, max=1, value = 0.95, step=0.01)
-        #actionButton("computeBayes", "Start Bayes method (takes a while)", styleclass="primary"),
+        sliderInput("bayes_pval_cutoff", "p-value cutoff (>)", min=0, max=1, value = 0.95, step=0.01),
+        actionButton("computeBayes", "Apply Bayes method", styleclass="primary")
         )
       )
     )
@@ -70,7 +74,10 @@ output$uiOutput_hits_options <- renderUI({
            conditionalPanel(
              condition = "input.differentialScreening",
              helpText("Differential screening options:"),
-             sliderInput("diffMargin", "Reference margin:",  min = 0.5, max = 10, value = 2.5, step= 0.5),
+             conditionalPanel(
+                condition = "input.method != 'Bayes'",
+                sliderInput("diffMargin", "Reference margin:",  min = 0.5, max = 10, value = 2.5, step= 0.5)
+             ),
              selectInput("referenceExperiment", "Reference experiment:", experiments(), experiments()[1]),
              selectInput("referenceReadout", "Reference readout:", readouts(), readouts()[1]),         
              helpText("Hits found in the reference readout (experiment) are removed from the other readouts (experiments)")
@@ -103,7 +110,7 @@ output$uiOutput_hits <- renderUI({
    tabPanel("Hits Plot", tags$div(showOutput("scatterPlotHits", "dimple"))),
    tabPanel("Heatmap", fluidRow(  
             selectInput("heatmapExperimentSelected", "Select experiment:", input$experimentSelected),
-            selectInput("input$heatmapReadoutSelected", "Select readout:", input$readoutSelected),         
+            selectInput("heatmapReadoutSelected", "Select readout:", input$readoutSelected),         
             checkboxInput("showLabelsOnHeatmap", "Show sample labels in heatmap", FALSE)
            
   ),

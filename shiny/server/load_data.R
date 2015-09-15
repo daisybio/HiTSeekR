@@ -1,7 +1,12 @@
 #load data
 rawData <- reactive({
+  
+  progress <- shiny::Progress$new()
+  on.exit(progress$close())
+  
   if(input$getFromPubChemButton > 0)
   {    
+    progress$set(message = "Downloading data from PubChem...", value=0)
     tryCatch({
       library(RCurl)
       raw <- getURL(paste("https://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid=", input$pubchem_aid, "&q=expdata_csvsave", sep=""))
@@ -14,6 +19,7 @@ rawData <- reactive({
     error = function(e){ showshinyalert(session, "general_status", paste("error reading file:", e$message), "danger") })
   }
   if(is.null(input$file)){
+    if(input$dataset != "none selected") progress$set(message = paste("Loading demo data set", input$dataset), value=0)
     if(input$dataset == "BCSC")
       data <- read.delim(paste(data.folder, "BCSC.txt", sep=""), header=T)
     else if(input$dataset == "A375_MTS"){
@@ -49,6 +55,7 @@ rawData <- reactive({
     }
   }
   else{
+    progress$set(message = "Uploading and processing custom data set...", value=0)
     file <- input$file
     tryCatch({
     data <- read.table(file$datapath, header=T, sep=input$fileSeparator, fill=T)
@@ -56,6 +63,7 @@ rawData <- reactive({
     warning = function(w){ showshinyalert(session, "general_status", paste("potential problem when reading file:", w$message), "warning")},
     error = function(e){ showshinyalert(session, "general_status", paste("error reading file:", e$message), "danger") })
   }
+  progress$set(message =  "Loading complete", value=1)
   return(data)
 })
 

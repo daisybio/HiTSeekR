@@ -1,7 +1,7 @@
 #identifier column types
 accTypes <- reactive({
   if(is.null(input$screenType)) return(NULL)
-  else if(input$screenType == "siRNA") return(c("RefSeq", "Entrez", "GeneSymbol", "FlybaseCG"))
+  else if(input$screenType == "siRNA") return(c("Entrez", "GeneSymbol"))
   else if(input$screenType == "miRNA") return(c("MI", "MIMAT", "mature_name"))
   else if(input$screenType == "compound") return(c("PubChem_SID", "PubChem_CID", "Chembank"))
   #return(c("RefSeq", "Entrez", "MIMAT", "MI"))
@@ -68,9 +68,7 @@ output$uiOutput_data_options <- renderUI({
            checkboxInput("hasControls", "Are controls included?", FALSE),
            conditionalPanel(condition = "input.hasControls",
            selectInput("controlCol", "Control Column", dataColumns()),        
-           uiOutput("uiOutput_controls")),
-           checkboxInput("log2normalize", "Log2 transform signal data", FALSE),
-           checkboxInput("computeBscore", "Compute B-score", FALSE)
+           uiOutput("uiOutput_controls"))
   )
   )
   do.call(fluidRow, elements)
@@ -80,7 +78,6 @@ output$uiOutput_data_options <- renderUI({
 dataUpdateObserver <- observe({
   datasetName()  
   isolate({
-    updateSelectInput(session, "screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA inhibitor / mimics" = "miRNA", "Compound screen" = "compound"), dataOptionDefaults()[["screenType"]])
     updateSelectInput(session, "sampleCol", "Sample Name Column", dataColumns(), dataOptionDefaults()[["sampleCol"]])
     updateSelectInput(session, "plateCol", "Plate Column", dataColumns(), dataOptionDefaults()[["plateCol"]])
     updateSelectInput(session, "positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol"), dataOptionDefaults()[["posColType"]])
@@ -144,4 +141,4 @@ output$uiOutput_controls <- renderUI({
 #with the defaults of the selected dataset even though the corresponding input
 #is hidden in the UI.
 outputOptions(output, 'uiOutput_data_options', suspendWhenHidden=FALSE)
-#outputOptions(output, 'uiOutput_controls', suspendWhenHidden=FALSE)
+outputOptions(output, 'uiOutput_controls', suspendWhenHidden=FALSE)

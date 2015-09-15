@@ -1,7 +1,8 @@
-Bscore <-function(plate, value.var="Raw"){
+Bscore <-function(plate, updateProgress, value.var="Raw"){
   
-  require(reshape2)
-  require(plyr)
+  Bcounter <<- Bcounter + 1
+  updateProgress(value = Bcounter / Bgroups, detail = "Computing B-score")
+
   #casting the signal to a matrix
   values <- acast(plate, Row~Column, value.var=value.var)
   #Tukey's two way median polish

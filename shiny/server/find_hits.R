@@ -1,5 +1,9 @@
-ssmd <- function(exp.data, neg.ctrl, signalColumn, summarise.results=TRUE)
+ssmd <- function(exp.data, neg.ctrl, signalColumn, summarise.results=TRUE, updateProgress)
 {        
+  #update progress bar
+  updateProgress(detail="Computing SSMD scores", value=ssmdPlateCounter/ssmdPlateMax)
+  ssmdPlateCounter <<- ssmdPlateCounter + 1
+  
   neg.ctrls <- dplyr::filter(exp.data, Control %in% neg.ctrl)
   if(nrow(neg.ctrls) == 0) stop("At least one plate is missing negative controls")
   result <- foreach(nc = neg.ctrl, .combine=rbind) %do%
@@ -45,7 +49,10 @@ find.hits.call <- function(exp.data, rep.data, method, margin, neg.ctrl, signalC
   else if(margin == 0) outl <- exp.data
   else if(method == "SSMD")
   {        
-    result <- rep.data %>% dplyr::group_by(Plate) %>% do(ssmd(., neg.ctrl, signalColumn))
+    result <- rep.data %>% dplyr::group_by(Plate) 
+    ssmdPlateCounter <<- 0
+    ssmdPlateMax <<- length(dplyr::group_size(result))
+    result <- result %>% do(ssmd(., neg.ctrl, signalColumn, updateProgress=updateProgress))
     outl <- exp.data
     outl <- dplyr::left_join(outl,result, by=c("Plate", "Sample"))
     outl <- outl %>% dplyr::filter(abs(SSMD) >= margin)    
@@ -67,6 +74,7 @@ observeBayesAbuse <- observe({
   if(is.null(input$normalization) || is.null(input$method)) return(NULL)
   else if(input$normalization != "Raw" && input$method=="Bayes")
   {
+    updateSelectInput(session, "normalization", "Normalization", normalizationChoices(), "Raw")
     showshinyalert(session, "hits_error", "Bayes method should be used on raw data only", "danger")  
   } else if(input$method=="Bayes" && is.null(negCtrl())){
     showshinyalert(session, "hits_error", "Bayesian statistics are based on negative controls (used to calculate the priors). Select a negative control column in the DATA tab", "error")        
@@ -77,7 +85,14 @@ observeBayesAbuse <- observe({
 hit.detect <- reactive({
     
   if(input$method=="Bayes" && is.null(negCtrl())) stop("negative control missing")
-  
+  if(!exists("bayesButtonCounter")) bayesButtonCounter <<- 0
+  if(input$method == "Bayes" && input$computeBayes == bayesButtonCounter){
+    stop("Press 'Apply Bayes method' to calculate p-values.")
+  showshinyalert(session, "hits_error", "Computation of Bayesian statistics are computationally expensive and will take a while to compute. Press 'Apply Bayes method' to trigger the computation.", "warning")        
+  } 
+  else{
+    bayesButtonCounter <<- input$computeBayes
+  }
   progress <- shiny::Progress$new()
   progress$set(message = "Finding hits...", value = 0)
   on.exit(progress$close())
@@ -119,6 +134,7 @@ outliers <- reactive({
   #inclusion filter
   
   if(input$method == "Bayes"){
+    if(input$normalization != "Raw") return(NULL)
     bayes_hypothesis <- switch(input$effect,
            "effect" = "p_effect",
            "suppressor" =  "p_suppressor",
@@ -146,7 +162,6 @@ outliers <- reactive({
       outl <- outl[-grep(input$exclude, outl$Sample),]
   }
 
-  
   #fix column order
   outl <- outl[,c(ncol(outl), seq(1:(ncol(outl)-1)))]
   
@@ -186,8 +201,14 @@ htsanalyzerHitList <- reactive({
 })
 
 KPM.selectedHitList <- reactive({
-  if(input$KPM.useConsensus== "hit list") data <- outliers()
-  else data <- consensusHitList()
+  if(input$screenType == "siRNA"){  
+    if(input$KPM.useConsensus == "hit list") data <- outliers()
+    else data <- consensusHitList()
+  }
+  else if(input$screenType == "miRNA")
+  {
+    return(outliers())
+  }
   return(data)  
 })
 

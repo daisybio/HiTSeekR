@@ -16,7 +16,12 @@ biocLite("RTCA", ask=F)
 biocLite("KEGG.db", ask=F)
 biocLite("org.Dm.eg.db", ask=F)
 biocLite("mirbase.db")
-biocLite("HTSanalyzeR", ask=F)
+
+#for gene set analysis
+#biocLite("HTSanalyzeR", ask=F)
+
+#load github version that has been modified for foreach support and shiny progress bars
+install_github("NanoCAN/HTSanalyzeR")
 
 ### for parallelization ###
 #install.packages("doRedis")

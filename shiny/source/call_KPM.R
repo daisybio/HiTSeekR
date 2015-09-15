@@ -61,7 +61,6 @@ datasetList.KPM <- function(list.of.indicator.matrices, ATTACHED_TO_ID, hitseekr
     txt.con <- textConnection("tmp.file", "w")    
     
     write.table(indicator.matrix, txt.con, sep="\t",quote=F, col.names=F)    
-    browser()
     enc.file <- base64(paste(tmp.file, collapse="\n"))
     close(txt.con)
     counter <- counter + 1

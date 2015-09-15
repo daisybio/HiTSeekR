@@ -87,7 +87,7 @@ output$downloadIndicatorMatrix <- downloadHandler(
 
 # Gene set analysis with htsanalyzer #
 output$htsanalyzer.results.download.GO_CC <- downloadHandler(
-  filename = function() { return(paste(input$htsanalyzer.resultType, "_GO_CC.txt"))},
+  filename = function() { return(paste(input$htsanalyzer.resultType, "_GO_CC.txt", sep=""))},
   content = function(file) {
     data <- htsanalyzer.results()[["GO_CC"]]
     write.table(data, file, sep="\t", quote=F)
@@ -95,7 +95,7 @@ output$htsanalyzer.results.download.GO_CC <- downloadHandler(
 ) 
   
 output$htsanalyzer.results.download.GO_MF <- downloadHandler(
-  filename = function() { return(paste(input$htsanalyzer.resultType, "_GO_MF.txt"))},
+  filename = function() { return(paste(input$htsanalyzer.resultType, "_GO_MF.txt", sep=""))},
   content = function(file) {
     data <- htsanalyzer.results()[["GO_MF"]]
     write.table(data, file, sep="\t", quote=F)
@@ -103,7 +103,7 @@ output$htsanalyzer.results.download.GO_MF <- downloadHandler(
   ) 
 
 output$htsanalyzer.results.download.GO_BP <- downloadHandler(
-  filename = function() { return(paste(input$htsanalyzer.resultType, "_GO_BP.txt"))},
+  filename = function() { return(paste(input$htsanalyzer.resultType, "_GO_BP.txt", sep=""))},
   content = function(file) {
     data <- htsanalyzer.results()[["GO_BP"]]
     write.table(data, file, sep="\t", quote=F)
@@ -111,12 +111,20 @@ output$htsanalyzer.results.download.GO_BP <- downloadHandler(
   ) 
 
 output$htsanalyzer.results.download.PW_KEGG <- downloadHandler(
-  filename = function() { return(paste(input$htsanalyzer.resultType, "_PW_KEGG.txt"))},
+  filename = function() { return(paste(input$htsanalyzer.resultType, "_KEGG.txt", sep=""))},
   content = function(file) {
     data <- htsanalyzer.results()[["PW_KEGG"]]
     write.table(data, file, sep="\t", quote=F)
   }
   ) 
+
+output$htsanalyzer.results.download.REACTOME <- downloadHandler(
+  filename = function() { return(paste(input$htsanalyzer.resultType, "_REACTOME.txt", sep=""))},
+  content = function(file) {
+    data <- htsanalyzer.results()[["REACTOME"]]
+    write.table(data, file, sep="\t", quote=F)
+  }
+) 
 
 # GO enrichment table #
 output$dlGnOntTbl <- downloadHandler(

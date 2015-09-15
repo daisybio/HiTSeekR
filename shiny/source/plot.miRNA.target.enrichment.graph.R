@@ -1,6 +1,7 @@
 library(foreach)
 library(reshape2)
 library(igraph)
+library(org.Hs.eg.db)
 
 prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.list, screenType)
 {
@@ -126,11 +127,16 @@ plot.miRNA.target.enrichment.graph.igraph <- function(kpm.result, indicator.matr
   
   #return(list(g, target.interactions))
   
-  #replace node gene ids with gene symbols
-  library(org.Hs.eg.db)
+  #replace node gene ids with gene symbols  
   node.names <- V(g)$name
   symbols <- left_join(data.frame(name = node.names), as.data.frame(org.Hs.egSYMBOL), by=c("name" = "gene_id"))$symbol
-  V(g)$name[-which(is.na(symbols))] <- symbols[-which(is.na(symbols))]
+  if(any(is.na(symbols)))
+  {
+    V(g)$name[-which(is.na(symbols))] <- symbols[-which(is.na(symbols))]
+  }
+  else{
+    V(g)$name <- symbols
+  }
   
   #color miRNAs according to suppressors / promoters
   if(screenType == "miRNA"){
@@ -154,5 +160,8 @@ plot.miRNA.target.enrichment.graph.igraph <- function(kpm.result, indicator.matr
   
   if(screenType == "miRNA"){
     legend("right", legend=c("Included", "Suppressor", "Promoter", "Reocurring gene"), fill=c("#FDB462", "#FB8072", "#80B1D3", "green"))
+  }
+  else if(screenType == "siRNA"){
+    legend("right", legend=c("Included", "Suppressor", "Promoter"), fill=c("#FDB462", "#FB8072", "#80B1D3"))
   }
 }

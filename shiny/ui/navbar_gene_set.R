@@ -1,9 +1,15 @@
+gene.sets <- c("GO cellular compartment" = "GO_CC",
+               "GO molecular function" = "GO_MF",
+               "GO biological process" = "GO_BP",
+               "KEGG pathways" ="PW_KEGG",
+               "REACTOME pathways" = "REACTOME")
+
 output$uiOutput_htsanalyzer <- renderUI({
   if(input$startHTSanalyzer == 0) return(NULL)
   
   isolate({
     elements <- foreach(geneset.type = input$htsanalyzer.geneset.types) %do%
-      tabPanel(geneset.type, 
+      tabPanel(names(gene.sets)[gene.sets == geneset.type], 
                dataTableOutput(paste("htsanalyzer.results.table.", geneset.type, sep="")),
                downloadButton(paste("htsanalyzer.results.download.", geneset.type, sep=""))
       )
@@ -16,7 +22,7 @@ output$uiOutput_htsanalyzerOptions <- renderUI({
   elements <- list(
     if(input$screenType=="miRNA")
     {
-      selectInput("htsanalyzer.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation", "network enrichment genes"="miRNA_KPM"), "miRNA_permutation")
+      selectInput("htsanalyzer.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_permutation")#, "network enrichment genes"="miRNA_KPM"), "miRNA_permutation")
     } else
     {  
       selectInput("htsanalyzer.useConsensus", "Use consensus hit list for target identification?", c("hit list", "consensus hit list"))                    
@@ -29,13 +35,10 @@ output$uiOutput_htsanalyzerOptions <- renderUI({
 #                   "Caenorhabditis elegans" = "Ce"
 #                 ), selected = "Hs"         
 #     ),    
-    checkboxGroupInput("htsanalyzer.geneset.types", "Select gene sets:", c("GO cellular compartment" = "GO_CC",
-                                                                           "GO molecular function" = "GO_MF",
-                                                                           "GO biological process" = "GO_BP",
-                                                                           "KEGG pathways" ="PW_KEGG"),
-                       selected = c("GO_CC", "GO_MF", "GO_BP", "PW_KEGG")
+    checkboxGroupInput("htsanalyzer.geneset.types", "Select gene sets:", gene.sets,
+                       selected = c("GO_CC", "GO_MF", "GO_BP", "PW_KEGG", "REACTOME")
     ),
-    numericInput("htsanalyzer.pval.cutoff", "p-value cutoff", min = 0, max = 1, value= 0.05),
+    numericInput("htsanalyzer.pval.cutoff", "Adjusted p-value cutoff", min = 0, max = 1, value= 0.05),
     numericInput("htsanalyzer.minimum.gene.set.size", "Minimal gene set size", min = 1, value = 10),    
     if(input$screenType %in% c("miRNA", "compound"))
     {
@@ -45,15 +48,13 @@ output$uiOutput_htsanalyzerOptions <- renderUI({
       checkboxInput("htsanalyzer.doGSEA", "Perform gene set enrichtment analysis", TRUE)
     },
     conditionalPanel(condition = "input['htsanalyzer.doGSEA']",
-                     numericInput("htsanalyzer.permutations", "Number of permutations for GSEA", min=10, max=1000, value=100)
+                     numericInput("htsanalyzer.permutations", "Number of permutations for GSEA", min=10, max=gsea.max.permutations, value=100)
     ),          
     #selectInput("htsanalyzer.adjust.method", "Method for p-value correction", p.adjust.methods, selected="BH"),
     actionButton("startHTSanalyzer", "Start Analysis", styleclass="primary")
   )
   do.call(sidebarPanel, elements)
 })
-
-
 
 output$uiOutput_gene_set_analysis <- renderUI({    
   elements <- list(
@@ -62,7 +63,6 @@ output$uiOutput_gene_set_analysis <- renderUI({
                selectInput("htsanalyzer.resultType", "Select results", 
                            c("Hypergeometric Test"= "HyperGeo.results", 
                              "Gene set enrichment analysis" = "GSEA.results",
-                             "Significant p-values in both" = "Sig.pvals.in.both",
                              "Significant adjusted p-values in both" = "Sig.adj.pvals.in.both")
                ), 
                uiOutput("uiOutput_htsanalyzer")
@@ -75,14 +75,14 @@ output$uiOutput_gene_set_analysis <- renderUI({
       #conditionalPanel("input.kpm_debug", 
       #                 verbatimTextOutput("KPM.test")
       #),
-      checkboxInput("kpm_d3", "Force directed network?", FALSE),
-      conditionalPanel("input.kpm_d3",
-                       sliderInput("highlight.kpm_d3", "Highlight genes in green that appear in more than x solution", min=1, max=20, value=5),
-                       forceNetworkOutput("KPM.plot.d3")
-      ),
-      conditionalPanel("!input.kpm_d3",
-                       plotOutput("KPM.plot.igraph", height=800, width=1200)
-      )    
+      #checkboxInput("kpm_d3", "Force directed network?", FALSE),
+      #conditionalPanel("input.kpm_d3",
+      #                 sliderInput("highlight.kpm_d3", "Highlight genes in green that appear in more than x solution", min=1, max=20, value=5),
+      #                 forceNetworkOutput("KPM.plot.d3")
+      #),
+      #conditionalPanel("!input.kpm_d3",
+      plotOutput("KPM.plot.igraph", height=800, width=1200)
+      #)    
     ))
   )  
     do.call(tabsetPanel, elements)
@@ -96,7 +96,7 @@ output$uiOutput_KPM <- renderUI({
     #textInput("kpm_URL", "KPM-Web URL:", "http://localhost:8080/kpm-web/"),  
     if(input$screenType=="miRNA")
     {
-      selectInput("KPM.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation", "network enrichment genes"="miRNA_KPM"), "miRNA_permutation")
+      selectInput("KPM.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_permutation")
     } else
     {  
       selectInput("KPM.useConsensus", "Use consensus hit list for target identification?", c("hit list", "consensus hit list"))                    
@@ -126,7 +126,7 @@ output$uiOutput_KPM <- renderUI({
     #),
     sliderInput("kpm_pathways", "Number of pathways", min = 1, max = 100, value=20),
     #checkboxInput("kpm_perturbation", "Perturbe network?", FALSE),
-    actionButton("startKPMButton", "Start KPM"), downloadButton('downloadIndicatorMatrix')
+    actionButton("startKPMButton", "Start KPM", styleclass="primary"), downloadButton('downloadIndicatorMatrix')
   )
   do.call(sidebarPanel, elements)
 })

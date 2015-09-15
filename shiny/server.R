@@ -48,8 +48,7 @@ source("source/bayesian_hit_selection.R")
 source("source/variance_based_hit_selection.R")
 source("source/plot.miRNA.target.enrichment.graph.R")
 source("source/find.mimat.from.alias.R")
-source("source/htsanalyzer.foreach.R")
-source("source/htsanalyzer.gsea.optimized.R")
+source("source/htsanalyzer.reactomeGeneSets.R")
 source("source/ggplot_smooth_func.R")
 
 ### Additional shiny options ###
@@ -60,6 +59,37 @@ mircancer.database <- read.table(paste(data.folder, "miRCancerMarch2015.txt", se
 
 ### Shiny server ###
 shinyServer(function(input, output, session) {
+  
+  ### Start page ###
+  source("ui/frontpage.R", local = TRUE)
+  
+  screenType <- reactiveValues(type = NULL)  
+  
+  observeEvent(input$siRNA, {
+    updateSelectInput(session, "screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA inhibitor / mimics" = "miRNA", "Compound screen" = "compound"), "siRNA")
+    updateSelectInput(session, "dataset", "Select a demo dataset", choices = c("none selected" = "none selected", demo.data.sets[c(1,3)]), "none selected")
+    shinyjs::disable("screenType")
+    shinyjs::runjs("closeOverlay();")
+  })
+  
+  observeEvent(input$miRNA, {
+    updateSelectInput(session, "screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA inhibitor / mimics" = "miRNA", "Compound screen" = "compound"), "miRNA")
+    updateSelectInput(session, "dataset", "Select a demo dataset", choices = c("none selected" = "none selected", demo.data.sets[2]), "none selected")    
+    shinyjs::disable("screenType")
+    shinyjs::runjs("closeOverlay();")
+  })  
+  
+  observeEvent(input$compound, {
+    updateSelectInput(session, "screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA inhibitor / mimics" = "miRNA", "Compound screen" = "compound"), "compound")
+    updateSelectInput(session, "dataset", "Select a demo dataset", choices = c("none selected" = "none selected", demo.data.sets[4]), "none selected")
+    shinyjs::disable("screenType")
+    shinyjs::runjs("closeOverlay();")    
+  })  
+  
+  output$uiOutput_frontpage <- renderUI({ 
+    if(!is.null(screenType)) do.call(navbarPage, elts)
+    else return(NULL)
+  })  
   
   ### Get parallel backend up and running ###
   
@@ -139,6 +169,10 @@ shinyServer(function(input, output, session) {
   source("ui/navbar_data.R", local = TRUE)
   source("ui/navbar_gene_set.R", local = TRUE)
   source("ui/navbar_enable_tabs.R", local = TRUE)
+  
+  ### Load help pages ###
+  
+  source("server/output/help.R", local = TRUE)
   
   shinyjs::disable("qc")
   

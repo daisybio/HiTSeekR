@@ -6,10 +6,10 @@ observe({
     session$sendCustomMessage(type = "enableNavTab", "3")
     session$sendCustomMessage(type = "enableNavTab", "4")
     
-    session$sendCustomMessage(type = "disableNavTab", "5")
-    session$sendCustomMessage(type = "disableNavTab", "6")
-    session$sendCustomMessage(type = "disableNavTab", "7")
-    session$sendCustomMessage(type = "disableNavTab", "8")
+    #session$sendCustomMessage(type = "disableNavTab", "5")
+    #session$sendCustomMessage(type = "disableNavTab", "6")
+    #session$sendCustomMessage(type = "disableNavTab", "7")
+    #session$sendCustomMessage(type = "disableNavTab", "8")
   }
 })
 

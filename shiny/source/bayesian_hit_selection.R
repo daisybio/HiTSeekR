@@ -41,7 +41,7 @@ bayesianHitSelection <-function(dataTable, neg.ctrl="NEG", signalColumn="Raw", a
   #estimate of variance of negative controls (nrow(Yij) == sum of control values)
   sigmaSqrd  <- sum(dij^2)/(nrow(Yij)-A)
   
-  tauSqrd <- max(var(X$value)-sigmaSqrd,0)
+  tauSqrd <- max(var(X$value, na.rm=T)-sigmaSqrd,0)
   
   #estimated variance of all Xi
   varX <- sigmaSqrd + tauSqrd
@@ -51,16 +51,8 @@ bayesianHitSelection <-function(dataTable, neg.ctrl="NEG", signalColumn="Raw", a
   rowNextStep <- rowStep
   percentage <- 0
   
-  pHs <- foreach(row=iter(X, by='row'), .combine=rbind) %do%
-  { 
-    #update progress bar
-    if(rowCount == rowNextStep && is.function(updateProgress)){
-      percentage <- percentage + 0.1
-      updateProgress(value=percentage, detail="Bayesian statistics")
-      rowNextStep <- rowNextStep + rowStep
-    }
-    rowCount <- rowCount + 1
-    
+  pHs <- foreach(row=iter(X, by='row'), .combine=rbind.with.progress(updateProgress, rowTotal), .verbose=FALSE, .export = c("bayesianHypothesisTesting")) %dopar%
+  {     
     #for each sample we need a prior distribution
     prior_mean <- Ydotj[row$plate]
     prior_var <- tauSqrd    
@@ -73,6 +65,17 @@ bayesianHitSelection <-function(dataTable, neg.ctrl="NEG", signalColumn="Raw", a
     bayesianHypothesisTesting(prior_mean, prior_var, posterior_mean,posterior_var, alpha)
   }
   return(cbind(dataTable, pHs))
+}
+
+rbind.with.progress <- function(progress, steps){  
+  bayescount <- 0
+  function(...) {
+    new.entries <- ((length(list(...)) - 1) / steps) 
+    bayescount <<- bayescount + new.entries
+    if(!is.null(progress))
+      progress(detail="Computing Bayes statistics", value=bayescount)            
+    rbind(...)
+  }
 }
 
 bayesianHypothesisTesting <- function(prior_mean, prior_var, posterior_mean, posterior_var, alpha=0.05){

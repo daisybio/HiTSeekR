@@ -1,5 +1,5 @@
 # Hit List #
-formattedTable <- function(exp.data, show.sd){  
+formattedTable <- function(exp.data, show.sd, show.all=TRUE, show.position=TRUE, rename=FALSE){  
   
   if(is.null(exp.data)) return(NULL)
   
@@ -11,6 +11,14 @@ formattedTable <- function(exp.data, show.sd){
     }
   }
   
+  if(!show.all){
+    exp.data <- exp.data %>% dplyr::select_(.dots = sapply(setdiff(normalizationChoices(), input$normalization), function(x){ paste("-", x, sep="")}))
+  }
+  
+  if(!show.position){
+    exp.data <- exp.data %>% dplyr::select(-Plate, -Well.position, -Row, -Column)
+  }
+  
   if("mature_from" %in% colnames(exp.data))
     exp.data <- exp.data %>% dplyr::select(-one_of("mature_from", "mature_to", "evidence", "experiment", "similarity"))
   
@@ -18,10 +26,14 @@ formattedTable <- function(exp.data, show.sd){
   exp.data[exp.data$category %in% c("promotor"),"category"] <- "<div style='background:#80B1D3; text-align:center; border-radius: 15px; width:25px; height:25px;'>P</div>"
   exp.data[exp.data$category %in% c("suppressor"),"category"] <- "<div style='background:#FB8072; text-align:center; border-radius: 15px; width:25px; height:25px;'>S</div>"
   exp.data[exp.data$category %in% c("included"),"category"] <- "<div style='background:#FDB462; text-align:center; border-radius: 15px; width:25px; height:25px;'>I</div>"
+    
+  if(rename && input$screenType == "siRNA"){
+    exp.data <- exp.data %>% dplyr::rename(Category = category, `Entrez ID` = gene_id, `Gene Symbol` = gene_symbol)
+  }
   return(as.data.frame(exp.data))
 }
 
-output$table_hits <- renderDataTable(formattedTable(outliers(), input$show.sd.in.hits), escape=FALSE)
+output$table_hits <- renderDataTable(formattedTable(outliers(), input$show.sd.in.hits, input$showAllScores, input$showSamplePosition, rename=TRUE), escape=FALSE)
 
 # Raw data
 output$table_rawData <- renderDataTable(rawData(), escape=FALSE)
@@ -52,6 +64,7 @@ output$htsanalyzer.results.table.GO_CC <- renderDataTable(htsanalyzer.results()[
 output$htsanalyzer.results.table.GO_MF <- renderDataTable(htsanalyzer.results()[["GO_MF"]], escape=FALSE)
 output$htsanalyzer.results.table.GO_BP <- renderDataTable(htsanalyzer.results()[["GO_BP"]], escape=FALSE)
 output$htsanalyzer.results.table.PW_KEGG <- renderDataTable(htsanalyzer.results()[["PW_KEGG"]], escape=FALSE)
+output$htsanalyzer.results.table.REACTOME <- renderDataTable(htsanalyzer.results()[["REACTOME"]], escape=FALSE)
 
 # mirCancerDB #
 output$mircancer.table <- renderDataTable({
