@@ -1,6 +1,6 @@
-# History files
-.Rhistory
+config.R
 .Rproj.user
+.Rhistory
 .RData
 data
 raw_data

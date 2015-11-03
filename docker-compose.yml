@@ -1,0 +1,38 @@
+nginx:
+ build: nginx/
+ ports:
+  - "3838:80"
+ links:
+  - hitseekrA
+  - hitseekrB
+  - hitseekrC
+ volumes:
+  - ./nginx/nginx.conf:/opt/nginx/conf/nginx.conf
+ restart: always
+hitseekrA:
+ image: nanocan/hitseekr:0.1
+ volumes:
+  - ./data:/srv/hitseekr/data
+  - ./config.R:/srv/hitseekr/config.R
+ links:
+  - redis
+ restart: always
+hitseekrB:
+ image: nanocan/hitseekr:0.1
+ volumes:
+  - ./data:/srv/hitseekr/data
+  - ./config.R:/srv/hitseekr/config.R
+ links:
+  - redis
+ restart: always
+hitseekrC:
+ image: nanocan/hitseekr:0.1
+ links:
+  - redis
+ volumes:
+  - ./data:/srv/hitseekr/data
+  - ./config.R:/srv/hitseekr/config.R
+ restart: always
+redis:
+ image: redis:2.8.21
+ restart: always
