@@ -27,7 +27,7 @@ library(tidyr)
 library(org.Hs.eg.db)
 library(HTSanalyzeR)
 library(GSEABase)
-library(org.Dm.eg.db)
+#library(org.Dm.eg.db)
 library(GO.db)
 library(KEGG.db)
 library(RCurl)
@@ -55,7 +55,7 @@ source("source/ggplot_smooth_func.R")
 options(shiny.maxRequestSize=30*1024^2)
 
 ### Load mircancer database #
-mircancer.database <- read.table(paste(data.folder, "miRCancerMarch2015.txt", sep=""), sep="\t", header=T, quote="\"")
+mircancer.database <- read.table(paste(data.folder, "miRCancerSeptember2015.txt", sep=""), sep="\t", header=T, quote="\"")
 
 ### Shiny server ###
 shinyServer(function(input, output, session) {
@@ -93,7 +93,7 @@ shinyServer(function(input, output, session) {
   
   ### Get parallel backend up and running ###
   
-  if(require(doRedis)){  
+  if(use.redis && require(doRedis)){  
     queueID <- paste(sample(c(LETTERS[1:6],0:9),8,replace=TRUE),collapse="")
     registerDoRedis(queueID, host=redis.host, nodelay=FALSE)
     setChunkSize(value = 50)
@@ -128,7 +128,7 @@ shinyServer(function(input, output, session) {
   source("server/find_hits.R", local = TRUE)
   
   #consensus hits
-  source("server/consensus_hits.R", local = TRUE)
+  #source("server/consensus_hits.R", local = TRUE)
     
   #miRNA targets
   source("server/mirna_targets.R", local = TRUE)
@@ -163,7 +163,7 @@ shinyServer(function(input, output, session) {
   source("ui/navbar_data_options.R", local = TRUE)
   source("ui/navbar_quality_control.R", local = TRUE)
   source("ui/navbar_hits.R", local = TRUE)
-  source("ui/navbar_consensus_hits.R", local = TRUE)
+  #source("ui/navbar_consensus_hits.R", local = TRUE)
   source("ui/navbar_mirna_targets.R", local = TRUE)
   source("ui/navbar_drug_targets.R", local = TRUE)
   source("ui/navbar_data.R", local = TRUE)
@@ -178,7 +178,7 @@ shinyServer(function(input, output, session) {
   
   ### Cleanup, close parallel backend clusters if necessary ###
   cancel.onSessionEnded <- session$onSessionEnded(function() {    
-    if(require(doRedis)) removeQueue(queueID)
+    if(use.redis && require(doRedis)) removeQueue(queueID)
     else if(require(doParallel)) stopCluster(cl)
   })
 }) 

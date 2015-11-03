@@ -20,11 +20,11 @@ rbind.with.progress <- function(progress, steps){
     }
 }
 
-selectedHitList <- reactive({
-  if(input$useConsensus == "hit list") data <- outliers()
-  else data <- consensusHitList()
-  return(data)
-})
+# selectedHitList <- reactive({
+#   if(input$useConsensus == "hit list") data <- outliers()
+#   else data <- consensusHitList()
+#   return(data)
+# })
 
 rnah.p.value.threshold <- reactive({
   if(is.null(input$rnah.p.value.threshold)) rnah.p.value.threshold <- NULL
@@ -35,7 +35,7 @@ rnah.p.value.threshold <- reactive({
 ## find miRNA target genes ##
 mirna.targets <- reactive({
   
-  data <- selectedHitList()  
+  data <- outliers()  
   if(is.null(data)) return(NULL)
   #result <- isolate({
     
@@ -72,7 +72,7 @@ mirna.target.permutation <- reactive({
   
   isolate({
     #get hit list and mirna targets
-    hit.list <- selectedHitList()
+    hit.list <- outliers()
     hit.list <- formattedTable(hit.list, FALSE)
     hit.list <- within(hit.list, Sample <- paste(category, Sample))
     
@@ -164,7 +164,7 @@ list.of.random.mirna.indicator.matrices <- reactive({
   rnah.p.value.threshold <- rnah.p.value.threshold()
   
   result <- foreach(i = 1:input$random.miRNA.iterations) %dopar% {    
-    data <- generateRandomHitList(length(unique(selectedHitList()$Accession)))
+    data <- generateRandomHitList(length(unique(outliers()$Accession)))
     mi.targets <- getTargets(data, rnah.pvalue.threshold=rnah.p.value.threshold, databases=input$selectedTargetDBs)  
     ind.matrix <- generateIndicatorMatrix(mi.targets)    
     return(ind.matrix)

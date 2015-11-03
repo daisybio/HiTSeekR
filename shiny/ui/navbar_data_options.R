@@ -15,10 +15,14 @@ hasCtrls <- reactive({
 
 #return available control types found in data
 ctrlTypes <- reactive({
-  data <- rawData()
-  if(!is.null(input$controlCol) && input$controlCol %in% colnames(data)) ctrlCol <- data[,input$controlCol]
+  exp.data <- rawData()
+  if(is.function(exp.data)) return(NULL)
   
-  else ctrlCol <- data[,dataOptionDefaults()[["ctrlCol"]]]
+  else if(!is.null(input$controlCol) && input$controlCol %in% colnames(data)) ctrlCol <- exp.data[,input$controlCol]
+  
+  else{
+    ctrlCol <- exp.data[,dataOptionDefaults()[["ctrlCol"]]]
+  }
   
   unique(as.character(ctrlCol))
 })
@@ -47,7 +51,6 @@ posCtrl <- reactive({
 output$uiOutput_data_options <- renderUI({
   
   elements <- list(column(4,
-                          selectInput("screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA (e.g. inhibitor)" = "miRNA", "compound", "Small compounds (e.g. drugs)")),
                           selectInput("sampleCol", "Sample Name Column", dataColumns()),
                           selectInput("plateCol", "Plate Column", dataColumns()),
                           selectInput("positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol")),
@@ -57,10 +60,10 @@ output$uiOutput_data_options <- renderUI({
                           ),
                           conditionalPanel("input.positionColType != 'rowcol'",
                             selectInput("positionCol", "Position Column", dataColumns())
-                          )
+                          ),
+                          selectInput("accessionColType", "Accession Column Type", NULL),
+                          selectInput("accessionCol", "Accession Column", dataColumns())         
   ),column(4,
-           selectInput("accessionColType", "Accession Column Type", NULL),
-           selectInput("accessionCol", "Accession Column", dataColumns()),           
            selectInput("measurementCol", "Measurement Column", dataColumns(), multiple=T),
            selectInput("replicateCol", "Replicate Column", dataColumns(), multiple=T),
            selectInput("experimentCol", "Experiment Column", dataColumns(), multiple=T)

@@ -44,7 +44,6 @@ htsanalyzer <- reactive({
          hit.list <- drug.targets()
          hit.list <- as.character(hit.list$gene_id)
          drug.targets <- drug.target.genes()
-         browser()
          all.samples.vector <- rep(1, length(drug.targets))
          names(all.samples.vector) <- drug.targets
       }
@@ -52,7 +51,7 @@ htsanalyzer <- reactive({
         all.samples <- data()
         all.samples <- all.samples %>% dplyr::filter(Experiment %in% input$experimentSelected, Readout %in% input$readoutSelected)
                 
-        hit.list <- htsanalyzerHitList()
+        hit.list <- outliers()
         hit.list <- na.omit(hit.list$gene_id)
         
         all.samples.vector <- all.samples[,input$normalization]

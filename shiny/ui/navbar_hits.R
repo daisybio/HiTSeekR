@@ -34,7 +34,7 @@ marginChoices <- reactive({
 
 output$uiOutput_hits_options <- renderUI({
   wellPanel(
-    tags$style(type="text/css", '#hitsOptionsPanel { max-width:1200px;}'),
+    tags$style(type="text/css", '#hitsOptionsPanel { max-width:1400px;}'),
     id="hitsOptionsPanel",
   fluidRow(
     column(3,
@@ -47,14 +47,14 @@ output$uiOutput_hits_options <- renderUI({
         ),
         checkboxInput("showFilterOptions", "Sample filter options", FALSE),
         checkboxInput("differentialScreening", "Differential screening", FALSE)
-    ),column(3,
+    ),column(2,
         selectInput("experimentSelected", "Select experiment:", experiments(), experiments()[1], multiple=TRUE),
         selectInput("readoutSelected", "Select readout:", readouts(), readouts()[1], multiple=TRUE)
-    ),column(3,
+    ),column(2,
         selectInput("normalization", "Normalization:", 
                    choices = normalizationChoices()),      
         selectInput("method", "Hit detection method:", choices = marginChoices())      
-    ),column(3,
+    ),column(2,
        selectInput("effect", "Effect:", choices = c("effect", "suppressor", "promotor")),
        conditionalPanel(
          condition = "input.method != 'Bayes'",
@@ -67,7 +67,7 @@ output$uiOutput_hits_options <- renderUI({
         actionButton("computeBayes", "Apply Bayes method", styleclass="primary")
         )
       )
-    )
+    ),column(3, uiOutput("cat_legend"))
   ),
   fluidRow(
     column(4,

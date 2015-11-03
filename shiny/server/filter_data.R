@@ -85,13 +85,13 @@ data <- reactive({
   }
   else if(input$screenType == "siRNA")
   {
-    if(input$accessionColType=="FlybaseCG")
-    {
-      library(org.Dm.eg.db)
-      flybaseCG <- as.data.frame(org.Dm.egFLYBASECG)
-      data <- left_join(data, flybaseCG, by=c("Accession" = "flybase_cg_id"))
-    }
-    else if(input$accessionColType == "Entrez"){
+    #if(input$accessionColType=="FlybaseCG")
+    #{
+    #  library(org.Dm.eg.db)
+    #  flybaseCG <- as.data.frame(org.Dm.egFLYBASECG)
+    #  data <- left_join(data, flybaseCG, by=c("Accession" = "flybase_cg_id"))
+    #}
+    if(input$accessionColType == "Entrez"){
       data$gene_id <- as.character(data$Accession)
     }
     else if(input$accessionColType == "Ensembl"){

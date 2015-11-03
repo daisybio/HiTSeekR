@@ -14,8 +14,8 @@ biocLite("org.Hs.eg.db", ask=F)
 biocLite("RmiR", ask=F)
 biocLite("RTCA", ask=F)
 biocLite("KEGG.db", ask=F)
-biocLite("org.Dm.eg.db", ask=F)
 biocLite("mirbase.db")
+biocLite("reactome.db")
 
 #for gene set analysis
 #biocLite("HTSanalyzeR", ask=F)

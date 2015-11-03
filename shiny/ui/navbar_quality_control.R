@@ -1,30 +1,57 @@
 output$uiOutput_quality_control <- renderUI({  
   
   elements <- list(
-    tabPanel("Plate Signal Spread",
+    tabPanel("Plate Signal Variation",
       plotOutput("plateMeanPlot"),
-      shinyalert("plateMeanInfo")
+      conditionalPanel("input.showHelpPages",
+                       HTML(paste('<div class="shinyalert alert fade alert-info in">',
+                                  plateMeanInfoText,
+                                  '</div>', sep="")
+                       )
+      )
     ),
     tabPanel("Row and Column Effect",
       plotOutput("rowAndColumn"),
-      shinyalert("rowColumnInfo")
-    )
+      conditionalPanel("input.showHelpPages",
+                       HTML(paste('<div class="shinyalert alert fade alert-info in">',
+                                  rowColumnInfoText,
+                                  '</div>', sep="")
+                       )
+      )    )
   )
   
   if(input$hasControls){
     elements <- c(elements, list(
     tabPanel("Control Signal Spread", 
-      plotOutput("controlPlot")
+      plotOutput("controlPlot"),
+      conditionalPanel("input.showHelpPages",
+                       HTML(paste('<div class="shinyalert alert fade alert-info in">',
+                                  controlPlotInfoText,
+                                  '</div>', sep="")
+                       )
+      )
     ),
     tabPanel("Control Separability",
-      plotOutput("controlPerformancePlot")
+      plotOutput("controlPerformancePlot"),
+      conditionalPanel("input.showHelpPages",
+                       HTML(paste('<div class="shinyalert alert fade alert-info in">',
+                                  controlPerformancePlotInfoText,
+                                  '</div>', sep="")
+                       )
+      )
     )))
   }
   if(!is.null(input$replicateCol)) 
   {
     elements <- c(elements, list(
       tabPanel("Replicate Correlation",
-               plotOutput("replicateCorrPlot")
+               plotOutput("replicateCorrPlot"),
+               conditionalPanel("input.showHelpPages",
+                                HTML(paste('<div class="shinyalert alert fade alert-info in">',
+                                           replicateCorrInfoText,
+                                           '</div>', sep="")
+                                )
+               )
     )))
   }
   

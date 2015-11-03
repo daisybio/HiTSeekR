@@ -23,10 +23,7 @@ output$uiOutput_htsanalyzerOptions <- renderUI({
     if(input$screenType=="miRNA")
     {
       selectInput("htsanalyzer.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_permutation")#, "network enrichment genes"="miRNA_KPM"), "miRNA_permutation")
-    } else
-    {  
-      selectInput("htsanalyzer.useConsensus", "Use consensus hit list for target identification?", c("hit list", "consensus hit list"))                    
-    },
+    }, 
 #     selectInput("htsanalyzer.species", "Species:", 
 #                 c("Drosophila melanogaster" = "Dm", 
 #                   "Homo sapiens" = "Hs",
@@ -60,6 +57,7 @@ output$uiOutput_gene_set_analysis <- renderUI({
   elements <- list(
     tabPanel("Gene set analysis", uiOutput("uiOutput_htsanalyzerOptions"), 
              mainPanel(
+               HTML('<div class="shinyalert alert fade alert-info in">Gene set analysis is perfomed based on pre-defind gene sets. The enrichment of hit genes in a particular gene set can be tested for significance using hyper-geometric tests or gene set enrichment analysis.</div>'), 
                selectInput("htsanalyzer.resultType", "Select results", 
                            c("Hypergeometric Test"= "HyperGeo.results", 
                              "Gene set enrichment analysis" = "GSEA.results",
@@ -68,7 +66,8 @@ output$uiOutput_gene_set_analysis <- renderUI({
                uiOutput("uiOutput_htsanalyzer")
              )
     ),
-    tabPanel("De novo network enrichment", uiOutput("uiOutput_KPM"), mainPanel(    
+    tabPanel("De novo network enrichment", uiOutput("uiOutput_KPM"), mainPanel(
+      HTML('<div class="shinyalert alert fade alert-info in">In contrast to gene set analysis, de novo network enrichment analysis does not rely on pre-defined gene sets, but directly extracts enriched sub-networks from large gene / protein interaction networks.</div>'), 
       shinyalert("kpm_status"),    
       #textOutput("ind.matrix.props"),    
       #checkboxInput("kpm_debug", "Show debug console", FALSE),
@@ -94,12 +93,10 @@ output$uiOutput_KPM <- renderUI({
   elements <- list(
     HTML('<img src="KPM_banner.png"/><br/><br/>'),
     #textInput("kpm_URL", "KPM-Web URL:", "http://localhost:8080/kpm-web/"),  
+    HTML('<div class="shinyalert alert fade alert-info in">For details regarding KeyPathwayMiner and the settings shown below click <a href=\'http://tomcat.compbio.sdu.dk/keypathwayminer/\' target=\'_blank\'>here</a>.</div>'), 
     if(input$screenType=="miRNA")
     {
       selectInput("KPM.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_permutation")
-    } else
-    {  
-      selectInput("KPM.useConsensus", "Use consensus hit list for target identification?", c("hit list", "consensus hit list"))                    
     },
     selectInput("kpm_strategy", "Strategy:", c("GLONE", "INES")),    
     selectInput("kpm_algorithm", "Algorithm:", list("Greedy"="Greedy")), #"Exact (FPT)"="Exact", "Ant Colony Optimization" = "ACO")),

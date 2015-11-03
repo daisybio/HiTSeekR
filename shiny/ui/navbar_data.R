@@ -26,7 +26,9 @@ output$uiOutput_data <- renderUI({
   replicates <- unique(as.character(exp.data$Replicate))
 elements <- list(  
   tabPanel("Normalized Data", dataTableOutput("table_processedData")),
-  tabPanel("Scatter Plots",  uiOutput("scatterPlotTagList")),
+  tabPanel("Plate Signal Variation", plotOutput("plateMeanPlot2")),
+  tabPanel("Replicate Correlation", plotOutput("replicateCorrPlot2")),
+  tabPanel("Whole Screen Scatter Plot",  uiOutput("scatterPlotTagList")),
   tabPanel("Signal Distribution", plotOutput("signalDistPlot")),
   tabPanel("QQ Plot", plotOutput("signalqqPlot")),
   tabPanel("Plate Viewer",

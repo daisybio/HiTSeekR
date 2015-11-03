@@ -182,8 +182,7 @@ outliers <- reactive({
 })
 
 genes.indicator.matrix <- reactive({
-  if(input$KPM.useConsensus == "hit list") hits <- outliers()
-  else hits <- consensusHitList()
+  hits <- outliers()
   all.samples <- data()
   
   gene_ids <- na.omit(unique(all.samples$gene_id))
@@ -194,36 +193,6 @@ genes.indicator.matrix <- reactive({
   return(ind.matrix)
 })
 
-htsanalyzerHitList <- reactive({
-  if(input$htsanalyzer.useConsensus== "hit list") data <- outliers()
-  else data <- consensusHitList()
-  return(data)
-})
-
-KPM.selectedHitList <- reactive({
-  if(input$screenType == "siRNA"){  
-    if(input$KPM.useConsensus == "hit list") data <- outliers()
-    else data <- consensusHitList()
-  }
-  else if(input$screenType == "miRNA")
-  {
-    return(outliers())
-  }
-  return(data)  
-})
-
-#update select depending on what is selected in navbar_gsea
-# selectedHitListObserver <- observe({
-# input$htsanalyzer.useConsensus
-#   isolate({
-#     if(!is.null(input$useConsensus) && 
-#          input$htsanalyzer.useConsensus != input$useConsensus)
-#       updateSelectInput(session, "useConsensus", 
-#                       "Use normal hit list or consensus hit list for target identification?", 
-#                       c("hit list", "consensus hit list"), 
-#                       input$htsanalyzer.useConsensus)
-#   })
-# })
 
 family.hitrate <- reactive({ 
  library(dplyr)

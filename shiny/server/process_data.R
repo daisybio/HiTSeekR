@@ -24,15 +24,29 @@ processedData <- reactive({
   numberOfExperiments <- length(input$experimentCol)
   numberOfReplicates <- length(input$replicateCol)
   
+  #check if columns have been selected multiple times
+  col.multiple <- anyDuplicated(c(input$measurementCol, input$experimentCol, input$replicateCol))
+  if(col.multiple){
+    showshinyalert(session, "data_processing_status", "You can not assign columns to more than one of the categories measurement, experiment, and replicate.","danger")
+    return(NULL)
+  }
+  
   #count which types of data have multiple columns
   count <- 0
   if(numberOfReadouts > 1) count <- count + 1
   if(numberOfExperiments > 1) count <- count + 1
   if(numberOfReplicates > 1) count <- count + 1
   
-  if(count > 1) stop("We do not support several experiments and measurements (readouts / replicates) in the same data set")
+  if(count > 1){
+    showshinyalert(session, "data_processing_status", "We do not support several experiments and measurements (readouts / replicates) in the same data set.","danger")
+    return(NULL)
+  } 
   
-  if(numberOfReadouts == 0 && numberOfExperiments < 2 && numberOfReplicates < 2) stop("You need to specify at least one measurement column (e.g. fluorescence counts)")
+  if(numberOfReadouts == 0 && numberOfExperiments < 2 && numberOfReplicates < 2) {
+    showshinyalert(session, "data_processing_status", "You need to specify at least one measurement column (e.g. fluorescence counts).","danger")
+    return(NULL)
+  }
+    
   
   if(numberOfReadouts  == 1){
     data$readoutCol <- input$measurementCol
@@ -95,6 +109,10 @@ processedData <- reactive({
   else{
     result <- normalizeRawData(processedData, control.based=F, updateProgress=updateProgress, compute.B=input$computeBscore)    
   }
+  
+  #remove previous error messages
+  hideshinyalert(session, "data_processing_status")
+  
   return(as.data.frame(result))
   })
 })

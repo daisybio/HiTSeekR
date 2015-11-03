@@ -6,7 +6,6 @@ output$uiOutput_drug_targets <- renderUI({
   elements <- list(
     tabPanel("Drug target genes",  
              sidebarPanel(
-               selectInput("drugUseConsensus", "Use hit list or consensus hit list for target identification?", c("hit list", "consensus hit list")),                    
                selectInput("selectedDrugTargetDBs", "currently selected:", c("STITCH"), "STITCH"),
                helpText("STITCH Chemical-Protein Interactions database http://stitch.embl.de/")             
 

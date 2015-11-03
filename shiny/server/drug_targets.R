@@ -1,8 +1,8 @@
-compoundSelectedHitList <- reactive({
-  if(input$drugUseConsensus == "hit list") data <- outliers()
-  else data <- consensusHitList()
-  return(data)
-})
+# compoundSelectedHitList <- reactive({
+#   if(input$drugUseConsensus == "hit list") data <- outliers()
+#   else data <- consensusHitList()
+#   return(data)
+# })
 
 convertToCid <- function(data, type){
   if(type == "PubChem_CID"){
@@ -36,7 +36,7 @@ stitch.db <- src_sqlite(paste(data.folder, "stitch_hsa_protein_chemical_links_v4
 
 drug.targets <- reactive({
   
-  hits <- compoundSelectedHitList()
+  hits <- outliers()
 
   #convert ids to pubchem compound ids (CID) as used in STITCH
   hits <- convertToCid(hits, input$accessionColType)

@@ -24,8 +24,8 @@ output$uiOutput_mirna_targets <- renderUI({
                #actionButton("updateTargets", "Update miRNA target list")
              ),mainPanel( 
              dataTableOutput("mirna.targets.table"),
-             downloadButton('downloadTargets', 'Download miRNA target list'),
-             downloadButton('downloadHotnetGeneList', 'Download hotnet2 heat scores')
+             downloadButton('downloadTargets', 'Download miRNA target list')#,
+             #downloadButton('downloadHotnetGeneList', 'Download hotnet2 heat scores')
              )
     ),
     tabPanel("miRNA family coverage", 

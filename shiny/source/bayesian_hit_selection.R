@@ -50,7 +50,7 @@ bayesianHitSelection <-function(dataTable, neg.ctrl="NEG", signalColumn="Raw", a
   rowStep <- floor(rowTotal / 10)
   rowNextStep <- rowStep
   percentage <- 0
-  
+  browser()
   pHs <- foreach(row=iter(X, by='row'), .combine=rbind.with.progress(updateProgress, rowTotal), .verbose=FALSE, .export = c("bayesianHypothesisTesting")) %dopar%
   {     
     #for each sample we need a prior distribution

@@ -35,6 +35,11 @@ formattedTable <- function(exp.data, show.sd, show.all=TRUE, show.position=TRUE,
 
 output$table_hits <- renderDataTable(formattedTable(outliers(), input$show.sd.in.hits, input$showAllScores, input$showSamplePosition, rename=TRUE), escape=FALSE)
 
+# Legend for category
+output$cat_legend <- renderText("<b>Categories:</b><br/><span>Promotor: <div style='background:#80B1D3; text-align:center; border-radius: 15px; width:25px; height:25px;'>P</div></span> 
+<span>Suppressor: <div style='background:#FB8072; text-align:center; border-radius: 15px; width:25px; height:25px;'>S</div></span>
+<span>Included by regular expression: <div style='background:#FDB462; text-align:center; border-radius: 15px; width:25px; height:25px;'>I</div></span>"
+)
 # Raw data
 output$table_rawData <- renderDataTable(rawData(), escape=FALSE)
 
@@ -42,7 +47,7 @@ output$table_rawData <- renderDataTable(rawData(), escape=FALSE)
 output$table_processedData <- renderDataTable(processedData(), escape=FALSE)
 
 # Consensus hit list #
-output$consensusHitList <- renderDataTable(formattedTable(consensusHitList(), input$show.sd.in.hits), escape=FALSE)
+#output$consensusHitList <- renderDataTable(formattedTable(consensusHitList(), input$show.sd.in.hits), escape=FALSE)
 
 # miRNA targets #
 output$mirna.targets.table <- renderDataTable(mirna.targets(), escape=FALSE)
@@ -71,6 +76,6 @@ output$mircancer.table <- renderDataTable({
   mirc.hits <- hits.mircancer()
   mirc.hits[mirc.hits$category %in% c("promotor"),"category"] <- "<div style='background:#80B1D3; text-align:center; border-radius: 15px; width:25px; height:25px;'>P</div>"
   mirc.hits[mirc.hits$category %in% c("suppressor"),"category"] <- "<div style='background:#FB8072; text-align:center; border-radius: 15px; width:25px; height:25px;'>S</div>"  
-  mirc.hits$mirna_id <- paste("<a href='http://mircancer.ecu.edu/search.jsp?mirId=", mirc.hits$mirna_id, "&logic=&condition=And&cancerName=", mirc.hits$Cancer, "'>", mirc.hits$mirna_id, "</a>", sep="")
+  mirc.hits$mirna_id <- paste("<a target='_blank' href='http://mircancer.ecu.edu/search.jsp?mirId=", mirc.hits$mirna_id, "&logic=&condition=And&cancerName=", mirc.hits$Cancer, "'>", mirc.hits$mirna_id, "</a>", sep="")
   return(mirc.hits)
 }, escape=FALSE)

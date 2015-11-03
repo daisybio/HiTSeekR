@@ -12,17 +12,17 @@ output$downloadHits <- downloadHandler(
 )
 
 # Consensus hit list #
-output$downloadConsensusHits <- downloadHandler(
-  filename = function() { paste('consensus', 'hits', input$margin, input$method, '.csv', sep='_') },
-  content = function(file) {
-    data <- consensusHitList()
-    data$miRBase.url <- gsub("'", "", str_extract(data$Accession, "'http://.*?'"))
-    data$Accession <- gsub("<|>", "", str_extract(data$Accession, ">.*?<"))
-    data$signal <- NULL
-    data$signal.sem <- NULL
-    write.table(data, file, row.names=F, sep=",", quote=F)
-  }
-)
+# output$downloadConsensusHits <- downloadHandler(
+#   filename = function() { paste('consensus', 'hits', input$margin, input$method, '.csv', sep='_') },
+#   content = function(file) {
+#     data <- consensusHitList()
+#     data$miRBase.url <- gsub("'", "", str_extract(data$Accession, "'http://.*?'"))
+#     data$Accession <- gsub("<|>", "", str_extract(data$Accession, ">.*?<"))
+#     data$signal <- NULL
+#     data$signal.sem <- NULL
+#     write.table(data, file, row.names=F, sep=",", quote=F)
+#   }
+# )
 
 # mRNA targets #
 output$downloadTargets <- downloadHandler(
