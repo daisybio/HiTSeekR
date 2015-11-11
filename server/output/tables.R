@@ -71,6 +71,9 @@ output$htsanalyzer.results.table.GO_BP <- renderDataTable(htsanalyzer.results()[
 output$htsanalyzer.results.table.PW_KEGG <- renderDataTable(htsanalyzer.results()[["PW_KEGG"]], escape=FALSE)
 output$htsanalyzer.results.table.REACTOME <- renderDataTable(htsanalyzer.results()[["REACTOME"]], escape=FALSE)
 
+# KPM selected graph - nodes
+output$show_kpm_nodes <- renderDataTable( formattedTable(kpm.node.table(), TRUE), escape=FALSE)
+
 # mirCancerDB #
 output$mircancer.table <- renderDataTable({
   mirc.hits <- hits.mircancer()
@@ -79,3 +82,6 @@ output$mircancer.table <- renderDataTable({
   mirc.hits$mirna_id <- paste("<a target='_blank' href='http://mircancer.ecu.edu/search.jsp?mirId=", mirc.hits$mirna_id, "&logic=&condition=And&cancerName=", mirc.hits$Cancer, "'>", mirc.hits$mirna_id, "</a>", sep="")
   return(mirc.hits)
 }, escape=FALSE)
+
+# DIANA mirPATH table #
+output$mirpath.table <- renderDataTable( mirpath.results() )

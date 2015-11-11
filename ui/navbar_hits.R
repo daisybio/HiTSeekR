@@ -12,6 +12,36 @@ readouts <- reactive({
   else return(readouts)
 })
 
+minCutoff <- reactive({
+  exp.data <- processedData()
+  
+  if(is.null(exp.data)) return(NULL)
+  return(round(min(exp.data[["Raw"]], na.rm=T)))
+})
+
+maxCutoff <- reactive({
+  exp.data <- processedData()
+  
+  if(is.null(exp.data)) return(NULL)
+  return(round(max(exp.data[["Raw"]], na.rm=T)))
+})
+
+defaultMaxCutoff <- reactive({
+  minCut <- minCutoff()
+  maxCut <- maxCutoff()
+  
+  if(is.null(minCut) || is.null(maxCut)) return(NULL)
+  else return(round((maxCut - minCut) * 0.8 + minCut))
+})
+
+defaultMinCutoff <- reactive({
+  minCut <- minCutoff()
+  maxCut <- maxCutoff()
+  
+  if(is.null(minCut) || is.null(maxCut)) return(NULL)
+  else return(round((maxCut - minCut) * 0.2 + minCut))
+})
+
 normalizationChoices <- reactive({
   methods <- c("Raw signal" = "Raw", "Centered by mean (centered)" = "centered", "Centered by median (rcentered)" = "rcentered", "z-score" = "zscore", "Robust z-score (rzscore)" = "rzscore")
   controlBasedMethods <- c("Percentage of negative control (poc)" = "poc", "Normalized percentage inhibition (npi)" = "npi")
@@ -25,8 +55,8 @@ normalizationChoices <- reactive({
 })
 
 marginChoices <- reactive({
-  methods <- c("Standard deviation" ="SD", "Median absolute deviation" = "MAD", "Inter-quartile range" = "quartile")
-  controlBasedMethods <- c("Bayesian Statistics" = "Bayes", "SSMD" = "SSMD", "robust SSMD" = "rSSMD")
+  methods <- c("Standard deviation" ="SD", "Median absolute deviation" = "MAD", "Inter-quartile range" = "quartile", "Fixed cutoffs" = "cutoff")
+  controlBasedMethods <- c("Bayesian Statistics" = "Bayes", "SSMD" = "SSMD")
   if(input$hasControls)
     return(c(methods, controlBasedMethods))
   else return(methods)
@@ -38,8 +68,6 @@ output$uiOutput_hits_options <- renderUI({
     id="hitsOptionsPanel",
   fluidRow(
     column(3,
-      #actionButton("updateNormalization", "Update Settings", styleclass="primary"),
-      #HTML("<br/><br/>"),
         checkboxInput("showSamplePosition", "Show sample position", FALSE),      
         checkboxInput("showAllScores", "Show all computed scores", FALSE),      
         conditionalPanel(condition = "input.replicateCol && input.showAllScores",
@@ -57,9 +85,14 @@ output$uiOutput_hits_options <- renderUI({
     ),column(2,
        selectInput("effect", "Effect:", choices = c("effect", "suppressor", "promotor")),
        conditionalPanel(
-         condition = "input.method != 'Bayes'",
+         condition = "input.method != 'Bayes' && input.method != 'cutoff'",
          sliderInput("margin", "Margin:",  min = 0, max = 20, value = 3, step= 0.5)
        ),
+        conditionalPanel(
+          condition = "input.method == 'cutoff'",
+          numericInput("upperCutoff", "Upper cutoff:", value=defaultMaxCutoff()),
+          numericInput("lowerCutoff", "Lower cutoff:", value=defaultMinCutoff())
+        ),
       conditionalPanel(
         condition = "input.method == 'Bayes'",
         wellPanel(
@@ -80,7 +113,7 @@ output$uiOutput_hits_options <- renderUI({
              ),
              selectInput("referenceExperiment", "Reference experiment:", experiments(), experiments()[1]),
              selectInput("referenceReadout", "Reference readout:", readouts(), readouts()[1]),         
-             helpText("Hits found in the reference readout (experiment) are removed from the other readouts (experiments)")
+             helpText("Hits found in the reference readout (experiment) are removed from the target readouts (experiments)")
            ) 
     )),
   fluidRow(

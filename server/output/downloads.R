@@ -24,21 +24,30 @@ output$downloadHits <- downloadHandler(
 #   }
 # )
 
-# mRNA targets #
+# miRNA targets #
 output$downloadTargets <- downloadHandler(
-  filename = function() { paste('mirna', 'target','genes', paste(input$selectedTargetDBs, collapse="_"), input$margin, input$method, input$normalization, '.csv', sep='_') },
+  filename = function() { paste('mirna', 'target','genes', paste(input$selectedTargetDBs, collapse="_"), input$margin, input$method, input$normalization, '.txt', sep='_') },
   content = function(file) {
     data <- mirna.targets()
-    write.table(data, file, row.names=F, sep=",", quote=F)
+    write.table(data, file, row.names=F, col.names = T, sep="\t", quote=F)
+  }  
+)
+
+#mirPath results #
+output$downloadMirPathResults <- downloadHandler(
+  filename = function() { "mirpath_results.txt" },
+  content = function(file) {
+    data <- mirpath.results()
+    write.table(data, file, row.names=F, col.names = T, sep="\t", quote=F)
   }  
 )
 
 # drug targets #
 output$downloadDrugTargets <- downloadHandler(
-  filename = function() { paste('drug', 'target','genes', paste(input$selectedTargetDBs, collapse="_"), input$margin, input$method, input$normalization, '.csv', sep='_') },
+  filename = function() { paste('drug', 'target','genes', paste(input$selectedTargetDBs, collapse="_"), input$margin, input$method, input$normalization, '.txt', sep='_') },
   content = function(file) {
     data <- drug.targets()
-    write.table(data, file, row.names=F, sep=",", quote=F)
+    write.table(data, file, row.names=F, sep="\t", quote=F)
   }  
 )
 
@@ -48,12 +57,12 @@ output$downloadTargetPermutationTestResult <- downloadHandler(
                                 paste(input$selectedTargetDBs, collapse="_"), 
                                 input$margin, 
                                 input$method, 
-                                input$normalization, '.csv', sep='_') 
+                                input$normalization, '.txt', sep='_') 
                         },
   content = function(file) {
     data <- filtered.mirna.target.permutation()
     data <- data %>% dplyr::select(-Samples)
-    write.table(data, file, row.names=F, sep=",", quote=F)
+    write.table(data, file, row.names=F, sep="\t", quote=F)
   }  
 )
 
@@ -81,8 +90,37 @@ output$downloadIndicatorMatrix <- downloadHandler(
     else {
       data <- genes.indicator.matrix()
     } 
-    write.table(data, file, sep="\t", quote=F, col.names=F)
+    write.table(data, file, sep="\t", quote=F, col.names=T)
   }
+)
+
+# Download currently selected KPM result graph as SIF file
+output$download_kpm_SIF <- downloadHandler(
+  filename = function() { 
+    if(input$kpm_union_graph) return(paste("kpm_result_union_graph.sif", sep=""))
+    else return(paste("kpm_result_graph_", input$kpm_selected_solution, ".sif", sep=""))},
+  content = function(file) {
+    edges <- kpm.graph.data()[[1]]
+    edges <- cbind(edges[,1], 'pp', edges[,2])
+    if(input$screenType == "miRNA") {
+      edges[-grep("^[0-9]+$", edges[,1]), 2] <- "mi"
+    }
+    if(input$screenType == "compound"){
+      edges[-grep("^[0-9]+$", edges[,1]), 2] <- "di"
+    }
+    write.table(edges, file, sep="\t", row.names = FALSE, col.names = FALSE, quote=F)
+  }
+) 
+
+# Download currently selected KPM result graph as table
+output$download_kpm_node_table <- downloadHandler(
+    filename = function(){
+  if(input$kpm_union_graph) return(paste("kpm_result_union_graph.txt", sep=""))
+  else return(paste("kpm_result_graph_", input$kpm_selected_solution, ".txt", sep=""))},
+  content = function(file) {
+    data <- kpm.node.table()
+    write.table(data, file, sep="\t", row.names = FALSE, quote=F)
+  }  
 )
 
 # Gene set analysis with htsanalyzer #
@@ -128,10 +166,10 @@ output$htsanalyzer.results.download.REACTOME <- downloadHandler(
 
 # GO enrichment table #
 output$dlGnOntTbl <- downloadHandler(
-  filename = function() { return("GO.csv")},
+  filename = function() { return("GO.txt")},
   content = function(file) {
     data <- goEnrichment()
-    write.table(data, file, row.names=F, sep=",", quote=F)
+    write.table(data, file, row.names=F, sep="\t", quote=F)
   }
 )
 

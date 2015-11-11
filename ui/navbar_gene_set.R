@@ -20,10 +20,10 @@ output$uiOutput_htsanalyzer <- renderUI({
 output$uiOutput_htsanalyzerOptions <- renderUI({
   
   elements <- list(
-    if(input$screenType=="miRNA")
-    {
-      selectInput("htsanalyzer.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_permutation")#, "network enrichment genes"="miRNA_KPM"), "miRNA_permutation")
-    }, 
+     if(input$screenType=="miRNA")
+     {
+       selectInput("htsanalyzer.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_permutation")#, "network enrichment genes"="miRNA_KPM"), "miRNA_permutation")
+     }, 
 #     selectInput("htsanalyzer.species", "Species:", 
 #                 c("Drosophila melanogaster" = "Dm", 
 #                   "Homo sapiens" = "Hs",
@@ -42,7 +42,7 @@ output$uiOutput_htsanalyzerOptions <- renderUI({
       HTML("Note: gene set enrichment analysis is not available for miRNA or compound target lists.")      
     } else 
     {  
-      checkboxInput("htsanalyzer.doGSEA", "Perform gene set enrichtment analysis", TRUE)
+      checkboxInput("htsanalyzer.doGSEA", "Perform gene set enrichtment analysis", FALSE)
     },
     conditionalPanel(condition = "input['htsanalyzer.doGSEA']",
                      numericInput("htsanalyzer.permutations", "Number of permutations for GSEA", min=10, max=gsea.max.permutations, value=100)
@@ -58,6 +58,7 @@ output$uiOutput_gene_set_analysis <- renderUI({
     tabPanel("Gene set analysis", uiOutput("uiOutput_htsanalyzerOptions"), 
              mainPanel(
                HTML('<div class="shinyalert alert fade alert-info in">Gene set analysis is perfomed based on pre-defind gene sets. The enrichment of hit genes in a particular gene set can be tested for significance using hyper-geometric tests or gene set enrichment analysis.</div>'), 
+               shinyalert("htsanalyzer_status"),
                selectInput("htsanalyzer.resultType", "Select results", 
                            c("Hypergeometric Test"= "HyperGeo.results", 
                              "Gene set enrichment analysis" = "GSEA.results",
@@ -80,36 +81,90 @@ output$uiOutput_gene_set_analysis <- renderUI({
       #                 forceNetworkOutput("KPM.plot.d3")
       #),
       #conditionalPanel("!input.kpm_d3",
-      plotOutput("KPM.plot.igraph", height=800, width=1200)
+      uiOutput("uiOutput_kpm_plot")
       #)    
     ))
   )  
-    do.call(tabsetPanel, elements)
+  if(input$screenType == "miRNA") 
+    elements <- c(elements, list(tabPanel("DIANA mirPATH", 
+                                          sidebarPanel(
+                                            HTML('<div class="shinyalert alert fade alert-info in">For details regarding DIANA and the settings shown below click <a href=\'http://diana.imis.athena-innovation.gr/DianaTools/index.php?r=mirpath\' target=\'_blank\'><u>here</u></a>.</div>'), 
+                                            selectInput("mirpath_selection", "Gene selection method", c("Genes union" = 0, "Genes intersection" = 1, "Pathways union" = 2, "Pathways intersection" = 3), 0),
+                                            conditionalPanel("input.mirpath_selection == 1", 
+                                                             numericInput("mirpath_cutoff", "Cutoff for gene intersection", min = 0, value = 0, max=100)
+                                            ),
+                                            numericInput("mirpath_fdr", "FDR cutoff", min=0, max=1, step=0.01, value=0.05),
+                                            checkboxInput("mirpath_conservative", "Use conservative statistics", value=TRUE),
+                                            #selectInput("mirpath_method", "miRNA target prediction method", c("tarbase", "microT-CDS"), value="microT-CDS"),
+                                            numericInput("mirpath_threshold", "microT-CDS score cutoff", min=0.7, max=1.0, value=0.8, step=0.01)
+                                          ),
+                                          mainPanel(dataTableOutput("mirpath.table"), downloadButton("downloadMirPathResults"))
+                                          )
+                                 )
+                  )
+  
+  do.call(tabsetPanel, elements)
 })
 
 
-output$uiOutput_KPM <- renderUI({
+#KPM main panel with result plots
+output$uiOutput_kpm_plot <- renderUI({
+  kpm.res <- KPM.result()
+  if(is.null(kpm.res)) return(NULL)
   
+  elements <- list(
+    wellPanel(
+      checkboxInput("kpm_union_graph", "Show union graph of top 20 extracted key pathways?", value = FALSE),
+      conditionalPanel(condition = '!input.kpm_union_graph',
+        sliderInput("kpm_selected_solution", "Select which of the top 20 key pathways to display", min=1, max=20, value=1)
+      )
+    ),
+    tabsetPanel(
+      tabPanel("Graph",
+        plotOutput("KPM.plot.igraph", height=800, width=900),
+        downloadButton('download_kpm_SIF', 'Download this graph as Cytoscape compatible SIF file')
+      ),  
+      tabPanel("Table", 
+       dataTableOutput("show_kpm_nodes"),
+       downloadButton('download_kpm_node_table', 'Download')
+      )
+    )  
+  )
+  do.call(mainPanel, elements)
+})
+
+#KPM sidebar panel with options
+output$uiOutput_KPM <- renderUI({
   elements <- list(
     HTML('<img src="KPM_banner.png"/><br/><br/>'),
     #textInput("kpm_URL", "KPM-Web URL:", "http://localhost:8080/kpm-web/"),  
-    HTML('<div class="shinyalert alert fade alert-info in">For details regarding KeyPathwayMiner and the settings shown below click <a href=\'http://tomcat.compbio.sdu.dk/keypathwayminer/\' target=\'_blank\'>here</a>.</div>'), 
+    HTML('<div class="shinyalert alert fade alert-info in">For details regarding KeyPathwayMiner and the settings shown below click <a href=\'http://tomcat.compbio.sdu.dk/keypathwayminer/\' target=\'_blank\'><u>here</u></a>.</div>'), 
     if(input$screenType=="miRNA")
     {
       selectInput("KPM.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_permutation")
     },
-    selectInput("kpm_strategy", "Strategy:", c("GLONE", "INES")),    
-    selectInput("kpm_algorithm", "Algorithm:", list("Greedy"="Greedy")), #"Exact (FPT)"="Exact", "Ant Colony Optimization" = "ACO")),
+    #selectInput("kpm_strategy", "Strategy:", c("GLONE", "INES"), value="INES"),    
+    #selectInput("kpm_algorithm", "Algorithm:", list("Greedy"="Greedy", "Exact (FPT)"="Exact", "Ant Colony Optimization" = "ACO")),
     selectInput("kpm_network", "Network", KPM.network.list()),
-    conditionalPanel(condition="input.kpm_strategy=='INES'",
-      checkboxInput("kpm_ben_removal", "Remove border exception nodes?", TRUE)
-    ),    
+    #conditionalPanel(condition="input.kpm_strategy=='INES'",
+      checkboxInput("kpm_ben_removal", "Remove border exception nodes?", TRUE),
+    #),    
     #checkboxInput("kpm_ranged", "ranged K and L?", FALSE),
     #conditionalPanel("!input.kpm_ranged",
-    conditionalPanel(condition="input.kpm_strategy!='GLONE'",
-         numericInput("kpm_K", paste("K (# node exceptions)"), 1, min = 1, max = 100)        
-    ),
-    numericInput("kpm_L", paste("L (# case exceptions)"), 1, min = 1, max = 1000),
+    #conditionalPanel(condition="input.kpm_strategy!='GLONE'",
+         sliderInput("kpm_K", paste("K (# node exceptions)"), 1, min = 0, max = 3, step=1),        
+    #),
+    if(input$screenType == "miRNA"){
+      sliderInput("kpm_L", paste("L (# case exceptions)"), 1, min = 0, max = length(unique(mirna.targets()$mature_miRNA))-1, step=1)
+    }
+    else if(input$screenType == "siRNA")
+    {
+      sliderInput("kpm_L", paste("L (# case exceptions)"), 1, min = 0, max = nrow(outliers()-1), step=1)
+    }
+    else if(input$screenType == "compound")
+    {
+      sliderInput("kpm_L", paste("L (# case exceptions)"), 1, min = 0, max = length(unique(drug.targets()$PubChem_CID))-1, step=1)
+    },
     #),
     #conditionalPanel("input.kpm_ranged",
     #  conditionalPanel("input.kpm_strategy!='GLONE'",
@@ -121,9 +176,12 @@ output$uiOutput_KPM <- renderUI({
     #  numericInput("kpm_upper_L", "Upper limit for L", min=1, value=10),
     #  numericInput("kpm_step_L", "Step size for L", min=1, value=1)
     #),
-    sliderInput("kpm_pathways", "Number of pathways", min = 1, max = 100, value=20),
+    #sliderInput("kpm_pathways", "Number of pathways", min = 1, max = 100, value=20),
     #checkboxInput("kpm_perturbation", "Perturbe network?", FALSE),
-    actionButton("startKPMButton", "Start KPM", styleclass="primary"), downloadButton('downloadIndicatorMatrix')
+    actionButton("startKPMButton", "Start KeyPathwayMiner Analysis", styleclass="primary"), 
+    hr(),
+    HTML('<div class="shinyalert alert fade alert-info in">Alternatively, you can also download the indicator matrix needed as input for KeyPathwayMiner and perform the analysis directly in <a href=\'http://tomcat.compbio.sdu.dk/keypathwayminer/\' target=\'_blank\'><u>KeyPathwayMiner Web</u></a> or using the <a href="http://apps.cytoscape.org/apps/keypathwayminer" target="_blank"><u>Cytoscape app</u></a>.</div>'), 
+    downloadButton('downloadIndicatorMatrix', 'Download indicator matrix')
   )
   do.call(sidebarPanel, elements)
 })

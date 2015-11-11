@@ -12,14 +12,18 @@ htsanalyzer <- reactive({
       else doGSEA <- input$htsanalyzer.doGSEA
       
       if(doGSEA && input$htsanalyzer.permutations > gsea.max.permutations)
-        stop(paste("The current configuration allows a maximum of", gsea.max.permutations, "GSEA permutations. Please select a smaller value."))
+      {
+        showshinyalert(session, "htsanalyzer_status", paste("The current configuration allows a maximum of", gsea.max.permutations, "GSEA permutations. Please select a smaller value."), "danger")
+        return(NULL)
+      }
       if(input$screenType == "miRNA")              
       {                     
           #get potential target genes from RNAhybrid. remove first entry (NA)
           if(input$selectedTargetDBs == "RNAhybrid_hsa")
           pot.targets <- getRNAhybridTargetCounts(pval.threshold = input$rnah.p.value.threshold)
           else{
-            stop("only RNAhybrid_hsa is currently supported")
+            showshinyalert(session, "htsanalyzer_status", "only RNAhybrid_hsa is currently supported", "danger")
+            return(NULL)
           }
           gene.ids <- collect(pot.targets)$gene[-1]
           all.samples.vector <- rep(1, length(gene.ids))
@@ -29,12 +33,18 @@ htsanalyzer <- reactive({
           hit.list <- as.character(hit.list$gene_id)
         }else if(input$htsanalyzer.miRNA.list == "miRNA_permutation")
         {
-          if(is.null(filtered.mirna.target.permutation())) stop("You need to compute high confidence miRNA targets first.")
+          if(input$mirna.target.permutation.button == 0){
+            showshinyalert(session, "htsanalyzer_status", "You need to compute high confidence miRNA targets first.", "danger")
+            return(NULL)
+          } 
           hit.list <- filtered.mirna.target.permutation()
           hit.list <- as.character(hit.list$gene_id)
         } else if(input$htsanalyzer.miRNA.list == "miRNA_KPM")
         {
-          if(is.null(KPM.result())) stop("You need to perform a KeyPathwayMiner enrichment analysis first.")
+          if(is.null(KPM.result())) {
+            showshinyalert(session, "htsanalyzer_status", "You need to perform a KeyPathwayMiner enrichment analysis first.", "danger")
+            return(NULL)
+          }
           hit.list <- KPM.result()
           hit.list <- as.character(hit.list$gene.id) 
         }        
@@ -60,7 +70,7 @@ htsanalyzer <- reactive({
       }    
       
       ListGSC <- geneSets()              
-        
+      hideshinyalert(session, "htsanalyzer_status")  
       progress$set(message = "Preparing HTSanalyzeR for input data...")         
       gsca <- new("GSCA", listOfGeneSetCollections=ListGSC, geneList=all.samples.vector, hits=hit.list)
       gsca <- preprocess(gsca, species="Hs", initialIDs="Entrez.gene", keepMultipleMappings=TRUE, duplicateRemoverMethod="average", orderAbsValue=FALSE, progress=progress)

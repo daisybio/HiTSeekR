@@ -32,20 +32,57 @@ rnah.p.value.threshold <- reactive({
   return(rnah.p.value.threshold)
 })
 
-## find miRNA target genes ##
-mirna.targets <- reactive({
+#compute % of how many miRNA members of any represented family are hit. 
+family.hitrate <- reactive({ 
+  all.data <- data()
+  all.data <- all.data %>% dplyr::group_by(prefam_acc) %>% dplyr::summarise(library_count=dplyr::n_distinct(mirna_id)) 
+  hits <- outliers()
   
+  result <- formattedTable(hits, FALSE)
+  result <- within(result, hits <- paste(category, Sample))
+  result <- result %>% dplyr::group_by(prefam_acc, id) %>% dplyr::summarise(hits_count=n(),
+                                                                            distinct_hits_count=n_distinct(mirna_id), 
+                                                                            samples=paste(hits, collapse="")
+  )
+  
+  final_result <- dplyr::left_join(result, all.data, by="prefam_acc")
+  final_result <- final_result %>% mutate(family_coverage=distinct_hits_count/library_count)
+  final_result <- final_result %>% filter(library_count > input$family_size_cutoff, family_coverage > (input$family_coverage_cutoff/100))
+  if(nrow(final_result) == 0) stop("no families found")
+  final_result <- as.data.frame(final_result)
+  family_coverage <- as.numeric(final_result$family_coverage)
+  
+  #add color code for <0.33, 0.33-0.66, >0.66.
+  final_result$family_coverage <- paste("<div style='background:#FDB462; text-align:center; border-radius: 15px; width:50px; height:25px;'>", 
+                                        round(100*family_coverage, 0), "%",
+                                        "</div>", sep="")
+  final_result[family_coverage < 0.33, "family_coverage"] <-  sub("#FDB462", "#FF0000", final_result[family_coverage < 0.33, "family_coverage"])
+  final_result[family_coverage > 0.66, "family_coverage"] <-  sub("#FDB462", "#40FF00", final_result[family_coverage > 0.66, "family_coverage"])
+  final_result <- na.omit(final_result)
+  
+  return(as.data.frame(final_result))
+})
+
+
+mirna.hits <- reactive({
   data <- outliers()  
   if(is.null(data)) return(NULL)
   #result <- isolate({
-    
-    #check if accession type is mirna_id we need to convert to mature mirna ids in that case
-    if(input$accessionColType == "MI")
-    {
-      showshinyalert(session, "mirna_target_status", "For pri-miRNA (Accession MI) it is unclear which of the two strands (3p or 5p) is active. Therefore, targets for both strands are predicted.","warning")
-      mimat <- as.data.frame(mirbaseMATURE)
-      data <- left_join(data, mimat, by=c("mirna_id"))
-    }
+  
+  #check if accession type is mirna_id we need to convert to mature mirna ids in that case
+  if(input$accessionColType == "MI")
+  {
+    showshinyalert(session, "mirna_target_status", "For pri-miRNA (Accession MI) it is unclear which of the two strands (3p or 5p) is active. Therefore, targets for both strands are predicted.","warning")
+    mimat <- as.data.frame(mirbaseMATURE)
+    data <- left_join(data, mimat, by=c("mirna_id"))
+  }
+  return(data)
+})
+## find miRNA target genes ##
+mirna.targets <- reactive({
+  
+ data <- mirna.hits()
+  
     gene.symbols <- FALSE
     if(input$selectedTargetDBs != "RNAhybrid_hsa"){
         gene.symbols <- TRUE    
@@ -64,13 +101,40 @@ rnah.mirna.count <- reactive({
   getRNAhybridNumOfmiRNAs()
 })
 
-mirna.target.permutation <- reactive({
-  
-  if(input$mirna.target.permutation.button == 0) return(NULL)
+observe({
+  if(is.null(input$mirna.target.permutation.button)) return(NULL)
   if(input$selectedTargetDBs != "RNAhybrid_hsa" && input$highConfidenceTargetsMethod == "hypergeometric test")
-    stop("Hypergeometric test is currently only supported for RNAhybrid_hsa")
+  {
+    showshinyalert(session, "mirna_conf_status", "Hypergeometric test is only supported for RNAhybrid.","warning")
+  }
+  else if(grepl(input$selectedTargetDBs, "DIANA")){
+    showshinyalert(session, "mirna_conf_status", "High-confidence miRNA target genes can not be computed with webservices due to excessive querying during the permutation test.","warning")
+  }
+  else if(input$mirna.target.permutations > gsea.max.permutations){
+    showshinyalert(session, "mirna_conf_status", paste("The current configuration of HiTSeekR only allows a maximum of", gsea.max.permutations, " permutations. The selected value will be adjusted accordingly.", sep = ""),"danger")
+  }
+  else{
+    hideshinyalert(session, "mirna_conf_status")
+  }
   
-  isolate({
+})
+
+mirna.target.permutation <- eventReactive(input$mirna.target.permutation.button,{
+
+    if(input$selectedTargetDBs != "RNAhybrid_hsa" && input$highConfidenceTargetsMethod == "hypergeometric test")
+    {
+      return(NULL)
+    }
+    else if(grepl(input$selectedTargetDBs, "DIANA")){
+      return(NULL)
+    }
+    if(input$mirna.target.permutations > gsea.max.permutations){
+      permutations <- gsea.max.permutations
+    }
+    else{
+      permutations <- input$mirna.target.permutations
+    }
+    
     #get hit list and mirna targets
     hit.list <- outliers()
     hit.list <- formattedTable(hit.list, FALSE)
@@ -101,14 +165,13 @@ mirna.target.permutation <- reactive({
       exp.data <- as.data.frame(exp.data) 
       rnah.p.value.threshold <- rnah.p.value.threshold()
       selectedTargetDBs <- input$selectedTargetDBs
-      permutations <- input$mirna.target.permutations    
-      
+
       progress$set(message = "Generating random hit lists")    
       
       #randomization loop
       result <- foreach(i = 1:permutations, .combine=rbind.with.progress(progress, permutations),
                         .packages=c("dplyr", "RmiR", "foreach"), 
-                        .export=c("generateRandomHitList", "getTargets")) %dopar%
+                        .export=c("generateRandomHitList", "getTargets", "data.folder", "getRNAhybridTargets")) %dopar%
       {
         #get a random hit list of equal length
         test.data <- generateRandomHitList(exp.data, length(unique(hit.list$Accession)))    
@@ -128,8 +191,8 @@ mirna.target.permutation <- reactive({
       result <- result %>% dplyr::group_by(gene_id) %>% dplyr::summarise(n= sum(n)) %>% mutate(n = n / permutations) %>% dplyr::rename(expected = n)              
       
       #combine information from the processed hit list with the result
-      mirna.hit.counts <- left_join(target.list.by.gene, result, by="gene_id")
-      mirna.hit.counts <- dplyr::select(final_result, gene_id, gene_symbol, number_of_miRNAs, count=expected, mirna_families)        
+      mirna.hit.counts <- left_join(target.list.by.gene, result, by="gene_id") %>%
+        dplyr::rename(count=expected)     
     }
     else{      
       progress$set(message = "Performing hypergeometric tests")    
@@ -139,7 +202,7 @@ mirna.target.permutation <- reactive({
     #universe and number of hits
     universe.size <- 1242 #rnah.mirna.count()
     hit.list.size <- length(unique(hit.list.targets$mature_miRNA))
-      
+    
     #calculate cumulative hypergeometric test, e.g. P(X >= k). We use number_of_miRNAs - 1, because otherwise it would be P(X > k)
     final_result <- mirna.hit.counts %>% mutate(p.value = phyper(number_of_miRNAs-1, count, universe.size - count, hit.list.size, lower.tail=FALSE))          
     progress$set(message = "Ajusting p-values (BH)")
@@ -147,7 +210,6 @@ mirna.target.permutation <- reactive({
                                             
     return(final_result)
   })
-})
 
 filtered.mirna.target.permutation <- reactive({
   result <- mirna.target.permutation()
@@ -173,10 +235,17 @@ list.of.random.mirna.indicator.matrices <- reactive({
 
 #indicator_matrix 
 targets.indicator.matrix <- reactive({
-  mi.targets <- mirna.targets()  
-  if(input$KPM.miRNA.list == "miRNA_targets")
+  mi.targets <- mirna.targets() 
+  if(input$KPM.miRNA.list != "miRNA_targets")
   { 
-    if(is.null(filtered.mirna.target.permutation())) stop("No high confidence genes found with current settings. Relax filter criteria and repeat.")
+    if(input$mirna.target.permutation.button == 0){
+      showshinyalert(session, "kpm_status", "You need to determine high confidence miRNA target genes first. Go to the microRNA tab.", "danger")   
+      return(NULL)
+    } 
+    else if(nrow(filtered.mirna.target.permutation()) == 0){
+      showshinyalert(session, "kpm_status", "No high confidence miRNA target genes were found with the selected settings. You need to change these settings before you can continue here.", "danger")   
+      return(NULL)
+    }
     confidence.genes <- filtered.mirna.target.permutation()
     mi.targets <- mi.targets %>% filter(mi.targets$gene_id %in% confidence.genes$gene_id)  
   }
@@ -185,4 +254,8 @@ targets.indicator.matrix <- reactive({
 
 ind.matrix.props <- renderText({
   paste(nrow(targets.indicator.matrix()), "genes\n", ncol(targets.indicator.matrix()), "cases")  
+})
+
+mirpath.results <- reactive({
+  get_DIANA_mirPath(miRNAs = mirna.hits(), threshold = input$mirpath_threshold, geneIntersectionCutoff = input$mirpath_cutoff, selection = input$mirpath_selection, fdr = input$mirpath_fdr,conservative = input$mirpath_conservative)
 })

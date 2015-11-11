@@ -6,10 +6,7 @@ bayesianHitSelection <-function(dataTable, neg.ctrl="NEG", signalColumn="Raw", a
   if(is.function(updateProgress))
     updateProgress(detail="Bayesian statistics", value=0)
   
-  #Log transform values if dealing with raw values
-  if(signalColumn=="Raw") values <- log2(dataTable$Raw)
-  else values <- dataTable[[signalColumn]]
-  X = data.frame(plate=as.integer(dataTable$Plate),row=dataTable$Row, column=dataTable$Column, value=values, control=dataTable$Control)
+  X = data.frame(plate=as.integer(dataTable$Plate),row=dataTable$Row, column=dataTable$Column, value=dataTable[[signalColumn]], control=dataTable$Control)
   
   #nr of plates
   A = max(X$plate)
@@ -50,7 +47,7 @@ bayesianHitSelection <-function(dataTable, neg.ctrl="NEG", signalColumn="Raw", a
   rowStep <- floor(rowTotal / 10)
   rowNextStep <- rowStep
   percentage <- 0
-  browser()
+  
   pHs <- foreach(row=iter(X, by='row'), .combine=rbind.with.progress(updateProgress, rowTotal), .verbose=FALSE, .export = c("bayesianHypothesisTesting")) %dopar%
   {     
     #for each sample we need a prior distribution

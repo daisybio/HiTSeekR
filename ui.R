@@ -6,17 +6,20 @@ library(gridExtra)
 library(scales)
 library(RmiR)
 library(shinysky)
-library(shinyjs)
 
 elts <- list(
-  #title=HTML('<img style="height:40px; margin-top: -7px;" src="RNAice.png"/>'),
-  #windowTitle="RNAice - RNAi comprehensive evaluation",
   title=HTML('<img style="height:40px; margin-top: -7px;" src="HiTSeekR.png" onclick="window.location.reload(true); 
 "/>'),
-  windowTitle="High-throughput Screening Kit for R",
+  windowTitle="HiTSeekR",
   header=tags$head(
     tags$script(
                 HTML('
+                     Shiny.addCustomMessageHandler("disableScreenType", function(empty){
+                        $("#screenType").attr({
+                            "disabled": "disabled"
+                        });
+                        closeOverlay();
+                     });
                      Shiny.addCustomMessageHandler("enableNavTab", function(tab){
                       if($(".nav li:nth-child(" + tab + ")").hasClass("disabled")){
                         $(".nav li:nth-child(" + tab + ")").removeClass("disabled");      
@@ -141,9 +144,12 @@ elts <- list(
                                  c("tab"= "\t", "comma"= ",", "semicolon"=";"))
     ),
     checkboxInput("showColOptions", "Show file input options", FALSE),
-    fluidRow(column(1, actionButton("startButton", "Process raw data", styleclass="primary")),    
-    column(1, conditionalPanel("input.startButton",
-      actionButton("continueToQC", "Continue with quality control", styleclass="info")
+    fluidRow(
+      tags$style(type="text/css", '#loadButtonsPanel { max-width:400px;}'),
+      id="loadButtonsPanel",
+      column(6, actionButton("startButton", "Process raw data", styleclass="primary")),    
+      column(6, conditionalPanel("input.startButton",
+        actionButton("continueToQC", "Continue with quality control", styleclass="info")
     ))),
     hr(),
     conditionalPanel(condition="input.showColOptions", 
@@ -231,14 +237,6 @@ This web application is dedicated to the analysis of high-throughput screening d
     actionButton("compound", "Small compound", "primary"),
     HTML('</div></div>
          <script>    openOverlay("#overlay-inAbox"); </script>'),
-    useShinyjs(),
     do.call(navbarPage, elts)    
   )
 )
-
-# shinyUI(fluidRow(
-#   column(12,
-#          "", 
-#          do.call(navbarPage, elts)
-#   )
-# ))

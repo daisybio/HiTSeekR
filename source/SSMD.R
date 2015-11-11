@@ -1,42 +1,40 @@
-ssmd <- function(pop1, pop2, alpha=0.05)
-{
-  fctr <- function(pop, exp.denominator=1, exp.sd=2)
-  {
-    return ((length(pop) - 1) / (length(pop))^exp.denominator * (sd(pop))^exp.sd)
+ssmd <- function(exp.data, neg.ctrl, signalColumn, summarise.results=TRUE, updateProgress)
+{        
+  #update progress bar
+  updateProgress(detail="Computing SSMD scores", value=ssmdPlateCounter/ssmdPlateMax)
+  ssmdPlateCounter <<- ssmdPlateCounter + 1
+  
+  neg.ctrls <- dplyr::filter(exp.data, Control %in% neg.ctrl)
+  if(nrow(neg.ctrls) == 0) stop("At least one plate is missing negative controls")
+  result <- foreach(nc = neg.ctrl, .combine=rbind) %do%
+  {      
+    neg.ctrl.data <- exp.data %>% dplyr::filter(Control == nc)
+    if(nrow(neg.ctrl.data) < 3) stop("Cannot estimate variance in SSMD with < 3 negative control wells per plate")
+    neg.ctrl.mean <- mean(neg.ctrl.data[[signalColumn]], na.rm=T)
+    neg.ctrl.sd <- sd(neg.ctrl.data[[signalColumn]], na.rm=T)
+    
+    calc.ssmd <- function(x)
+    {      
+      sampleSignal <- x[[signalColumn]]
+      
+      if(nrow(x) == 1)
+      {        
+        return ((sampleSignal - neg.ctrl.mean) / (sqrt(2) * neg.ctrl.sd))
+      }
+      else
+      {
+        return ((mean(sampleSignal, na.rm=T) - neg.ctrl.mean) / sqrt((neg.ctrl.sd)^2 + sd(sampleSignal, na.rm=T)^2))    
+      }
+    }    
+    result <- as.data.frame(exp.data)
+    result <- result %>% dplyr::group_by(Sample) %>% 
+      dplyr::do(NEG.CTRL=nc, SSMD=calc.ssmd(.))       
+    return(na.omit(result))
   }
-  beta <- mean(pop1) - mean(pop2)
-  beta <- beta / sqrt(fctr(pop1) + fctr(pop2))
-  
-  errorA <- ( fctr(pop1, exp.denominator=2) + fctr(pop2, exp.denominator=2) ) / ( fctr(pop1) + fctr(pop2) )
-  errorB <- fctr(pop1, exp.denominator=3, exp.sd=4) + fctr(pop2, exp.denominator=3, exp.sd=4)
-  errorC <- ( mean(pop1) - mean(pop2) )^2 / (2 * (fctr(pop1) + fctr(pop2))^3)
-  
-  error <- pnorm(alpha) * sqrt(errorA + (errorB * errorC))
-  
-  return (c(beta, error))
-}
-
-ssmd.robust <- function(pop1, pop2, alpha=0.05)
-{
-  fctr <- function(pop, exp.denominator=1, exp.mad=2)
-  {
-    return ((length(pop) - 1) / (length(pop))^exp.denominator * (mad(pop))^exp.mad)
+  if(summarise.results)
+    result <- result %>% dplyr::group_by(Sample) %>% dplyr::summarise(SSMD = mean(unlist(SSMD), na.rm=T))
+  else{
+    result <- result %>% dplyr::mutate(SSMD = unlist(SSMD), NEG.CTRL = unlist(NEG.CTRL))
   }
-  beta <- median(pop1) - median(pop2)
-  beta <- beta / sqrt(fctr(pop1) + fctr(pop2))
-  
-  errorA <- ( fctr(pop1, exp.denominator=2) + fctr(pop2, exp.denominator=2) ) / ( fctr(pop1) + fctr(pop2) )
-  errorB <- fctr(pop1, exp.denominator=3, exp.mad=4) + fctr(pop2, exp.denominator=3, exp.mad=4)
-  errorC <- ( median(pop1) - median(pop2) )^2 / (2 * (fctr(pop1) + fctr(pop2))^3)
-  
-  error <- pnorm(alpha) * sqrt(errorA + (errorB * errorC))
-  
-  return (c(beta, error))
-}
-
-ssmdMM <- function(pop1, pop2)
-{
-  beta <- mean(pop1) - mean(pop2)
-  beta <- beta / sqrt((sd(pop1))^2 + (sd(pop2))^2)
-  return (beta)  
+  return(as.data.frame(result))
 }

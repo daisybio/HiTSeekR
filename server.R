@@ -31,25 +31,30 @@ library(GSEABase)
 library(GO.db)
 library(KEGG.db)
 library(RCurl)
+library(lazyeval)
+library(XML)
 
 ### Load all non-shiny source files ###
 source("source/wellPositionToAlphaName.R")
 source("source/heatmap.R")
-source("source/RmiR.R")
 source("source/go.analysis.R")
 source("source/Bscore.R")
 source("source/SSMD.R")
 source("source/posEffectNorm.R")
+source("source/find_hits_call.R")
 source("source/normalize.raw.data.R")
 source("source/call_KPM.R")
 source("source/highcharts_heatmap.R")
 source("source/highcharts_scatterplot.R")
 source("source/bayesian_hit_selection.R")
 source("source/variance_based_hit_selection.R")
-source("source/plot.miRNA.target.enrichment.graph.R")
+source("source/plot.kpm.result.graph.R")
 source("source/find.mimat.from.alias.R")
 source("source/htsanalyzer.reactomeGeneSets.R")
 source("source/ggplot_smooth_func.R")
+source("source/DIANAtools_webservices.R")
+source("source/RNAhybrid.R")
+source("source/RmiR.R")
 
 ### Additional shiny options ###
 options(shiny.maxRequestSize=30*1024^2)
@@ -68,22 +73,19 @@ shinyServer(function(input, output, session) {
   observeEvent(input$siRNA, {
     updateSelectInput(session, "screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA inhibitor / mimics" = "miRNA", "Compound screen" = "compound"), "siRNA")
     updateSelectInput(session, "dataset", "Select a demo dataset", choices = c("none selected" = "none selected", demo.data.sets[c(1,3)]), "none selected")
-    shinyjs::disable("screenType")
-    shinyjs::runjs("closeOverlay();")
+    session$sendCustomMessage(type = "disableScreenType", message=list(empty=""))
   })
   
   observeEvent(input$miRNA, {
     updateSelectInput(session, "screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA inhibitor / mimics" = "miRNA", "Compound screen" = "compound"), "miRNA")
     updateSelectInput(session, "dataset", "Select a demo dataset", choices = c("none selected" = "none selected", demo.data.sets[2]), "none selected")    
-    shinyjs::disable("screenType")
-    shinyjs::runjs("closeOverlay();")
+    session$sendCustomMessage(type = "disableScreenType", message=list(empty=""))
   })  
   
   observeEvent(input$compound, {
     updateSelectInput(session, "screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA inhibitor / mimics" = "miRNA", "Compound screen" = "compound"), "compound")
     updateSelectInput(session, "dataset", "Select a demo dataset", choices = c("none selected" = "none selected", demo.data.sets[4]), "none selected")
-    shinyjs::disable("screenType")
-    shinyjs::runjs("closeOverlay();")    
+    session$sendCustomMessage(type = "disableScreenType", message=list(empty=""))
   })  
   
   output$uiOutput_frontpage <- renderUI({ 
@@ -173,8 +175,6 @@ shinyServer(function(input, output, session) {
   ### Load help pages ###
   
   source("server/output/help.R", local = TRUE)
-  
-  shinyjs::disable("qc")
   
   ### Cleanup, close parallel backend clusters if necessary ###
   cancel.onSessionEnded <- session$onSessionEnded(function() {    

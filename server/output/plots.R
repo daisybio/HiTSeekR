@@ -424,34 +424,17 @@ output$rowAndColumn <- renderPlot({
   print(grid.arrange(p1,p2))
 })
 
-KPM.modify.hits <- reactive({
- hits <- outliers()
-  
- if(input$accessionColType == "MI")
- {
-   mimat <- as.data.frame(mirbaseMATURE)
-   hits <- left_join(hits, mimat, by=c("mirna_id"))
- }
- return(hits)
-})
-
 #KPM miRNA target enrichment plot
-#using igraph
+#using d3
 output$KPM.plot.d3 <- renderForceNetwork({
-  progress <- dummyProgressBar()
-  on.exit(progress$close())
-  hits <- KPM.modify.hits()
-  kpm.res <- KPM.result()
-  if(is.null(kpm.res)) return(NULL)
-  plot.miRNA.target.enrichment.graph.d3(kpm.res,KPM.indicator.matrix(), hits, input$highlight.kpm_d3, input$screenType)  
+  graph.data <- kpm.graph.data()
+  if(is.null(graph.data)) return(NULL)
+  plot.kpm.d3(graph.data, KPM.modify.hits(), input$screenType)
 })
 
-#interactive using d3
-output$KPM.plot.igraph <- renderPlot({  
-  progress <- dummyProgressBar()
-  on.exit(progress$close())
-  hits <- KPM.modify.hits()
-  kpm.res <- KPM.result()
-  if(is.null(kpm.res)) return(NULL)
-  plot.miRNA.target.enrichment.graph.igraph(kpm.res,KPM.indicator.matrix(), hits, input$screenType)
+#interactive using igraph
+output$KPM.plot.igraph <- renderPlot({
+  graph.data <- kpm.graph.data()
+  if(is.null(graph.data)) return(NULL)
+  plot.kpm.igraph(graph.data, KPM.modify.hits(), input$screenType)
 })

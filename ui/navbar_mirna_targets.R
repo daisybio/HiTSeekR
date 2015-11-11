@@ -6,8 +6,8 @@ output$uiOutput_mirna_targets <- renderUI({
   elements <- list(
     tabPanel("miRNA target genes",  
              sidebarPanel(
-               selectInput("useConsensus", "Use hit list or consensus hit list for target identification?", c("hit list", "consensus hit list")),                    
-               selectInput("selectedTargetDBs", "currently selected:", c(dbListTables(RmiR.Hs.miRNA_dbconn()), "RNAhybrid_hsa"), "RNAhybrid_hsa"),
+               #selectInput("useConsensus", "Use hit list or consensus hit list for target identification?", c("hit list", "consensus hit list")),                    
+               selectInput("selectedTargetDBs", "currently selected:", c(setdiff(dbListTables(RmiR.Hs.miRNA_dbconn()), "pictar"), "RNAhybrid (homo sapiens)" = "RNAhybrid_hsa", "Webservice: DIANA microT-CDS v5" = "DIANA_microT_CDS", "Webservice: DIANA tarbase 6.0" = "DIANA_tarbase"), "RNAhybrid_hsa"),
                #helpText("tarbase is a database of experimentally verified targets. Other DBs deliver prediction based targets.")             
                conditionalPanel(
                  condition = "input.selectedTargetDBs=='RNAhybrid_hsa'",
@@ -37,15 +37,16 @@ output$uiOutput_mirna_targets <- renderUI({
              dataTableOutput("family.hitrate")
   ),  
   tabPanel("miRNA high confidence targets", 
+    shinyalert("mirna_conf_status"),  
     sidebarPanel(
     selectInput("highConfidenceTargetsMethod", "Method:", c("permutation test", "hypergeometric test"), "hypergeometric test"),    
     conditionalPanel(
       condition = "input.highConfidenceTargetsMethod == 'permutation test'",
-      numericInput("mirna.target.permutations", "Number of permutations", value=1000, min=10, max=10000)
+      numericInput("mirna.target.permutations", "Number of permutations", value=100, min=10, max=gsea.max.permutations)
     ),
     sliderInput("mirna.target.permutation.num.of.mirnas.cutoff", "Minimal number of miRNAs from hit list targeting a gene", value=1, min = 0, max=100, step=1),
     numericInput("mirna.target.permutation.padj.cutoff", "adjusted p-value threshold", min=0, max=1, value=0.05),
-    actionButton("mirna.target.permutation.button", "Start test")
+    actionButton("mirna.target.permutation.button", "Start test", style="primary")
     ), mainPanel(
     dataTableOutput("mirna.target.permutation.table"),    
     downloadButton("downloadTargetPermutationTestResult", "Download")

@@ -31,7 +31,7 @@ rawData <- reactive({
     }
     else if(input$dataset == "HCC_vorinostat_miRNA")
     {
-      data <- read.csv(paste(data.folder, "AID_743456_data.csv", sep=""), header=T)
+      data <- read.csv(paste(data.folder, "AID_743456_MIMAT_data.csv", sep=""), header=T)
     }
     else if(input$dataset == "TNFa_Casp4")
     {
