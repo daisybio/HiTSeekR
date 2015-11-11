@@ -1,6 +1,6 @@
 config.R
 .Rproj.user
-*.Rroj
+*.Rproj
 .Rhistory
 .RData
 data
