@@ -223,19 +223,22 @@ shinyUI(fluidPage(
     HTML('<div id="overlay-shade"></div>
           <div id="overlay-inAbox" class="overlay">
           <div class="wrapper">
-            <img style="height:40px; margin: 50px;" src="HiTSeekR.png"/>
-            <p>Welcome to the High-Throughput Screening Kit for R. 
+            <div style="float:right;"><img style="height:120px; margin-top: 50px;" src="pipetting.jpg"/></div>
+            <div style="float:left;"><img style="height:40px; margin-left: 10px; margin-bottom: 20px;" src="HiTSeekR.png"/>
+<p style="width: 300px; text-align:justify;">Welcome to the High-Throughput Screening Kit for R. 
 This web application is dedicated to the analysis of high-throughput screening data of various types. It can accommodate small to ultra-large scale. Start by selecting a screen type below.</p>
-          </div>
-          <div class="toolbar">                
+          </div></div>
+          <div class="toolbar" style="clear:both;">                
          '),
-    HTML('If you are here the first time, check out the <a target="_blank" href="http://nanocan.github.io/HiTSeekR/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">Tutorial
-    </button></a>'),
-    h1("Select type of screen:"),
-    actionButton("siRNA", "Gene silencing", "primary"),
-    actionButton("miRNA", "MicroRNA", "primary"),
-    actionButton("compound", "Small compound", "primary"),
-    HTML('</div></div>
+    HTML('<span style="margin-left:20px;"><a target="_blank" href="http://nanocan.github.io/HiTSeekR/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">If you are here the first time, check out the tutorial
+    </button></a></span>'),
+    br(),
+    HTML("<div style='background-color:#ccccff; padding:30px; margin-top:30px; border-radius: 5px; '><h1>Select type of screen</h1>"),
+    br(),
+    actionButton("siRNA", "Genes", "primary"),
+    actionButton("miRNA", "microRNAs", "primary"),
+    actionButton("compound", "Small compounds", "primary"),
+    HTML('</div></div></div>
          <script>    openOverlay("#overlay-inAbox"); </script>'),
     do.call(navbarPage, elts)    
   )

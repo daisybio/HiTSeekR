@@ -84,7 +84,7 @@ hit.detect <- reactive({
   #And we show a warning to make the user aware that he or she has to press a button.
   if(!exists("bayesButtonCounter")) bayesButtonCounter <<- 0
   if(input$method == "Bayes" && input$computeBayes == bayesButtonCounter){
-    showshinyalert(session, "hits_error", "Computation of Bayesian statistics are computationally expensive and will take a while to compute. Press 'Apply Bayes method' to trigger the computation.", "danger")       
+    showshinyalert(session, "hits_error", "Computation of Bayesian statistics is computationally expensive and will take a while to compute. Press 'Apply Bayes method' to trigger the computation.", "danger")       
     return(NULL)
   } 
   else{

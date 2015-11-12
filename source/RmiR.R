@@ -3,12 +3,12 @@
 #library(dplyr)
 #library(foreach)
 
-getTargets <- function(hits, rnah.pvalue.threshold=0.001, get.gene.symbols=F, databases=NA){
+getTargets <- function(hits, rnah.pvalue.threshold=0.001, get.gene.symbols=F, databases=NA, diana.threshold=0.8){
   #repair ids
   
   hits <- na.omit(sub("mir", "miR", hits$mature_name))
   if("DIANA_microT_CDS" %in% databases){
-    return(get_DIANA_microT_targets(hits))
+    return(get_DIANA_microT_targets(hits, diana.threshold))
   }
   else if("DIANA_tarbase" %in% databases)
   {

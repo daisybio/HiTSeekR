@@ -18,11 +18,12 @@ ctrlTypes <- reactive({
   exp.data <- rawData()
   if(is.function(exp.data)) return(NULL)
   
-  else if(!is.null(input$controlCol) && input$controlCol %in% colnames(data)) ctrlCol <- exp.data[,input$controlCol]
-  
-  else{
-    ctrlCol <- exp.data[,dataOptionDefaults()[["ctrlCol"]]]
-  }
+  if(is.null(input$controlCol)) return(NULL)
+  else if(input$controlCol == "") return(NULL)
+  else if(input$controlCol %in% colnames(exp.data)) ctrlCol <- exp.data[,input$controlCol]
+#   else{
+#     ctrlCol <- exp.data[,dataOptionDefaults()[["ctrlCol"]]]
+#   }
   
   unique(as.character(ctrlCol))
 })

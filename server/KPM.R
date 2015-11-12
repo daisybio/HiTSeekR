@@ -33,9 +33,9 @@ genes.indicator.matrix <- reactive({
   all.samples <- data()
   
   gene_ids <- na.omit(unique(all.samples$gene_id))
-  ind.matrix <- as.matrix(rep(0, length(gene_ids)))
+  gene_ids <- gene_ids[which(gene_ids %in% hits$gene_id)]
+  ind.matrix <- as.matrix(rep(1, length(gene_ids)))
   row.names(ind.matrix) <- gene_ids
-  ind.matrix[which(gene_ids %in% hits$gene_id), 1] <- 1
   
   return(ind.matrix)
 })
@@ -175,6 +175,9 @@ KPM.modify.hits <- reactive({
   {
     mimat <- as.data.frame(mirbaseMATURE)
     hits <- left_join(hits, mimat, by=c("mirna_id"))
+  }
+  else if(input$screenType == "compound"){
+    hits <- drug.hits.with.cid()
   }
   return(hits)
 })

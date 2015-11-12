@@ -12,6 +12,10 @@ output$uiOutput_mirna_targets <- renderUI({
                conditionalPanel(
                  condition = "input.selectedTargetDBs=='RNAhybrid_hsa'",
                  selectInput("rnah.p.value.threshold", "p-value threshold", c(0.05, 0.01, 0.001, 0.0001), 0.05)
+               ),
+               conditionalPanel(
+                 condition = "input.selectedTargetDBs=='DIANA_microT_CDS'",
+                 selectInput("diana.microT.min.score", "Score threshold", c(0.7, 0.8, 0.9), 0.9)
                )#,
                #conditionalPanel(
                # condition = "input.selectedTargetDBs!='RNAhybrid_hsa'",

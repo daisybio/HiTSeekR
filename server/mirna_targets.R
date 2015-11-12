@@ -82,19 +82,29 @@ mirna.hits <- reactive({
 mirna.targets <- reactive({
   
  data <- mirna.hits()
+ 
+ #prepare progress bar
+ progress <- shiny::Progress$new()
+ on.exit(progress$close())
+ progress$set(message = "Querying for miRNA target genes")    
+ 
+  gene.symbols <- FALSE
   
-    gene.symbols <- FALSE
-    if(input$selectedTargetDBs != "RNAhybrid_hsa"){
-        gene.symbols <- TRUE    
-    }
-    result <- getTargets(data, rnah.pvalue.threshold=rnah.p.value.threshold(), get.gene.symbols = gene.symbols,databases=input$selectedTargetDBs)
-    #if(input$excludeDBcol) result <- result[,setdiff(colnames(result), c("db_list"))]
-    
-    if(nrow(result) == 0) stop("No target has been found. reduce stringency or increase number of hits.")
-    
-    return(result)
-  #})                 
-  #return(result)
+  if(input$selectedTargetDBs != "RNAhybrid_hsa"){
+      gene.symbols <- TRUE    
+  }
+ 
+  tryCatch({ 
+    result <- getTargets(data, rnah.pvalue.threshold=rnah.p.value.threshold(), get.gene.symbols = gene.symbols,databases=input$selectedTargetDBs, diana.threshold = input$diana.microT.min.score)
+  }, error = function(e){ 
+      showshinyalert(session, "mirna_target_status", paste("An error occured: ", e$message, sep="") ,"danger")
+      return(NULL)
+    })
+  
+  if(nrow(result) == 0) stop("No target has been found. reduce stringency or increase number of hits.")
+  
+  return(result)
+
 })
 
 rnah.mirna.count <- reactive({
@@ -107,7 +117,7 @@ observe({
   {
     showshinyalert(session, "mirna_conf_status", "Hypergeometric test is only supported for RNAhybrid.","warning")
   }
-  else if(grepl(input$selectedTargetDBs, "DIANA")){
+  else if(grepl("DIANA", input$selectedTargetDBs, ignore.case=TRUE)){
     showshinyalert(session, "mirna_conf_status", "High-confidence miRNA target genes can not be computed with webservices due to excessive querying during the permutation test.","warning")
   }
   else if(input$mirna.target.permutations > gsea.max.permutations){
@@ -125,7 +135,7 @@ mirna.target.permutation <- eventReactive(input$mirna.target.permutation.button,
     {
       return(NULL)
     }
-    else if(grepl(input$selectedTargetDBs, "DIANA")){
+    else if(grepl("DIANA", input$selectedTargetDBs, ignore.case=TRUE)){
       return(NULL)
     }
     if(input$mirna.target.permutations > gsea.max.permutations){

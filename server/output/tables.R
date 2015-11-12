@@ -74,6 +74,25 @@ output$htsanalyzer.results.table.REACTOME <- renderDataTable(htsanalyzer.results
 # KPM selected graph - nodes
 output$show_kpm_nodes <- renderDataTable( formattedTable(kpm.node.table(), TRUE), escape=FALSE)
 
+# KPM selected gene info
+output$kpm_gene_details <- reactive({
+  table.data <- kpm.node.table()
+  sel.gene <- table.data[input$show_kpm_nodes_row_last_clicked, "gene_id"]
+  return(mygene::query(sel.gene, fields=c("go")))
+})
+
+output$kpm_gene_details_cc <- renderDataTable({
+  kpm_gene_details()$hits$go$CC[[1]]
+})
+
+output$kpm_gene_details_bp <- renderDataTable({
+  kpm_gene_details()$hits$go$BP[[1]]
+})
+
+output$kpm_gene_details_mf <- renderDataTable({
+  kpm_gene_details()$hits$go$MF[[1]]
+})
+
 # mirCancerDB #
 output$mircancer.table <- renderDataTable({
   mirc.hits <- hits.mircancer()

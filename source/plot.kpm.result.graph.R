@@ -43,7 +43,7 @@ prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.li
   node.ids[,1] <- as.character(node.ids[,1])
   row.names(node.ids) <- node.ids[,1]
   
-  if(screenType == "miRNA")
+  if(screenType %in% c("miRNA", "compound"))
   {
     #get miRNA interactions
     target.interactions.matrix <- indicator.matrix[node.ids$id,]
@@ -53,10 +53,11 @@ prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.li
     target.interactions <- subset(target.interactions, value==1)[,c(2,1)]
     colnames(target.interactions) <- c("source", "target")
     
-    #add miRNA interactions to edge and node data frame
+    #add interactions to edge and node data frame
     edges.df <- rbind(edges.df, target.interactions)
     node.ids <- rbind(node.ids, data.frame(id=target.interactions$source, overlapCount=1))
   }
+  
   return(list(edges.df, node.ids))
 }
 
@@ -80,6 +81,12 @@ plot.kpm.d3 <- function(kpm.data, hit.list, highlight=1, screenType)
   {
     #color miRNAs according to suppressors / promoters
     categories <- left_join(node.ids, hit.list, by=c("id"="mature_name")) %>% group_by(id) %>% summarise(category=unique(category))
+    node.ids <- left_join(node.ids, categories,by="id")
+    node.ids[is.na(node.ids$category),"category"] <- "NA"
+  }
+  else if(screenType == "compound"){
+    browser()
+    categories <- left_join(node.ids, hit.list, by=c("id"="Pubchem_CID")) %>% group_by(id) %>% summarise(category=unique(category))
     node.ids <- left_join(node.ids, categories,by="id")
     node.ids[is.na(node.ids$category),"category"] <- "NA"
   }
@@ -137,6 +144,12 @@ plot.kpm.igraph <- function(kpm.data, hit.list, screenType){
   }
   else if(screenType == "siRNA"){
     category <- left_join(data.frame(name = node.names, stringsAsFactors = FALSE), hit.list, by=c("name" = "gene_id"))$category
+    V(g)$color[which(category == "promotor")] <- "#80B1D3"
+    V(g)$color[which(category == "suppressor")] <- "#FB8072"
+    V(g)$color[which(category == "included")] <- "#FDB462"
+  }
+  else if(screenType == "compound"){
+    category <- left_join(data.frame(name = node.names, stringsAsFactors = FALSE), hit.list, by=c("name" = "PubChem_CID"))$category
     V(g)$color[which(category == "promotor")] <- "#80B1D3"
     V(g)$color[which(category == "suppressor")] <- "#FB8072"
     V(g)$color[which(category == "included")] <- "#FDB462"

@@ -127,6 +127,8 @@ output$uiOutput_kpm_plot <- renderUI({
       tabPanel("Table", 
        dataTableOutput("show_kpm_nodes"),
        downloadButton('download_kpm_node_table', 'Download')
+       #tabsetPanel(position = "left", tabPanel("GO Biological Process",
+       #dataTableOutput("kpm_gene_details")))
       )
     )  
   )
@@ -159,7 +161,7 @@ output$uiOutput_KPM <- renderUI({
     }
     else if(input$screenType == "siRNA")
     {
-      sliderInput("kpm_L", paste("L (# case exceptions)"), 1, min = 0, max = nrow(outliers()-1), step=1)
+      sliderInput("kpm_L", paste("L (# case exceptions)"), 0, min = 0, max = 0, step=1)
     }
     else if(input$screenType == "compound")
     {
