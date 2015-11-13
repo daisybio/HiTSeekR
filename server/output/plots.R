@@ -317,7 +317,7 @@ output$controlPerformancePlot <- renderPlot({
 
 correlationPlot <- function(exp.data, signalCol){
   exp.data$Replicate <- as.character(exp.data$Replicate)
-  if(length(unique(exp.data$Replicate < 2))) stop("No replicates have been found with the selected input settings.")
+  if(length(unique(exp.data$Replicate)) < 2) stop("No replicates have been found with the selected input settings.")
   
   exp.data$Signal <- exp.data[[signalCol]]
   combinations.of.replicates <- combn(unique(exp.data$Replicate),2)

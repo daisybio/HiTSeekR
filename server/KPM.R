@@ -6,6 +6,7 @@ KPM.network.list <- reactive({
   progress <- shiny::Progress$new()
   progress$set(message = "Connecting to KeyPathwayMiner web to learn about available networks...", value = 0)
   on.exit(progress$close())
+  networks <- NULL
   
   tryCatch({
     kpm.url <- paste(keypathwayminer.url, "requests/graphsAsJSON/", sep="")    
@@ -16,8 +17,8 @@ KPM.network.list <- reactive({
     return(networks)
   }, error = function(e) {
       showshinyalert(session, "kpm_status", "Could not connect to KeyPathwayMiner Web", "danger")   
-      return(NULL)
-    })  
+    })
+  return(networks)
 })
 
 KPM.indicator.matrix <- reactive({

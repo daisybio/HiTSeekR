@@ -27,7 +27,6 @@ output$uiOutput_data <- renderUI({
 elements <- list(  
   tabPanel("Normalized Data", dataTableOutput("table_processedData")),
   tabPanel("Plate Signal Variation", plotOutput("plateMeanPlot2")),
-  tabPanel("Replicate Correlation", plotOutput("replicateCorrPlot2")),
   tabPanel("Whole Screen Scatter Plot",  uiOutput("scatterPlotTagList")),
   tabPanel("Signal Distribution", plotOutput("signalDistPlot")),
   tabPanel("QQ Plot", plotOutput("signalqqPlot")),
@@ -46,5 +45,11 @@ elements <- list(
   
 )
 
+if(!is.null(input$replicateCol)) 
+{
+  elements <- c(elements, list(
+    tabPanel("Replicate Correlation", plotOutput("replicateCorrPlot2"))
+  ))
+}
 do.call(tabsetPanel, elements)
 })
