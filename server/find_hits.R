@@ -1,5 +1,13 @@
 #reactive element that post-processes the hit list
 outliers <- reactive({
+  
+  #first check if a hit list was uploaded directly
+  if(input$isHitList){
+    outl <- data()
+    outl$category <- "included"
+    return(outl)
+  }
+  
   #nothing to process, return null
   if(is.null(processedData())) return(NULL)
   
@@ -133,6 +141,32 @@ hit.detect <- reactive({
       find.hits.call(m.data, it.data, input$method, margin, negCtrl(), input$normalization, updateProgress, upperCutoff=input$upperCutoff, lowerCutoff=input$lowerCutoff)      
     }
   }  
+  
+  #check how many of the hits are not mapped to an unambigious identifier
+  if(input$screenType == 'siRNA')
+  {
+    na.count <- length(which(is.na(outl$gene_id)))
+  }
+  else if(input$screenType == 'miRNA')
+  {
+    na.count <- length(which(is.na(outl$mirna_id)))
+  }
+  else if(input$screenType == 'compound')
+  {
+    #convert ids to pubchem compound ids (CID) as used in STITCH
+    hits <- convertToCid(outl, input$accessionColType)
+    
+    #add CID prefix and leading zeros for STITCH db
+    hits[!is.na(hits$PubChem_CID), "PubChem_CID"] <- paste("CID", formatC(as.integer(hits[!is.na(hits$PubChem_CID), "PubChem_CID"]), width=9, flag="0"), sep="")
+    
+    outl <- hits[,c(1:(ncol(hits)-2), ncol(hits), ncol(hits) -1)]
+    na.count <- length(which(is.na(outl$PubChem_CID)))
+  }
+  
+  if(na.count > 0)
+    showshinyalert(session, "hits_error", paste("Warning: ", na.count, " of the selected hits could not be mapped to a suitable identifier and will thus be ignored in subsequent analyses.", sep=""), "danger")
+  else hideshinyalert(session, "hits_error")                     
+  
   #return results    
   return(outl)
 })

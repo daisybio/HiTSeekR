@@ -16,7 +16,9 @@
 #filter and summarise
 data <- reactive({
   #load data in "normalized" form with known column names
-  data <- processedData()
+  
+  if(input$analysisButton != 0) data <- processedHitList()
+  else data <- processedData()
   
   if(is.null(data)) stop("Please process the input data first")
   #fire up a progress bar
@@ -33,16 +35,18 @@ data <- reactive({
     progress$set(value = value, detail = detail)
   }
   
-  #update progress bar
-  updateProgress(detail = "Merging replicates", value=0.2)
-
-  merge.funs <- funs(mean(., na.rm=T), sd(., na.rm=T))
+  if(!input$isHitList){
+    #update progress bar
+    updateProgress(detail = "Merging replicates", value=0.2)
   
-  #data <- data %>% filter(!is.na(Raw))
-  data <- data %>% group_by(Experiment, Readout, Plate, Row, Column, Sample, Accession, Well.position, Control) %>% summarise_each(merge.funs, c(-Replicate, -wellCount))  
-  
-  #fix column names and get rid of NaNs
-  colnames(data) <- str_replace(colnames(data), "_mean", "")
+    merge.funs <- funs(mean(., na.rm=T), sd(., na.rm=T))
+    
+    #data <- data %>% filter(!is.na(Raw))
+    data <- data %>% group_by(Experiment, Readout, Plate, Row, Column, Sample, Accession, Well.position, Control) %>% summarise_each(merge.funs, c(-Replicate, -wellCount))  
+    
+    #fix column names and get rid of NaNs
+    colnames(data) <- str_replace(colnames(data), "_mean", "")
+  }
   
   #if we are dealing with miRNAs add miRNA family name and ID
   if(input$screenType == "miRNA")
@@ -70,7 +74,7 @@ data <- reactive({
       result <- left_join(mimat, fam, by="mirna_id")
       data <- left_join(data, result, by=c("Accession" = "mature_acc"))
       
-      data <- data %>% group_by(Experiment, Readout, Plate, Well.position) %>% summarise_each(funs(mergeRows))      
+      if(!input$isHitList) data <- data %>% group_by(Experiment, Readout, Plate, Well.position) %>% summarise_each(funs(mergeRows))      
     }    
     else if(input$accessionColType=="MI"){
       updateProgress(detail = "Get miRNA id", value=0.8)

@@ -57,6 +57,7 @@ rawData <- reactive({
   else{
     progress$set(message = "Uploading and processing custom data set...", value=0)
     file <- input$file
+    
     tryCatch({
     data <- read.table(file$datapath, header=T, sep=input$fileSeparator, fill=T)
     }, 
@@ -66,6 +67,13 @@ rawData <- reactive({
   progress$set(message =  "Loading complete", value=1)
   return(data)
 })
+
+output$fileUploaded <- reactive({
+  return(!is.null(input$file))
+})
+
+#add to output for conditional panel switch in ui.R
+outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
 
 datasetName <- reactive({
   if(!is.null(input$file) || input$getFromPubChemButton > 0){

@@ -30,6 +30,10 @@ formattedTable <- function(exp.data, show.sd, show.all=TRUE, show.position=TRUE,
   if(rename && input$screenType == "siRNA"){
     exp.data <- exp.data %>% dplyr::rename(Category = category, `Entrez ID` = gene_id, `Gene Symbol` = gene_symbol)
   }
+  else
+  {
+    exp.data <- exp.data %>% dplyr::rename(Category = category)
+  }
   return(as.data.frame(exp.data))
 }
 

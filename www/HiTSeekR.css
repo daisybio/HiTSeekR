@@ -16,6 +16,11 @@ margin-top: 20px;
     background-color: rgba(0, 0, 0, 0.65);   
 }
 
+#aboutdbs li
+{
+  padding: 20px;
+}
+
 .shiny-progress .progress {
 	position: absolute;
 	top: 50% !important;

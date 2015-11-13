@@ -266,6 +266,13 @@ ind.matrix.props <- renderText({
   paste(nrow(targets.indicator.matrix()), "genes\n", ncol(targets.indicator.matrix()), "cases")  
 })
 
+# DIANA mirpath results
 mirpath.results <- reactive({
+  
+  #prepare progress bar
+  progress <- shiny::Progress$new()
+  on.exit(progress$close())
+  progress$set(message = "Querying DIANA mirPATH. Waiting for results...")   
+  
   get_DIANA_mirPath(miRNAs = mirna.hits(), threshold = input$mirpath_threshold, geneIntersectionCutoff = input$mirpath_cutoff, selection = input$mirpath_selection, fdr = input$mirpath_fdr,conservative = input$mirpath_conservative)
 })

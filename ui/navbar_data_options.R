@@ -50,31 +50,42 @@ posCtrl <- reactive({
 
 #select corresponding columns in the dataset to process to a common format
 output$uiOutput_data_options <- renderUI({
-  
-  elements <- list(column(4,
-                          selectInput("sampleCol", "Sample Name Column", dataColumns()),
-                          selectInput("plateCol", "Plate Column", dataColumns()),
-                          selectInput("positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol")),
-                          conditionalPanel("input.positionColType == 'rowcol'", 
-                            selectInput("rowCol", "Row Column", dataColumns()),
-                            selectInput("colCol", "Column Column", dataColumns())
-                          ),
-                          conditionalPanel("input.positionColType != 'rowcol'",
-                            selectInput("positionCol", "Position Column", dataColumns())
-                          ),
-                          selectInput("accessionColType", "Accession Column Type", NULL),
-                          selectInput("accessionCol", "Accession Column", dataColumns())         
-  ),column(4,
-           selectInput("measurementCol", "Measurement Column", dataColumns(), multiple=T),
-           selectInput("replicateCol", "Replicate Column", dataColumns(), multiple=T),
-           selectInput("experimentCol", "Experiment Column", dataColumns(), multiple=T)
-  ),column(4,
-           checkboxInput("hasControls", "Are controls included?", FALSE),
-           conditionalPanel(condition = "input.hasControls",
-           selectInput("controlCol", "Control Column", dataColumns()),        
-           uiOutput("uiOutput_controls"))
-  )
-  )
+
+  if(input$isHitList){
+    elements <- list(column(12, 
+                                selectInput("experimentCol", "Experiment Column", dataColumns()),
+                                selectInput("sampleCol", "Sample Name Column", dataColumns()),
+                                selectInput("accessionColType", "Accession Column Type", NULL),
+                                selectInput("accessionCol", "Accession Column", dataColumns()),
+                                selectInput("measurementCol", "Measurement Column", dataColumns())
+    ))
+  }
+  else{
+    elements <- list(column(4,
+                            selectInput("sampleCol", "Sample Name Column", dataColumns()),
+                            selectInput("plateCol", "Plate Column", dataColumns()),
+                            selectInput("positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol")),
+                            conditionalPanel("input.positionColType == 'rowcol'", 
+                              selectInput("rowCol", "Row Column", dataColumns()),
+                              selectInput("colCol", "Column Column", dataColumns())
+                            ),
+                            conditionalPanel("input.positionColType != 'rowcol'",
+                              selectInput("positionCol", "Position Column", dataColumns())
+                            ),
+                            selectInput("accessionColType", "Accession Column Type", NULL),
+                            selectInput("accessionCol", "Accession Column", dataColumns())         
+    ),column(4,
+             selectInput("measurementCol", "Measurement Column", dataColumns(), multiple=T),
+             selectInput("replicateCol", "Replicate Column", dataColumns(), multiple=T),
+             selectInput("experimentCol", "Experiment Column", dataColumns(), multiple=T)
+    ),column(4,
+             checkboxInput("hasControls", "Are controls included?", FALSE),
+             conditionalPanel(condition = "input.hasControls",
+             selectInput("controlCol", "Control Column", dataColumns()),        
+             uiOutput("uiOutput_controls"))
+    )
+    )
+  }
   do.call(fluidRow, elements)
 })
 
@@ -129,7 +140,10 @@ dataChangeObserver <- observe({
 })
 
 accessionColTypeObserver <- observe({
-  updateSelectInput(session, "accessionColType", "Accession Column Type", accTypes(), dataOptionDefaults()[["accColType"]])
+  input$isHitList
+  default <- dataOptionDefaults()[["accColType"]]
+  if(default == "") default <- accTypes()[1]
+  updateSelectInput(session, "accessionColType", "Accession Column Type", accTypes(), default)
 })
 
 #extra well pane for selecting controls of the experiment

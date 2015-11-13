@@ -34,21 +34,9 @@ convertToCid <- function(data, type){
 
 stitch.db <- src_sqlite(paste(data.folder, "stitch_hsa_protein_chemical_links_v4.0.sqlite3", sep=""))
 
-drug.hits.with.cid <- reactive({
-  hits <- outliers()
-  
-  #convert ids to pubchem compound ids (CID) as used in STITCH
-  hits <- convertToCid(hits, input$accessionColType)
-  
-  #add CID prefix and leading zeros for STITCH db
-  hits[!is.na(hits$PubChem_CID), "PubChem_CID"] <- paste("CID", formatC(as.integer(hits[!is.na(hits$PubChem_CID), "PubChem_CID"]), width=9, flag="0"), sep="")
-  
-  return(hits)
-})
-
 drug.targets <- reactive({
   
-  hits <- drug.hits.with.cid()
+  hits <- outliers()
   
   tryCatch({
     hits.wo.nas <- na.omit(hits$PubChem_CID)
@@ -59,6 +47,7 @@ drug.targets <- reactive({
   }, error = function(e){ showshinyalert(session, "general_status", paste("error:", e$message), "danger") })
   
   if(nrow(hits) == 0) stop("No target has been found.")
+  hits <- hits %>% dplyr::filter(combined_score > input$drugTargetCutoff)
   
   return(hits)
 })

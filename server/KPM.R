@@ -2,6 +2,11 @@
 ATTACHED_TO_ID <- paste(sample(c(LETTERS[1:6],0:9),32,replace=TRUE),collapse="")
 
 KPM.network.list <- reactive({  
+  #create a progress bar
+  progress <- shiny::Progress$new()
+  progress$set(message = "Connecting to KeyPathwayMiner web to learn about available networks...", value = 0)
+  on.exit(progress$close())
+  
   tryCatch({
     kpm.url <- paste(keypathwayminer.url, "requests/graphsAsJSON/", sep="")    
     result <- getURL(kpm.url)
@@ -175,9 +180,6 @@ KPM.modify.hits <- reactive({
   {
     mimat <- as.data.frame(mirbaseMATURE)
     hits <- left_join(hits, mimat, by=c("mirna_id"))
-  }
-  else if(input$screenType == "compound"){
-    hits <- drug.hits.with.cid()
   }
   return(hits)
 })

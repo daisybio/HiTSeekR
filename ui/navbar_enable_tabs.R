@@ -62,6 +62,22 @@ observe({
   }
 })
 
+observeEvent(input$analysisButton,
+{
+  if(input$screenType == "miRNA"){
+    session$sendCustomMessage(type = "enableNavTab", "5")  
+    updateTabsetPanel(session, "mainNavbar", selected = "microRNAs")
+  }
+  else if(input$screenType == "compound"){
+    session$sendCustomMessage(type = "enableNavTab", "6")  
+    updateTabsetPanel(session, "mainNavbar", selected = "Small Compounds")
+  }   
+  else{
+    session$sendCustomMessage(type = "enableNavTab", "7")  
+    updateTabsetPanel(session, "mainNavbar", selected = "Genes")
+  }
+})
+
 observe({    
   if(input$mainNavbar == "Hit Discovery")
   { 

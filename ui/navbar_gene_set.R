@@ -59,11 +59,12 @@ output$uiOutput_gene_set_analysis <- renderUI({
              mainPanel(
                HTML('<div class="shinyalert alert fade alert-info in">Gene set analysis is perfomed based on pre-defind gene sets. The enrichment of hit genes in a particular gene set can be tested for significance using hyper-geometric tests or gene set enrichment analysis.</div>'), 
                shinyalert("htsanalyzer_status"),
+               conditionalPanel("input['htsanalyzer.doGSEA']",
                selectInput("htsanalyzer.resultType", "Select results", 
                            c("Hypergeometric Test"= "HyperGeo.results", 
                              "Gene set enrichment analysis" = "GSEA.results",
                              "Significant adjusted p-values in both" = "Sig.adj.pvals.in.both")
-               ), 
+               )),
                uiOutput("uiOutput_htsanalyzer")
              )
     ),
@@ -103,6 +104,11 @@ output$uiOutput_gene_set_analysis <- renderUI({
                                  )
                   )
   
+  if(input$isHitList){
+    elements[[1]] <-  tabPanel("Gene set analysis",                               
+                                    HTML('<div class="shinyalert alert fade alert-info in">Gene set analysis cannot be performed directly on a hit list, since information about the entire experiment is needed to calculate the necessary p-values.</div>'))
+                               
+  }
   do.call(tabsetPanel, elements)
 })
 

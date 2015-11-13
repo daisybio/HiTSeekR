@@ -136,21 +136,27 @@ elts <- list(
           <li>If you would like to analyze a different data set just click on the HiTSeekR logo in the top left corner to get back to the start.</li>
           <li>On the bottom of the page, a preview of the input data is shown. Once you are confident about the selected settings press the "Process raw data" button below.</li>
          </ul></div>'), 
-    checkboxInput("log2normalize", "Log2 transform signal data", TRUE),
-    checkboxInput("computeBscore", "Compute B-score", FALSE),
-    conditionalPanel("input.file",
+    conditionalPanel("output.fileUploaded",
+                     checkboxInput("isHitList", "If the uploaded file is already a processed list of hits subject to down-stream analysis check this box", FALSE),
                      selectInput("fileSeparator", 
                                  "Column separator", 
                                  c("tab"= "\t", "comma"= ",", "semicolon"=";"))
     ),
+    conditionalPanel("!input.isHitList",
+                     checkboxInput("log2normalize", "Log2 transform signal data", TRUE),
+                     checkboxInput("computeBscore", "Compute B-score", FALSE)
+    ),
     checkboxInput("showColOptions", "Show file input options", FALSE),
-    fluidRow(
+    conditionalPanel("!input.isHitList", fluidRow(
       tags$style(type="text/css", '#loadButtonsPanel { max-width:400px;}'),
       id="loadButtonsPanel",
       column(6, actionButton("startButton", "Process raw data", styleclass="primary")),    
       column(6, conditionalPanel("input.startButton",
         actionButton("continueToQC", "Continue with quality control", styleclass="info")
-    ))),
+    )))),
+    conditionalPanel("input.isHitList", fluidRow(
+      column(6, actionButton("analysisButton", "Continue with downstream analysis", styleclass="info"))    
+    )),
     hr(),
     conditionalPanel(condition="input.showColOptions", 
                      wellPanel(
@@ -176,6 +182,7 @@ elts <- list(
            fluidRow(column(width=4, uiOutput("uiOutput_dataWellPanel"))),uiOutput("uiOutput_data")),
   tabPanel("Hit Discovery", shinyalert("hits_error"), 
            HTML('<div class="shinyalert alert fade alert-info in">Here you can select a normalization and hit detection strategy to generate a candidate hit list used for down-stream analysis :</div>'), 
+           shinyalert("hits_error"),
            conditionalPanel("input.screenType == 'miRNA'",
                             actionButton("continueToMiRNAs", "Continue with miRNA analysis and target discovery", styleclass="info")           
            ),
@@ -210,10 +217,20 @@ elts <- list(
   ),
   tabPanel("About",
            fluidRow(column(width=4, HTML("The High-Throughput Screening kit for R (HiTSeekR) was developed as a joint project between<br/><br/>
-                <div style='float:left;'><a href='http://nanocan.org'><img width=150 src='NanoCAN.png'/></a></div>
-                <div style='float:right;'><a href='http://baumbachlab.net'><img width=200 src='baumbachlab.png'/></a></div>
+                <a href='http://nanocan.org'><img width=150 src='NanoCAN.png'/></a>
+                <a href='http://baumbachlab.net'><img width=200 src='baumbachlab.png'/></a>
                 <div style='clear: both; padding-top:50px;'>
-                Contact: Markus List &lt;mlist'at'health.sdu.dk&gt;
+                Contact: Markus List &lt;markus.list=.AT.=mpi-inf.mpg.de&gt;<br/><br/>
+                <p><a href='https://github.com/nanocan/HiTSeekR' target='_blank' class='btn btn-primary'>View on GitHub &rarr;</a></p>
+                <p><a href='https://nanocan.github.io/HiTSeekR' target='_blank' class='btn btn-primary'>Project page with tutorial &rarr;</a></p>
+                <br/><br/><hr>
+                <div id='aboutdbs'><h4>In addition to a great many R packages from CRAN, bioconductor and github, the following databases and external resources are used in HiTSeekR:</h4>
+                <ul>
+                  <li><a href='http://diana.imis.athena-innovation.gr/DianaTools/index.php?r=site/page&view=software' target='_blank' class='btn btn-primary'>DIANA tools</a> &rarr; microRNA target and pathway prediction</li>
+                  <li><a href='http://stitch.embl.de/'target='_blank' class='btn btn-primary'>STITCH</a> &rarr; interaction between proteins and chemicals</li>
+                  <li><a href='http://keypathwayminer.compbio.sdu.dk/'target='_blank' class='btn btn-primary'>KeyPathwayMiner</a> &rarr; de novo network enrichment</li>
+                </ul>
+                </div>
                 </div>
                 ")))
   )

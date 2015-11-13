@@ -7,6 +7,7 @@ output$uiOutput_drug_targets <- renderUI({
     tabPanel("Drug target genes",  
              sidebarPanel(
                selectInput("selectedDrugTargetDBs", "currently selected:", c("STITCH"), "STITCH"),
+               numericInput("drugTargetCutoff", "Cutoff for the STITCH combined score", value=500),
                helpText("STITCH Chemical-Protein Interactions database http://stitch.embl.de/")             
 
                #conditionalPanel(

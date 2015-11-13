@@ -1,3 +1,19 @@
+processedHitList <- reactive({
+  input$analysisButton
+  
+  isolate({
+    data <- rawData()
+    
+    accessionCol <- data[,input$accessionCol]
+    sampleCol <- data[,input$sampleCol]  
+    measurementCol <- data[,input$measurementCol]
+    experimentCol <- data[,input$experimentCol]
+    processedData <- data.frame(experimentCol, sampleCol, accessionCol, measurementCol)
+    colnames(processedData) <- c("Experiment", "Sample", "Accession", "Raw")    
+    return(processedData)
+  })
+})
+
 processedData <- reactive({  
   input$startButton
 
