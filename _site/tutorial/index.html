@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/HiTSeekR/stylesheets/shiori.css">
+    <link href='//fonts.googleapis.com/css?family=Montserrat:700,400' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Merriweather:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="canonical" href="http://nanocan.github.io/HiTSeekR/tutorial/">
+    <link rel="shortcut icon" href="/HiTSeekR/favicon.ico">
+    <title>Tutorial | HiTSeekR</title>
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Additions to <head> tags go here. -->
+
+  </head>
+  <body>
+  
+    <div class="navbar navbar-inverse navbar-static-top">
+  
+      <div class="container">
+        <div class="navbar-header">
+          <div class="navbar-toggle-wrapper visible-xs">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".js-navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+          </div>
+          <a href="/HiTSeekR/" class="navbar-brand" style="margin-bottom:100px;"><img src="/HiTSeekR/images/HiTSeekR.png" alt=""></a>
+        </div>
+        <div class="collapse navbar-collapse js-navbar-collapse">
+          <ul class="navbar-nav nav" data-purplecoat="shiori" data-purplecoat-label="nav.html">
+            <li><a href="/HiTSeekR/archive">Archive</a></li>
+<li><a href="/HiTSeekR/tutorial">Tutorial</a></li>
+
+
+          </ul>
+          <ul class="navbar-nav nav navbar-right" data-purplecoat="shiori" data-purplecoat-label="nav-right.html">
+            <li class="hidden-xs"><iframe src="http://ghbtns.com/github-btn.html?user=nanocan&repo=HiTSeekR&type=watch&count=true&size=large"
+  allowtransparency="true" frameborder="0" scrolling="0" width="170" height="30" style="margin-top: 14px;"></iframe>
+</li>
+
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        
+          <div class="col-sm-8">
+            
+<h2 id="introduction">Introduction</h2>
+<p><a name="Introdcution"></a></p>
+
+<p>High-throughput screening (HTS) is characterized by experimentation on a large or even ultra-large (&gt; 100,000 experiments) scale, which is achieved through a high degree of automation with regards to pipetting and microtiter plate handling as well as through miniaturization of experimental procedures. 
+Data generated in HTS are subject to variation caused by different sources and therefore requires appropriate normalization. In general, the following steps are taken:</p>
+
+<ol>
+  <li><strong>Input Data:</strong> The columns of the input data need to be assigned correctly, for HiTSeekR to proceed with the analysis.</li>
+  <li><strong>Quality Control:</strong> Sources of variation are identified and the quality of replicates and controls are assessed.</li>
+  <li><strong>Normalization:</strong> Bias in the data is countered by a suitable normalization method. Control based and plate based normalization methods are differentiated.</li>
+  <li><strong>Hit Discovery:</strong> A hit detection method, either based on controls or on plate statistics, is used to identify active samples in the screen.</li>
+  <li><strong>Down-stream analysis:</strong> The hit list generated in the step above is used as input for further analyses based on systems biology methods. The goal here is to learn what biological processes are affected rather than relying on individual observations that can also be due to outliers or off-target effects of the samples.</li>
+</ol>
+
+<p>HiTSeekR guides the user through each of these steps and enables well informed decisions based on informative plots and direct method comparisons. 
+One decisive advantage of the HTS technology is its versatility, i.e. almost any kind of cell based assay can in theory be adapted. 
+Since the early days of the technology, where it was mainly used for small molecule screens (drug screens) in pharmaceutical companies, this flexibility has opened up new use cases, such as
+RNA interference (gene silencing) or miRNA screens (inhibitors or mimicks). Each of these screen types demands a different strategy for down-stream analysis. All three types of screens are supported in HiTSeekR and will be elaborated on in this tutorial.
+However, since the first four steps are identical, they will only be shown exemplary on an RNAi screen aimed at the discovery of vorinostat resistance genes obtained from PubChem (https://pubchem.ncbi.nlm.nih.gov/bioassay/743454).    </p>
+
+<h2 id="rna-interference--crispr-cas9-screens-gene-silencing">RNA interference / CRISPR CAS9 screens (Gene silencing)</h2>
+<p><a name="siRNA"></a></p>
+
+<h3 id="step-1-input-data">Step 1: Input Data</h3>
+
+<h3 id="step-2-quality-control">Step 2: Quality Control</h3>
+
+<h3 id="step-3-normalization">Step 3: Normalization</h3>
+
+<h3 id="step-4-hit-discovery">Step 4: Hit Discovery</h3>
+
+<h3 id="step-5-downstream-analysis">Step 5: Downstream Analysis</h3>
+
+<h2 id="microrna-inhibitor--mimicks-screens">microRNA inhibitor / mimicks screens</h2>
+<p><a name="miRNA"></a></p>
+
+<h3 id="steps-1-4">Steps 1-4</h3>
+
+<p>See RNA interference.</p>
+
+<h3 id="step-5-downstream-analysis-1">Step 5: Downstream Analysis</h3>
+
+<h2 id="small-compound-drug-screen">Small compound (drug) screen</h2>
+<p><a name="compound"></a></p>
+
+<h3 id="steps-1-4-1">Steps 1-4</h3>
+
+<p>See RNA interference</p>
+
+<h3 id="step-5-downstream-analysis-2">Step 5: Downstream Analysis</h3>
+
+          </div>
+          <div class="col-sm-4">
+            <!-- Feel free to remove this div. Uses purplecoat: http://ellekasai.github.io/purplecoat.js -->
+  <h3 class="section-header">
+    Get started:
+  </h3>
+  <p><a href="http://www.hitseekr.combio.sdu.dk" target="_blank" class="btn btn-primary">Demo Application</a></p>
+
+<h3>
+  Tutorial:
+</h3>
+<ul>
+	<li>
+		<a href="/HiTSeekR/tutorial/index.html#Introduction" >Introduction</a>
+	</li>
+	<li>
+		<a href="/HiTSeekR/tutorial/index.html#siRNA" >Example 1: siRNA screen</a>
+	</li>
+	<li>
+		<a href="/HiTSeekR/tutorial/index.html#miRNA" >Example 2: microRNA screen</a>
+	</li>
+	<li>
+		<a href="/HiTSeekR/tutorial/index.html#compound" >Example 3: drug screen</a>
+	</li>
+</ul>
+
+<h3>
+  Setup your own installation:
+</h3>
+	<p><a href="https://hub.docker.com/r/nanocan/hitseekr/" target="_blank" class="btn btn-primary">Docker Hub</a></p>
+
+<h3>
+  <h3 class="section-header">
+    Get involved:
+  </h3>
+
+  <p><a href="https://github.com/nanocan/HitSeekR" target="_blank" class="btn btn-primary"><i class="fa fa-github fa-lg"></i> View on GitHub &rarr;</a></p>
+
+
+  <h3>
+    Design & Development: 
+  </h3>
+  <h4>Markus List</h4>
+
+  <p><a href="https://twitter.com/itisalist" class="twitter-follow-button" data-show-screen-name="false" data-show-count="true" data-dnt="true" data-size="large">Follow @itisalist</a></p>
+
+<h3>
+	Supported by:
+</h3>          
+	<div><a href='http://nanocan.org'><img width=150 src="/HiTSeekR/images/NanoCAN.png"/></a></div>
+   <div><a href='http://baumbachlab.net'><img width=200 src="/HiTSeekR/images/baumbachlab.png"/></a></div>
+ 
+
+
+          </div>
+        
+      </div>
+      <div class="row footer">
+        <div class="col-sm-12 text-center">
+          <!-- Feel free to remove this div. Uses purplecoat: http://ellekasai.github.io/purplecoat.js -->
+<div data-purplecoat="shiori" data-purplecoat-label="footer.html">
+&copy;2015.
+Built with <a href="http://jekyllrb.com/">Jekyll</a> and
+<a href="https://github.com/ellekasai/shiori">Shiori Theme</a>.
+</div>
+        </div>
+      </div>
+    </div>
+    <script src="/HiTSeekR/javascripts/jquery.min.js"></script>
+    <script src="/HiTSeekR/javascripts/bootstrap.min.js"></script>
+    <script src="/HiTSeekR/javascripts/purplecoat-min.js"></script>
+    <!-- Place your <script> tags here. -->
+
+<!-- Example: Twitter -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+
+  </body>
+</html>

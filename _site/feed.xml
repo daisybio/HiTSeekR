@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>HiTSeekR</title>
+    <description></description>
+    <link>http://nanocan.github.io/HiTSeekR/</link>
+    <atom:link href="http://nanocan.github.io/HiTSeekR/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Mon, 16 Nov 2015 17:12:33 +0100</pubDate>
+    <lastBuildDate>Mon, 16 Nov 2015 17:12:33 +0100</lastBuildDate>
+    <generator>Jekyll v2.4.0</generator>
+    
+      <item>
+        <title>HiTSeekR project page launched</title>
+        <description>&lt;p&gt;This is the official launch of the HiTSeekR project page. An in-depth tutorial will follow shortly to provide some hands-on experience for the demo application.&lt;/p&gt;
+</description>
+        <pubDate>Thu, 12 Nov 2015 00:00:00 +0100</pubDate>
+        <link>http://nanocan.github.io/HiTSeekR/HiTSeekR-project-page</link>
+        <guid isPermaLink="true">http://nanocan.github.io/HiTSeekR/HiTSeekR-project-page</guid>
+        
+        
+      </item>
+    
+  </channel>
+</rss>
