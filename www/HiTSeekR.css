@@ -102,7 +102,6 @@ a#overlaylaunch-inAbox {
     padding: 15px 30px 30px;
 }
 
-
 .overlay .toolbar {
 	margin-bottom:50px;
     padding: 8px;
@@ -130,4 +129,8 @@ a#overlaylaunch-inAbox {
   .overlay .toolbar a.close:hover span {
     background-color: #b90900;
     color: #fff;
+}
+
+.shiny-plot-output {
+  height: 800;
 }

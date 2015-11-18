@@ -90,11 +90,11 @@ output$uiOutput_gene_set_analysis <- renderUI({
     elements <- c(elements, list(tabPanel("DIANA mirPATH", 
                                           sidebarPanel(
                                             HTML('<div class="shinyalert alert fade alert-info in">For details regarding DIANA and the settings shown below click <a href=\'http://diana.imis.athena-innovation.gr/DianaTools/index.php?r=mirpath\' target=\'_blank\'><u>here</u></a>.</div>'), 
-                                            selectInput("mirpath_selection", "Gene selection method", c("Genes union" = 0, "Genes intersection" = 1, "Pathways union" = 2, "Pathways intersection" = 3), 0),
+                                            selectInput("mirpath_selection", "Gene selection method", c("Genes union" = 0, "Genes intersection" = 1, "Pathways union" = 2, "Pathways intersection" = 3), 2),
                                             conditionalPanel("input.mirpath_selection == 1", 
                                                              numericInput("mirpath_cutoff", "Cutoff for gene intersection", min = 0, value = 0, max=100)
                                             ),
-                                            numericInput("mirpath_fdr", "FDR cutoff", min=0, max=1, step=0.01, value=0.05),
+                                            numericInput("mirpath_fdr", "Multiple testing (FDR) cutoff", min=0, max=1, step=0.01, value=0.05),
                                             checkboxInput("mirpath_conservative", "Use conservative statistics", value=TRUE),
                                             #selectInput("mirpath_method", "miRNA target prediction method", c("tarbase", "microT-CDS"), value="microT-CDS"),
                                             numericInput("mirpath_threshold", "microT-CDS score cutoff", min=0.7, max=1.0, value=0.8, step=0.01)
@@ -149,7 +149,7 @@ output$uiOutput_KPM <- renderUI({
     HTML('<div class="shinyalert alert fade alert-info in">For details regarding KeyPathwayMiner and the settings shown below click <a href=\'http://tomcat.compbio.sdu.dk/keypathwayminer/\' target=\'_blank\'><u>here</u></a>.</div>'), 
     if(input$screenType=="miRNA")
     {
-      selectInput("KPM.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_permutation")
+      selectInput("KPM.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_targets")
     },
     #selectInput("kpm_strategy", "Strategy:", c("GLONE", "INES"), value="INES"),    
     #selectInput("kpm_algorithm", "Algorithm:", list("Greedy"="Greedy", "Exact (FPT)"="Exact", "Ant Colony Optimization" = "ACO")),
@@ -159,20 +159,16 @@ output$uiOutput_KPM <- renderUI({
     #),    
     #checkboxInput("kpm_ranged", "ranged K and L?", FALSE),
     #conditionalPanel("!input.kpm_ranged",
-    #conditionalPanel(condition="input.kpm_strategy!='GLONE'",
-         sliderInput("kpm_K", paste("K (# node exceptions)"), 1, min = 0, max = 3, step=1),        
-    #),
     if(input$screenType == "miRNA"){
-      sliderInput("kpm_L", paste("L (# case exceptions)"), 1, min = 0, max = length(unique(mirna.targets()$mature_miRNA))-1, step=1)
-    }
-    else if(input$screenType == "siRNA")
-    {
-      sliderInput("kpm_L", paste("L (# case exceptions)"), 0, min = 0, max = 0, step=1)
+      sliderInput("kpm_L", paste("How many times should a gene be targeted at least to be considered?"), 1, min = 1, max = length(unique(mirna.targets()$mature_miRNA)), step=1)
     }
     else if(input$screenType == "compound")
     {
-      sliderInput("kpm_L", paste("L (# case exceptions)"), 1, min = 0, max = length(unique(drug.targets()$PubChem_CID))-1, step=1)
+      sliderInput("kpm_L", paste("How many times should a gene be targeted at least to be considered?"), 1, min = 1, max = length(unique(drug.targets()$PubChem_CID)), step=1)
     },
+    #conditionalPanel(condition="input.kpm_strategy!='GLONE'",
+    sliderInput("kpm_K", paste("Number of exception genes allowed"), 1, min = 0, max = 3, step=1),        
+    #),
     #),
     #conditionalPanel("input.kpm_ranged",
     #  conditionalPanel("input.kpm_strategy!='GLONE'",

@@ -9,6 +9,7 @@ dummyProgressBar <- function(){
 
 #format integers for plots
 formatIntegerForPlot <- function(data, columnToFormat){    
+    data <- as.data.frame(data)
     maxNumber <- max(as.integer(data[,columnToFormat]))
     data[,columnToFormat] <- sprintf(paste("%0", nchar(maxNumber), "d", sep=""),as.integer(data$Plate))
     data[,columnToFormat] <- as.factor(data[,columnToFormat])
@@ -22,7 +23,7 @@ formatIntegerForPlot <- function(data, columnToFormat){
 #   
 #   exp.data <- filter(exp.data, Sample %in% consensus$Sample)
 #   p3 <- rPlot(x="Sample", y="n", color='method', data = exp.data, type = 'bar')
-#   p3$addParams(dom='normcomparison', width="800", height="600")
+#   p3$addParams(dom='normcomparison', width="800", height="800")
 #   return(p3)
 # })
 
@@ -51,7 +52,7 @@ output$signalDistPlot <- renderPlot({
   p <- p + geom_density(alpha=.3)
   p <- p + theme_bw() + facet_grid(Experiment ~ Readout)
   return(p)  
-})
+}, height=600)
 
 output$signalqqPlot <- renderPlot({
   plot.data <- processedData()
@@ -65,7 +66,7 @@ output$signalqqPlot <- renderPlot({
   p <- p + theme_bw() + facet_grid(Experiment ~ Readout)
   
   return(p)  
-})
+}, height=600)
 
 # Heatmap #
 output$heatmapPlot <- renderPlot({  
@@ -124,7 +125,7 @@ output$scatterPlotHits <- renderChart3({
 
   p1 <- dPlot(y=input$normalization, x=c("Sample", "Well.position"), z=paste(input$normalization, "_sd", sep=""), 
               data=outl, type="bubble", groups="category", height="800", width="100%",
-              bounds = list(x=70, y=30, height="600", width="90%"))  
+              bounds = list(x=70, y=30, height="90%", width="90%"))  
   p1$addParams(dom='scatterPlotHits')
 
   p1$legend(
@@ -222,8 +223,9 @@ observe({
         plotData <- dplyr::filter(exp.data, Experiment == experiment, Readout == readout)
         plotName <- paste(experiment, readout, "IntScatterPlot", sep="")
         output[[plotName]] <- renderChart({         
+          
           formatted.plotData <-formatIntegerForPlot(plotData, "Plate")
-          p <- hPlot(y= sel.normalization, x = "wellCount", data = formatted.plotData, type = "scatter", group = "Plate")
+          p <- hPlot(y= sel.normalization, x = "sampleName", data = formatted.plotData, type = "scatter", group = "Plate")
           #p$params$series[[1]]$data <- toJSONArray(formatted.plotData, json=F)
           #p$tooltip(formatter = "#! function(){ return this.point.x + ',k' + this.point.Sample + this.point.y;} !#")
           p$addParams(dom=plotName)      
@@ -248,8 +250,8 @@ output$scatterPlot <- renderPlot({
   progress <- dummyProgressBar()
   on.exit(progress$close())
   
-  if(is.null(input$dataNormalizationSelected)) sel.normalization <- "Raw"
-  else sel.normalization <- input$normalization    
+  if(is.null(input$dataSelectedNormalization)) sel.normalization <- "Raw"
+  else sel.normalization <- input$dataSelectedNormalization
   q <- ggplot(exp.data, aes_string(x="wellCount", y=sel.normalization, color="Plate", shape="Replicate")) + geom_point() + geom_line(stat="hline", yintercept="mean", color="black", aes(group=interaction(Plate, Replicate))) 
   q <- q + theme_bw()
   q <- q + facet_grid(Readout~Experiment, scales="free")
@@ -260,7 +262,7 @@ output$scatterPlot <- renderPlot({
   numOfPlates <- length(unique(exp.data$Plate))
   q <- q + scale_color_manual(values=rep(brewer.pal(8,"Dark2"), length.out=numOfPlates))
   print(q)
-})
+}, height=600)
 
 getRainbowColors <- function(numOfCategories){
   #col <-rainbow(numOfCategories)
@@ -311,7 +313,7 @@ output$controlPerformancePlot <- renderPlot({
   p <- p + annotate("rect", xmin=0, xmax=length(unique(result$Plate))+1, ymin=3, ymax=6, alpha=0.2, fill="orange") 
   p <- p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   return(p)
-})
+}, height=600)
 
 #plot for correlation of replicates
 
@@ -351,7 +353,7 @@ output$replicateCorrPlot <- renderPlot({
   on.exit(progress$close())
   list.of.plots <- correlationPlot(exp.data, "Raw")
   do.call(grid.arrange, list.of.plots)
-})
+}, height=600)
 
 #normalization tab
 output$replicateCorrPlot2 <- renderPlot({
@@ -360,7 +362,7 @@ output$replicateCorrPlot2 <- renderPlot({
   on.exit(progress$close())
   list.of.plots <- correlationPlot(exp.data, input$dataSelectedNormalization)
   do.call(grid.arrange, list.of.plots)
-})
+}, height=600)
 
 
 # Control plot for plate signal spread (box plots)
@@ -384,7 +386,7 @@ output$plateMeanPlot <- renderPlot({
   
   q <- plateSignalSpreadPlot(exp.data, "Raw")
   print(q)
-})
+}, height=600)
 
 #normalization tab
 output$plateMeanPlot2 <- renderPlot({
@@ -395,7 +397,7 @@ output$plateMeanPlot2 <- renderPlot({
   
   q <- plateSignalSpreadPlot(exp.data, input$dataSelectedNormalization)
   print(q)
-})
+}, height=600)
 
 # Plot for control performance (box plots) #
 output$controlPlot <- renderPlot({  
@@ -410,7 +412,7 @@ output$controlPlot <- renderPlot({
   q <- q + guides(color=guide_legend(nrow=10, byrow=TRUE))  
   q <- q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  
   print(q)
-})
+}, height=600)
 
 # Plot for row and column effects over whole screen #
 output$rowAndColumn <- renderPlot({
@@ -424,7 +426,7 @@ output$rowAndColumn <- renderPlot({
   p1 <- p1 + theme_bw() + facet_grid(Readout~Experiment) + scale_fill_brewer(palette="Accent")
   p2 <- p2 + theme_bw() + facet_grid(Readout~Experiment) + scale_fill_brewer(palette="Accent")
   print(grid.arrange(p1,p2))
-})
+}, height=600)
 
 #KPM miRNA target enrichment plot
 #using d3

@@ -39,7 +39,7 @@ family.hitrate <- reactive({
   hits <- outliers()
   
   result <- formattedTable(hits, FALSE)
-  result <- within(result, hits <- paste(category, Sample))
+  result <- within(result, hits <- paste(Category, Sample))
   result <- result %>% dplyr::group_by(prefam_acc, id) %>% dplyr::summarise(hits_count=n(),
                                                                             distinct_hits_count=n_distinct(mirna_id), 
                                                                             samples=paste(hits, collapse="")
@@ -272,7 +272,7 @@ mirpath.results <- reactive({
   #prepare progress bar
   progress <- shiny::Progress$new()
   on.exit(progress$close())
-  progress$set(message = "Querying DIANA mirPATH. Waiting fcor results...")   
+  progress$set(message = "Querying DIANA mirPATH. Waiting for results...")   
   
   get_DIANA_mirPath(miRNAs = mirna.hits(), threshold = input$mirpath_threshold, geneIntersectionCutoff = input$mirpath_cutoff, selection = input$mirpath_selection, fdr = input$mirpath_fdr,conservative = input$mirpath_conservative)
 })

@@ -61,8 +61,10 @@ outliers <- reactive({
   
   #differential screening. remove hits found in the reference screen
   if(input$differentialScreening){
-    if(length(input$experimentSelected) == 1 && length(input$readoutSelected) == 1)
-      stop("You have to select at least two different readouts or experiments to apply differential screening.")
+    if(length(input$experimentSelected) == 1 && length(input$readoutSelected) == 1){
+      showshinyalert(session, "hits_error", "You have to select at least two different readouts or experiments to apply differential screening.", "danger")
+      return(NULL)
+    }
     else{      
       refSet <- dplyr::filter(outl, Experiment == input$referenceExperiment, Readout == input$referenceReadout)
       outl <- dplyr::anti_join(outl, refSet, by=c("Plate", "Well.position"))
@@ -120,6 +122,9 @@ hit.detect <- reactive({
   margin <- input$margin
   
   #split input data by experiment and readout and process each individually
+  
+  errors.log <<- ""
+  
   outl <- foreach(exp = input$experimentSelected, .combine=rbind) %do%{
     foreach(rdt = input$readoutSelected, .combine=rbind) %do% {
       
@@ -138,18 +143,29 @@ hit.detect <- reactive({
       }
       
       #function to apply hit detection
-      find.hits.call(m.data, it.data, input$method, margin, negCtrl(), input$normalization, updateProgress, upperCutoff=input$upperCutoff, lowerCutoff=input$lowerCutoff)      
+      result <- NULL
+      
+      tryCatch({
+        result <- find.hits.call(m.data, it.data, input$method, margin, negCtrl(), input$normalization, updateProgress, upperCutoff=input$upperCutoff, lowerCutoff=input$lowerCutoff)
+      },
+      error = function(e) { 
+          errors.log <<- paste(errors.log, "For experiment ", exp, " and readout ", rdt, e$message, "<br/>")        
+        }
+      )
     }
-  }  
+      return(result)
+  }
   
   #check how many of the hits are not mapped to an unambigious identifier
   if(input$screenType == 'siRNA')
   {
     na.count <- length(which(is.na(outl$gene_id)))
+    possible_reason <- "Gene symbols not accepted by HUGO are sometimes ambigious or do not match to an entrez gene id. Typical examples are hypothetical genes starting with LOC."
   }
   else if(input$screenType == 'miRNA')
   {
     na.count <- length(which(is.na(outl$mirna_id)))
+    possible_reason <- "miRNA names other than MI or MIMAT are often outdated. This is not necessarily a problem, but for some miR identifiers it is not clear whether the 3p or 5p strand is meant. Moreover, some hits are ignored because they belong to dead miRNA entries."
   }
   else if(input$screenType == 'compound')
   {
@@ -161,11 +177,17 @@ hit.detect <- reactive({
     
     outl <- hits[,c(1:(ncol(hits)-2), ncol(hits), ncol(hits) -1)]
     na.count <- length(which(is.na(outl$PubChem_CID)))
+    
+    possible_reason <- "Some of the identifiers used here have no known match to a PubChem compound id (CID)."
   }
   
-  if(na.count > 0)
-    showshinyalert(session, "hits_error", paste("Warning: ", na.count, " of the selected hits could not be mapped to a suitable identifier and will thus be ignored in subsequent analyses.", sep=""), "danger")
-  else hideshinyalert(session, "hits_error")                     
+  if(na.count > 0){
+    errors.log <-  paste(errors.log, "Warning: ", na.count, " of the selected hits could not be mapped to a suitable identifier and will thus be ignored in subsequent analyses. Possible reason: ", possible_reason, sep="")
+  }
+  
+  #output errors and warnings
+  if(errors.log != "") showshinyalert(session, "hits_error", errors.log, "danger")
+  else hideshinyalert(session, "hits_error")
   
   #return results    
   return(outl)

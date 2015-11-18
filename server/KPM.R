@@ -75,7 +75,19 @@ KPM.run <- reactive({
     #}
     #else{
       Kmin <- input$kpm_K
-      Lmin <- input$kpm_L
+      
+      if(input$screenType == "miRNA"){
+        Lmin <- length(unique(mirna.targets()$mature_miRNA)) - input$kpm_L
+      }
+      else if(input$screenType == "siRNA")
+      {
+        Lmin <- 0
+      }
+      else if(input$screenType == "compound")
+      {
+        Lmin <- length(unique(drug.targets()$PubChem_CID)) - input$kpm_L
+      }
+      
     #}
     
     result <- foreach(ind.matrix = list.of.ind.matrices) %do%{

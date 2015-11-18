@@ -136,6 +136,7 @@ elts <- list(
           <li>If you would like to analyze a different data set just click on the HiTSeekR logo in the top left corner to get back to the start.</li>
           <li>On the bottom of the page, a preview of the input data is shown. Once you are confident about the selected settings press the "Process raw data" button below.</li>
          </ul></div>'), 
+    shinyalert("demoDatasetInfo", click.hide = FALSE),
     conditionalPanel("output.fileUploaded",
                      checkboxInput("isHitList", "If the uploaded file is already a processed list of hits subject to down-stream analysis check this box", FALSE),
                      selectInput("fileSeparator", 
@@ -174,13 +175,17 @@ elts <- list(
   ),  
   tabPanel("Quality Control", id="qc", 
            HTML('<div class="shinyalert alert fade alert-info in">Below you can select plots that may help to assess potential quality problems with the raw data.</div>'), 
-           actionButton("continueToNormalizationEffect", "Continue with studying normalization effects", styleclass="info"), checkboxInput("showHelpPages", "Show help text", FALSE), uiOutput("uiOutput_quality_control")),
+           fluidRow(
+             column(4, wellPanel(checkboxInput("showHelpPages", "Show help text", FALSE))),
+             column(4, actionButton("continueToNormalizationEffect", "Continue with studying normalization effects", styleclass="info"))
+           ), uiOutput("uiOutput_quality_control")),
   tabPanel("Normalization Effect", 
            HTML('<div class="shinyalert alert fade alert-info in">Some quality issues can be accommodated with appropriate normalization. Here you can study the effect of different normalization strategies on the data:</div>'), 
-           actionButton("continueToHitDiscovery", "Continue with hit discovery", styleclass="info"),
-           hr(),
-           fluidRow(column(width=4, uiOutput("uiOutput_dataWellPanel"))),uiOutput("uiOutput_data")),
-  tabPanel("Hit Discovery", shinyalert("hits_error"), 
+           fluidRow(
+             column(width=4, uiOutput("uiOutput_dataWellPanel")),
+             column(4, actionButton("continueToHitDiscovery", "Continue with hit discovery", styleclass="info"))
+           ), uiOutput("uiOutput_data")),
+  tabPanel("Hit Discovery", 
            HTML('<div class="shinyalert alert fade alert-info in">Here you can select a normalization and hit detection strategy to generate a candidate hit list used for down-stream analysis :</div>'), 
            shinyalert("hits_error"),
            conditionalPanel("input.screenType == 'miRNA'",
