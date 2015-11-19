@@ -48,7 +48,7 @@ output$uiOutput_htsanalyzerOptions <- renderUI({
                      numericInput("htsanalyzer.permutations", "Number of permutations for GSEA", min=10, max=gsea.max.permutations, value=100)
     ),          
     #selectInput("htsanalyzer.adjust.method", "Method for p-value correction", p.adjust.methods, selected="BH"),
-    actionButton("startHTSanalyzer", "Start Analysis", styleclass="primary")
+    actionButton("startHTSanalyzer", "Start Gene Set Analysis", styleclass="primary")
   )
   do.call(sidebarPanel, elements)
 })
@@ -57,7 +57,9 @@ output$uiOutput_gene_set_analysis <- renderUI({
   elements <- list(
     tabPanel("Gene set analysis", uiOutput("uiOutput_htsanalyzerOptions"), 
              mainPanel(
-               HTML('<div class="shinyalert alert fade alert-info in">Gene set analysis is perfomed based on pre-defind gene sets. The enrichment of hit genes in a particular gene set can be tested for significance using hyper-geometric tests or gene set enrichment analysis.</div>'), 
+               conditionalPanel("input.showHelpText",
+                HTML('<div class="shinyalert alert fade alert-info in">Gene set analysis is perfomed based on pre-defind gene sets. The enrichment of hit genes in a particular gene set can be tested for significance using hyper-geometric tests or gene set enrichment analysis.</div>')
+               ),
                shinyalert("htsanalyzer_status"),
                conditionalPanel("input['htsanalyzer.doGSEA']",
                selectInput("htsanalyzer.resultType", "Select results", 
@@ -69,7 +71,9 @@ output$uiOutput_gene_set_analysis <- renderUI({
              )
     ),
     tabPanel("De novo network enrichment", uiOutput("uiOutput_KPM"), mainPanel(
-      HTML('<div class="shinyalert alert fade alert-info in">In contrast to gene set analysis, de novo network enrichment analysis does not rely on pre-defined gene sets, but directly extracts enriched sub-networks from large gene / protein interaction networks.</div>'), 
+      conditionalPanel("input.showHelpText",
+        HTML('<div class="shinyalert alert fade alert-info in">In contrast to gene set analysis, de novo network enrichment analysis does not rely on pre-defined gene sets, but directly extracts enriched sub-networks from large gene / protein interaction networks.</div>')
+      ),
       shinyalert("kpm_status"),    
       #textOutput("ind.matrix.props"),    
       #checkboxInput("kpm_debug", "Show debug console", FALSE),
@@ -97,7 +101,8 @@ output$uiOutput_gene_set_analysis <- renderUI({
                                             numericInput("mirpath_fdr", "Multiple testing (FDR) cutoff", min=0, max=1, step=0.01, value=0.05),
                                             checkboxInput("mirpath_conservative", "Use conservative statistics", value=TRUE),
                                             #selectInput("mirpath_method", "miRNA target prediction method", c("tarbase", "microT-CDS"), value="microT-CDS"),
-                                            numericInput("mirpath_threshold", "microT-CDS score cutoff", min=0.7, max=1.0, value=0.8, step=0.01)
+                                            sliderInput("mirpath_threshold", "microT-CDS score cutoff", min=0.7, max=1.0, value=0.8, step=0.05),
+                                            actionButton("startDIANAmirpath", "Start DIANA mirPATH Analysis", styleclass="primary")
                                           ),
                                           mainPanel(dataTableOutput("mirpath.table"), downloadButton("downloadMirPathResults"))
                                           )
@@ -146,7 +151,9 @@ output$uiOutput_KPM <- renderUI({
   elements <- list(
     HTML('<img src="KPM_banner.png"/><br/><br/>'),
     #textInput("kpm_URL", "KPM-Web URL:", "http://localhost:8080/kpm-web/"),  
-    HTML('<div class="shinyalert alert fade alert-info in">For details regarding KeyPathwayMiner and the settings shown below click <a href=\'http://tomcat.compbio.sdu.dk/keypathwayminer/\' target=\'_blank\'><u>here</u></a>.</div>'), 
+    conditionalPanel("input.showHelpText",
+    HTML('<div class="shinyalert alert fade alert-info in">For details regarding KeyPathwayMiner and the settings shown below click <a href=\'http://tomcat.compbio.sdu.dk/keypathwayminer/\' target=\'_blank\'><u>here</u></a>.</div>')
+    ),
     if(input$screenType=="miRNA")
     {
       selectInput("KPM.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_targets")
@@ -184,7 +191,9 @@ output$uiOutput_KPM <- renderUI({
     #checkboxInput("kpm_perturbation", "Perturbe network?", FALSE),
     actionButton("startKPMButton", "Start KeyPathwayMiner Analysis", styleclass="primary"), 
     hr(),
-    HTML('<div class="shinyalert alert fade alert-info in">Alternatively, you can also download the indicator matrix needed as input for KeyPathwayMiner and perform the analysis directly in <a href=\'http://tomcat.compbio.sdu.dk/keypathwayminer/\' target=\'_blank\'><u>KeyPathwayMiner Web</u></a> or using the <a href="http://apps.cytoscape.org/apps/keypathwayminer" target="_blank"><u>Cytoscape app</u></a>.</div>'), 
+    conditionalPanel("input.showHelpText",
+      HTML('<div class="shinyalert alert fade alert-info in">Alternatively, you can also download the indicator matrix needed as input for KeyPathwayMiner and perform the analysis directly in <a href=\'http://tomcat.compbio.sdu.dk/keypathwayminer/\' target=\'_blank\'><u>KeyPathwayMiner Web</u></a> or using the <a href="http://apps.cytoscape.org/apps/keypathwayminer" target="_blank"><u>Cytoscape app</u></a>.</div>')
+    ),
     downloadButton('downloadIndicatorMatrix', 'Download indicator matrix')
   )
   do.call(sidebarPanel, elements)

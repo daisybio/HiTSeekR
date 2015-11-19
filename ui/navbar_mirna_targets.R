@@ -26,7 +26,10 @@ output$uiOutput_mirna_targets <- renderUI({
                #sliderInput("at.least", "List only targets found in at least x databases", min = 1, max = 6, value = 3, step = 1),
                #checkboxInput("excludeDBcol", "Exclude database text column from gene target list", TRUE),
                #actionButton("updateTargets", "Update miRNA target list")
-             ),mainPanel( 
+             ),mainPanel(
+             conditionalPanel("input.showHelpText",
+                    miRNAtargetInfoText          
+             ),
              dataTableOutput("mirna.targets.table"),
              downloadButton('downloadTargets', 'Download miRNA target list')#,
              #downloadButton('downloadHotnetGeneList', 'Download hotnet2 heat scores')
@@ -34,6 +37,9 @@ output$uiOutput_mirna_targets <- renderUI({
     ),
     tabPanel("miRNA family coverage", 
              shinyalert("miRNA_family_info", click.hide = TRUE),
+             conditionalPanel("input.showHelpText",
+                              miRNAfamilyInfoText          
+             ),
              wellPanel(fluidRow(
                column(6, sliderInput("family_size_cutoff", "Family size cutoff:", min=0, max=20, value=0)),
                column(6, sliderInput("family_coverage_cutoff", "Family coverage cutoff:", min=0, max=100, value=0))
@@ -41,7 +47,10 @@ output$uiOutput_mirna_targets <- renderUI({
              dataTableOutput("family.hitrate")
   ),  
   tabPanel("miRNA high confidence targets", 
-    shinyalert("mirna_conf_status"),  
+    shinyalert("mirna_conf_status"), 
+    conditionalPanel("input.showHelpText",
+                     miRNAhighConfInfoText          
+    ),
     sidebarPanel(
     selectInput("highConfidenceTargetsMethod", "Method:", c("permutation test", "hypergeometric test"), "hypergeometric test"),    
     conditionalPanel(

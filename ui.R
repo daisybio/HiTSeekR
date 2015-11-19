@@ -101,13 +101,15 @@ elts <- list(
     }
                          ')),
     tags$link(rel = "stylesheet", type = "text/css", href = "HiTSeekR.css"),
-    shinyalert("general_status")
+    shinyalert("general_status"), fluidRow(id='helpCheckBox', tags$style(type="text/css", "#helpCheckBox { margin-left:50px;}"), checkboxInput("showHelpText", "Show help", FALSE))
   ),
   id="mainNavbar",  
   position="fixed-top",  
   tabPanel("Input",
      conditionalPanel("input.dataset == 'none selected'",
-       HTML('<div class="shinyalert alert fade alert-info in">Before you can start your analysis you have to select or upload a dataset:</div>'), 
+       conditionalPanel("input.showHelpText",                      
+        HTML('<div class="shinyalert alert fade alert-info in">Before you can start your analysis you have to select or upload a dataset:</div>')
+       ),
         fluidRow(
           tags$style(type="text/css", '#loadOptionsPanel { max-width:800px;}'),
           id="loadOptionsPanel",
@@ -128,6 +130,7 @@ elts <- list(
           ))
         )),   
     conditionalPanel("input.dataset != 'none selected'",
+    conditionalPanel("input.showHelpText",                     
     HTML('<div class="shinyalert alert fade alert-info in">In the next step you can customize how the data set is processed. Note:
          <ul>
           <li>In particular for uploaded data sets you need to select which type of information is found in which column. Check "show fileinput options".</li>
@@ -135,7 +138,8 @@ elts <- list(
           <li>The B-score normalization is ideally suited to address position bias in the data, but is computationally expensive and not selected by default.</li>
           <li>If you would like to analyze a different data set just click on the HiTSeekR logo in the top left corner to get back to the start.</li>
           <li>On the bottom of the page, a preview of the input data is shown. Once you are confident about the selected settings press the "Process raw data" button below.</li>
-         </ul></div>'), 
+         </ul></div>')
+    ),
     shinyalert("demoDatasetInfo", click.hide = FALSE),
     conditionalPanel("output.fileUploaded",
                      checkboxInput("isHitList", "If the uploaded file is already a processed list of hits subject to down-stream analysis check this box", FALSE),
@@ -174,19 +178,24 @@ elts <- list(
     ))
   ),  
   tabPanel("Quality Control", id="qc", 
-           HTML('<div class="shinyalert alert fade alert-info in">Below you can select plots that may help to assess potential quality problems with the raw data.</div>'), 
-           fluidRow(
-             column(4, wellPanel(checkboxInput("showHelpPages", "Show help text", FALSE))),
-             column(4, actionButton("continueToNormalizationEffect", "Continue with studying normalization effects", styleclass="info"))
-           ), uiOutput("uiOutput_quality_control")),
+           conditionalPanel("input.showHelpText",
+             HTML('<div class="shinyalert alert fade alert-info in">Below you can select plots that may help to assess potential quality problems with the raw data.</div>')
+           ),
+            actionButton("continueToNormalizationEffect", "Continue with studying normalization effects", styleclass="info"),
+            hr(),
+            uiOutput("uiOutput_quality_control")),
   tabPanel("Normalization Effect", 
-           HTML('<div class="shinyalert alert fade alert-info in">Some quality issues can be accommodated with appropriate normalization. Here you can study the effect of different normalization strategies on the data:</div>'), 
+           conditionalPanel("input.showHelpText",
+            HTML('<div class="shinyalert alert fade alert-info in">Some quality issues can be accommodated with appropriate normalization. Here you can study the effect of different normalization strategies on the data:</div>')
+           ),
            fluidRow(
              column(width=4, uiOutput("uiOutput_dataWellPanel")),
              column(4, actionButton("continueToHitDiscovery", "Continue with hit discovery", styleclass="info"))
            ), uiOutput("uiOutput_data")),
   tabPanel("Hit Discovery", 
-           HTML('<div class="shinyalert alert fade alert-info in">Here you can select a normalization and hit detection strategy to generate a candidate hit list used for down-stream analysis :</div>'), 
+           conditionalPanel("input.showHelpText",
+            HTML('<div class="shinyalert alert fade alert-info in">Here you can select a normalization and hit detection strategy to generate a candidate hit list used for down-stream analysis :</div>')
+           ),
            shinyalert("hits_error"),
            conditionalPanel("input.screenType == 'miRNA'",
                             actionButton("continueToMiRNAs", "Continue with miRNA analysis and target discovery", styleclass="info")           
@@ -205,19 +214,25 @@ elts <- list(
   #),
   tabPanel("microRNAs",            
            shinyalert("mirna_target_status"), 
-           HTML('<div class="shinyalert alert fade alert-info in">Here you can investigate miRNA targets, family membership and find publications associated with the hit candidates found in the previous tab. the effect of different normalization strategies on the data:</div>'), 
+           conditionalPanel("input.showHelpText",
+            HTML('<div class="shinyalert alert fade alert-info in">Here you can investigate miRNA targets, miRNA family membership and browse the mircancer database.</div>')
+           ),
            actionButton("continueToGenes2", "Continue with gene list analyses", styleclass="info"),
            hr(),
            uiOutput("uiOutput_mirna_targets")
   ),
   tabPanel("Small Compounds", 
-           HTML('<div class="shinyalert alert fade alert-info in">Here you can find putative drug target proteins of the previously identified hit candidates.</div>'), 
+           conditionalPanel("input.showHelpText",
+             HTML('<div class="shinyalert alert fade alert-info in">Here you can find putative drug target proteins of the previously identified hit candidates.</div>')
+           ),
            actionButton("continueToGenes3", "Continue with gene list analyses", styleclass="info"),
            hr(),
            uiOutput("uiOutput_drug_targets")
   ),
-  tabPanel("Genes", 
-           HTML('<div class="shinyalert alert fade alert-info in">Here you can perform down-stream analysis of genes identified in the previous step:</div>'), 
+  tabPanel("Genes",
+           conditionalPanel("input.showHelpText",
+            HTML('<div class="shinyalert alert fade alert-info in">Here you can perform down-stream analysis of genes identified in the previous step:</div>')
+           ),
            uiOutput("uiOutput_gene_set_analysis")
   ),
   tabPanel("About",
@@ -252,7 +267,7 @@ This web application is dedicated to the analysis of high-throughput screening d
           </div></div>
           <div class="toolbar" style="clear:both;">                
          '),
-    HTML('<span style="margin-left:20px;"><a target="_blank" href="http://nanocan.github.io/HiTSeekR/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">If you are here the first time, check out the tutorial
+    HTML('<span style="margin-left:20px;"><a target="_blank" href="http://nanocan.github.io/HiTSeekR/tutorial/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">If you are here the first time, check out the tutorial
     </button></a></span>'),
     br(),
     HTML("<div style='background-color:#ccccff; padding:30px; margin-top:30px; border-radius: 5px; '><h1>Select type of screen</h1>"),

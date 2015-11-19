@@ -16,14 +16,7 @@ output$scatterPlotTagList <- renderUI({
 })
 
 output$uiOutput_dataWellPanel <- renderUI({
-  do.call(wellPanel, list(fluidRow(column(6, 
-                                          selectInput("dataSelectedNormalization", "Normalization", normalizationChoices(), "Raw")
-  ), 
-  column(6, 
-         checkboxInput("dataShowHelpText", "Show help text", FALSE)
-  )
-  )
-  ))
+  do.call(wellPanel, list(selectInput("dataSelectedNormalization", "Normalization", normalizationChoices(), "Raw")))
 })
 
 output$uiOutput_data <- renderUI({ 
@@ -32,42 +25,42 @@ output$uiOutput_data <- renderUI({
   replicates <- unique(as.character(exp.data$Replicate))
   elements <- list(  
     tabPanel("Normalized Data", 
-             conditionalPanel("input.dataShowHelpText",
+             conditionalPanel("input.showHelpText",
                               HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                          normDataTableInfoText,
                                          '</div>', sep="")
                               )
              ), dataTableOutput("table_processedData")),
     tabPanel("Plate Signal Variation",
-             conditionalPanel("input.dataShowHelpText",
+             conditionalPanel("input.showHelpText",
                               HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                          plateMeanInfoText,
                                          '</div>', sep="")
                               )
              ), plotOutput("plateMeanPlot2", height="auto")),
     tabPanel("Whole Screen Scatter Plot", 
-             conditionalPanel("input.dataShowHelpText",
+             conditionalPanel("input.showHelpText",
                               HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                          wholeScreenInfoText,
                                          '</div>', sep="")
                               )
              ), uiOutput("scatterPlotTagList")),
     tabPanel("Signal Distribution", 
-             conditionalPanel("input.dataShowHelpText",
+             conditionalPanel("input.showHelpText",
                               HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                          signalDistributionInfoText,
                                          '</div>', sep="")
                               )
              ), plotOutput("signalDistPlot", height="auto")),
     tabPanel("QQ Plot", 
-             conditionalPanel("input.dataShowHelpText",
+             conditionalPanel("input.showHelpText",
                               HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                          qqPlotInfoText,
                                          '</div>', sep="")
                               )
              ), plotOutput("signalqqPlot", height="auto")),
     tabPanel("Plate Viewer",
-             conditionalPanel("input.dataShowHelpText",
+             conditionalPanel("input.showHelpText",
                               HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                          plateViewerInfoText,
                                          '</div>', sep="")
@@ -91,7 +84,7 @@ output$uiOutput_data <- renderUI({
   {
     elements <- c(elements, list(
       tabPanel("Replicate Correlation",              
-               conditionalPanel("input.dataShowHelpText",
+               conditionalPanel("input.showHelpText",
                                 HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                            replicateCorrInfoText,
                                            '</div>', sep="")

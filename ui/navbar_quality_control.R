@@ -2,7 +2,7 @@ output$uiOutput_quality_control <- renderUI({
   
   elements <- list(
     tabPanel("Plate Signal Variation",
-       conditionalPanel("input.showHelpPages",
+       conditionalPanel("input.showHelpText",
                         HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                    plateMeanInfoText,
                                    '</div>', sep="")
@@ -11,7 +11,7 @@ output$uiOutput_quality_control <- renderUI({
       plotOutput("plateMeanPlot", height="auto")
     ),
     tabPanel("Row and Column Effect",
-      conditionalPanel("input.showHelpPages",
+      conditionalPanel("input.showHelpText",
                        HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                   rowColumnInfoText,
                                   '</div>', sep="")
@@ -24,7 +24,7 @@ output$uiOutput_quality_control <- renderUI({
   if(input$hasControls){
     elements <- c(elements, list(
     tabPanel("Control Signal Spread", 
-      conditionalPanel("input.showHelpPages",
+      conditionalPanel("input.showHelpText",
                        HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                   controlPlotInfoText,
                                   '</div>', sep="")
@@ -33,7 +33,7 @@ output$uiOutput_quality_control <- renderUI({
       plotOutput("controlPlot", height="auto")
     ),
     tabPanel("Control Separability",
-      conditionalPanel("input.showHelpPages",
+      conditionalPanel("input.showHelpText",
                        HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                   controlPerformancePlotInfoText,
                                   '</div>', sep="")
@@ -46,7 +46,7 @@ output$uiOutput_quality_control <- renderUI({
   {
     elements <- c(elements, list(
       tabPanel("Replicate Correlation",
-               conditionalPanel("input.showHelpPages",
+               conditionalPanel("input.showHelpText",
                                 HTML(paste('<div class="shinyalert alert fade alert-info in">',
                                            replicateCorrInfoText,
                                            '</div>', sep="")

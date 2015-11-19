@@ -121,9 +121,10 @@ renderChart3 <- function( expr, env = parent.frame(), quoted = FALSE ){
 
 # Interactive plots for screen hits #
 output$scatterPlotHits <- renderChart3({
-  outl <- outliers()
+  outl <- outliers() %>% dplyr::select_("Sample", "Plate", "Well.position", "category", input$normalization, paste(input$normalization, "_sd", sep=""))
+  outl <- unique(outl)
 
-  p1 <- dPlot(y=input$normalization, x=c("Sample", "Well.position"), z=paste(input$normalization, "_sd", sep=""), 
+  p1 <- dPlot(y=input$normalization, x=c("Sample", "Plate", "Well.position"), z=paste(input$normalization, "_sd", sep=""), 
               data=outl, type="bubble", groups="category", height="800", width="100%",
               bounds = list(x=70, y=30, height="90%", width="90%"))  
   p1$addParams(dom='scatterPlotHits')

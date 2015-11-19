@@ -148,7 +148,7 @@ mirna.target.permutation <- eventReactive(input$mirna.target.permutation.button,
     #get hit list and mirna targets
     hit.list <- outliers()
     hit.list <- formattedTable(hit.list, FALSE)
-    hit.list <- within(hit.list, Sample <- paste(category, Sample))
+    hit.list <- within(hit.list, Sample <- paste(Category, Sample))
     
     if(input$accessionColType == "MI")
     {
@@ -267,7 +267,7 @@ ind.matrix.props <- renderText({
 })
 
 # DIANA mirpath results
-mirpath.results <- reactive({
+mirpath.results <- eventReactive(input$startDIANAmirpath, {
   
   #prepare progress bar
   progress <- shiny::Progress$new()

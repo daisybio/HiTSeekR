@@ -152,8 +152,8 @@ hit.detect <- reactive({
           errors.log <<- paste(errors.log, "For experiment ", exp, " and readout ", rdt, e$message, "<br/>")        
         }
       )
-    }
       return(result)
+    }
   }
   
   #check how many of the hits are not mapped to an unambigious identifier
