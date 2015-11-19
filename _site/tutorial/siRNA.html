@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/HiTSeekR/stylesheets/shiori.css">
+    <link href='//fonts.googleapis.com/css?family=Montserrat:700,400' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Merriweather:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="canonical" href="http://nanocan.github.io/HiTSeekR/tutorial/siRNA.html">
+    <link rel="shortcut icon" href="/HiTSeekR/favicon.ico">
+    <title>RNAi interference and CRISPR/CAS9 (Gene silencing) | HiTSeekR</title>
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Additions to <head> tags go here. -->
+
+  </head>
+  <body>
+  
+    <div class="navbar navbar-inverse navbar-static-top">
+  
+      <div class="container">
+        <div class="navbar-header">
+          <div class="navbar-toggle-wrapper visible-xs">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".js-navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+          </div>
+          <a href="/HiTSeekR/" class="navbar-brand" style="margin-bottom:100px;"><img src="/HiTSeekR/images/HiTSeekR.png" alt=""></a>
+        </div>
+        <div class="collapse navbar-collapse js-navbar-collapse">
+          <ul class="navbar-nav nav" data-purplecoat="shiori" data-purplecoat-label="nav.html">
+            <li><a href="/HiTSeekR/archive">Archive</a></li>
+<li><a href="/HiTSeekR/tutorial">Tutorial</a></li>
+
+
+          </ul>
+          <ul class="navbar-nav nav navbar-right" data-purplecoat="shiori" data-purplecoat-label="nav-right.html">
+            <li class="hidden-xs"><iframe src="http://ghbtns.com/github-btn.html?user=nanocan&repo=HiTSeekR&type=watch&count=true&size=large"
+  allowtransparency="true" frameborder="0" scrolling="0" width="170" height="30" style="margin-top: 14px;"></iframe>
+</li>
+
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        
+          <div class="col-sm-8">
+            
+<h2 id="rna-interference--crispr-cas9-screens-gene-silencing">RNA interference / CRISPR CAS9 screens (Gene silencing)</h2>
+<p><a name="siRNA"></a></p>
+
+<p>Genes and their products are the basic unit of the cellular machinery. Systematically inhibiting gene function is thus an ideal tool for functional and drug studies based on cellular responses. 
+This type of screen is supported in HiTSeekR and begins by selecting the appropriate screen type:</p>
+
+<p><img src="/HiTSeekR/images/tutorial/select_screen_genes.png" alt="The choice of the screen type is always the first step in HiTSeekR" title="The choice of the screen type is always the first step in HiTSeekR" /> </p>
+
+<h3 id="step-1-input-data">Step 1: Input Data</h3>
+
+<p>After selecting <em>genes</em> on the initial page, the input data tab is shown:</p>
+
+<p><img src="/HiTSeekR/images/tutorial/input_options.png" alt="For the input data you can choose between demo data sets, uploading your own data, or downloading a dataset via its PubChem Assay ID" title="For the input data you can choose between demo data sets, uploading your own data, or downloading a dataset via its PubChem Assay ID" /></p>
+
+<p>Here, the user is offered three choices:</p>
+
+<ol>
+  <li>
+    <p>Selecting one of the available demo datasets for this screen type</p>
+  </li>
+  <li>
+    <p>Uploading a new dataset in a comma, semicolon or tab separated format</p>
+  </li>
+  <li>
+    <p>Selecting and downloading a dataset from PubChem via its assay id (AID)</p>
+  </li>
+</ol>
+
+<p>For now, we will select <em>RNAi screen identifies Caspase4 as factor for TNFa signaling</em> as input (obtained from http://mcb.asm.org/content/32/17/3372.abstract). This action will change the view:</p>
+
+<p><img src="/HiTSeekR/images/tutorial/input_options2.png" alt="Options after selecting a screen" title="Options after selecting a gene" /></p>
+
+<p>At the bottom of the page, a table is shown that represents a raw representation of the input data. This allows the user to check if the data was 
+read in correctly and to identify the content of each column. 
+The user now has to decide whether the measured values need to be log2 transformed (stabilizes variance between lower and higher signal values), 
+if the B-score should be calculated (This is a computationally expensive score suitable to counter position related effects), and, most importantly,
+the user can also assign columns of the input data to properties in HiTSeekR. This step can be omitted for demo data since the column assignment is 
+pre-configured. For custom uploaded and PubChem downloaded screens, however, this step is necessary before the analysis can be continued:</p>
+
+<p><img src="/HiTSeekR/images/tutorial/input_options3.png" alt="Assigning columns in the raw data" title="Assigning columns in the raw data" /></p>
+
+<p>Please take
+your time to do the column assignment right, because experience shows that most of the problems with using HiTSeekR are caused by incorrect column assignments. A few notes:</p>
+
+<ul>
+  <li>For the well position, three different formats are accepted. Row / column indices, alphanumeric well names, e.g. A01, and absoulte well indices, e.g. (1-384)</li>
+  <li>For each screen type, we support the most common identifiers, which HiTSeekR will try to map to its default accession type. We advise users to check if this mapping is successful, since outdated identifiers
+cannot always be mapped like ambigious miRNA identifiers that do not yet follow the 3p and 5p notation. </li>
+  <li>Several measurement, replicate and experiment columns can be selected. The background of this is that in many data sets this information is not fully normalized. This header, for example is not normalized:</li>
+</ul>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Sample</th>
+      <th style="text-align: center">Experiment1</th>
+      <th style="text-align: center">Experiment2</th>
+      <th style="text-align: center">Experiment3</th>
+      <th style="text-align: center">Accession</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>In contrast, this header is normalized:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Sample</th>
+      <th style="text-align: center">Experiment</th>
+      <th style="text-align: center">Accession</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">Experiment1</td>
+      <td style="text-align: center">…</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">Experiment2</td>
+      <td style="text-align: center">…</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">Experiment3</td>
+      <td style="text-align: center">…</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>If multiple columns of experiments, readouts, or measurements are selected, HiTSeekR will attempt to construct a normalized table. 
+Note that this multiple column feature is currently restricted to one of those three types.
+After choosing the appropriate columns the user is encouraged to click on <em>Process raw data</em> to continue. After successful processing, new options will appear in the tab bar on top of the page. 
+In addition, continue buttons like the one highlighted here are supposed to guide the user through the process:</p>
+
+<p><img src="/HiTSeekR/images/tutorial/continue_to_qc.png" alt="After the processing of the raw data, new options become available" title="After the processing of the raw data, new options become available" /></p>
+
+<h3 id="step-2-quality-control">Step 2: Quality Control</h3>
+
+<p>In the next step of the analysis, various plots are produced to illuminate various aspects of the screening quality. The following plot, for instance, gives an impression of the signal distribution over
+the entire screen. Each box plots here depicts the signal spread of one plate, allowing it to easily spot differences of plate means and signal variance. Please note the checkbox <em>show help text</em>, which, when clicked, will provide 
+additional information on each plot to help the user with the interpretation:</p>
+
+<p><img src="/HiTSeekR/images/tutorial/continue_to_qc.png" alt="Quality control" title="Quality control" /></p>
+
+<p>The following plots are available:</p>
+
+<ul>
+  <li>Plate Signal Variation: Whole screen box plots of each plate and replicate, divided into different readouts and experiments.</li>
+  <li>Row and Column Effect: Bar plot of avarge signal of each row and column over the entire screen. Helps to spot positional bias.</li>
+  <li>Control Signal Spread: Depicts in box plots the signal variation of the controls (if included).</li>
+  <li>Control Separability: Depicts strictly standardized mean scores (SSMD, Zhang et al.) scores for assessing the separability of positive and negative controls (if given).</li>
+  <li>Replicate Correlation: Pairwise comparison of screening replicates including linear regression and R2 value to assess replicate correlation. </li>
+</ul>
+
+<p>The main purpose of the quality control step is to learn about bias in the raw screening data. This allows the user to make informed decisions on the choice of normalization method in the next step.</p>
+
+<h3 id="step-3-normalization">Step 3: Normalization</h3>
+
+<p>In this step, various normalization methods can be compared by investigating their effect on the data. First, the user can select one of the following methods:</p>
+
+<ul>
+  <li>centered by mean: Divide each plate by its mean signal value </li>
+  <li>centered by median: Divide each plate by its median signal value</li>
+  <li>z-score: Subtract for each plate the mean value and divide by the standard deviation</li>
+  <li>robust z-score: Subtract for each plate the median value and divide by the median absolute deviation</li>
+  <li>percentage of negative control: Use the negative controls as reference point (1).</li>
+  <li>normalized percentage inhibition: Use positive and negative control as reference points (positive 100, negative 0).</li>
+</ul>
+
+<p>The plots will then be updated to reflect the chose normalization. As an example, we here show the plate signal variation plot again, which, with the selected z-score, guarantees that the plate means are now aligned:</p>
+
+<p><img src="/HiTSeekR/images/tutorial/normalization.png" alt="Normalization" title="Normalization" /></p>
+
+<p>In addition, to a downloadable table with all of the normalized values, the following plots are available to study the effect of a normalization method:</p>
+
+<ul>
+  <li>Plate Signal Variation: Same as above</li>
+  <li>Whole Screen Scatterplot: Similar to the plate signal variation plot, but shows each sample as individual point. For smaller screens an interactive javascript version is rendered.</li>
+  <li>Signal Distribution: This plot shows the signal density plot for each replicate. Here, normalization effects can be assessed very effectively by checking how well replicates agree.</li>
+  <li>QQ plot: The qq plot shows if the data is normally distributed. In this case most of the data points will form a line from which only active samples will deviate at the beginning and end.</li>
+  <li>Plate Viewer: Here, individual plates can be investigated closely by an interactive scatter plot and heatmap. </li>
+  <li>Replicate Correlation: Same as above</li>
+</ul>
+
+<p>When the user feels confident with the different normalization methods and their effect, we continue with the identification of active samples, also called hits. </p>
+
+<h3 id="step-4-hit-discovery">Step 4: Hit Discovery</h3>
+
+<p>In this step, the user is required to select a normalization and hit identification strategy to identify those samples that are considered active, i.e. that change the phenotype in the experiment. </p>
+
+<p><img src="/HiTSeekR/images/tutorial/hit_discovery.png" alt="Hit Discovery" title="Hit Discovery" /></p>
+
+<p>Here, users might feel a bit overwhelmed with the different options at first, so let’s go through them one by one, starting with the select boxes.</p>
+
+<ul>
+  <li>Select experiment: The user can select one or seveal experiments to check for hits</li>
+  <li>Select readout: The user can select one or several readouts to be included</li>
+  <li>Normalization: Here, the normalization should be selected that appeared most appropriate after quality control and the normalization step before. </li>
+  <li>Hit discovery method: There are several ways to identify hits:
+    <ul>
+      <li>Fixed cutoffs: This is the most primitive hit detection method in which the user defines an upper and lower threshold to be considered as hard cutoff.</li>
+      <li>Standard deviation: Probably the most common hit detection method in which the general variability of the screening data is used as a measure of activity. A common threshold here is a margin of 3 standard deviations.</li>
+      <li>Median absolute deviation: Similar to standard deviation method, but more robust due to the use of the median instead of the mean.</li>
+      <li>Inter-quartile range: Another variant in which the difference of the 3rd and 1st quartile are used instead to assess variability.</li>
+      <li>SSMD: The strictly standardized mean difference proposed by Zhang et al. is a robust alternative to multiple t-tests between the sample and the controls, which is not affected by the number of replciates / samples. A SSMD value of +-3 is considered good, a SSMD value of +-6 is considered excellent. Naturally, this method only works if replicates are available.</li>
+      <li>Bayesian statistics: The probably most sophisticated hit detection method takes plate as well as screen-wide statistics into account as priors to assess sample activity as a posterior probability. It is the only method that allows setting a threshold based on a p-value and works best on raw signal values. It depends on the availablity of negative control samples on each plate.
+Similar to the normalization step, we encourage users to try out different strategies and thresholds. Comparing the results will reveal what works best for a particular dataset.</li>
+    </ul>
+  </li>
+  <li>Effect: This is interesting if the user is interested in only one effect direction, e.g. only promotors or suppressors.</li>
+  <li>Categories: HiTSeekR depicts each hit with one of the following three categories:
+    <ul>
+      <li>Promotor (blue): The sample shows increased signal, e.g. proliferation effect</li>
+      <li>Suppressor (red): The samples shows decreased signal, e.g. killing effect</li>
+      <li>Included (yellow): The sample has been manually included in the hit list by the user</li>
+    </ul>
+  </li>
+</ul>
+
+<p>A number of check boxes on the left side provide additional options:</p>
+
+<ul>
+  <li>Show sample position: Add the well location to the output table</li>
+  <li>Show all computed scores: Add normalized values other than the one selected to the table</li>
+  <li>Sample filter options: Provides users with the possiblity to use positive and negative, i.e. inclusion and exclusion filters using regular expression on the sample names.</li>
+  <li>Differential screen: Enables users to select one readout or experiment as baseline screen that is considered as reference. Hits identified in the reference screen will be excluded from the remaining screens. The background of this is that often such reference readouts are included to separate specific from unspecific effects. This can be used, for instance, to exclude gene knockouts that are generally lethal in a particular cell line. </li>
+</ul>
+
+<p>Below the options panel, a tabular hit list is shown. This table, like all tables in HiTSeekR, can be downloaded (button below the table), sorted after arbitrary columns and searched either on the entire table or on a specific column. </p>
+
+<p>The hits plot tab provides a graphical representation of the screening hits in a scatter plot:</p>
+
+<p><img src="/HiTSeekR/images/tutorial/hits_plot.png" alt="Hits plot" title="Hits plot" /></p>
+
+<p>Finally, the Heatmap is a graphical representation of the entire screen. Hits are depicted by small black arrows. 
+This plot allows the user to quickly spot if hits accumulate on a specific plate or a general plate location (e.g. mostly in the first row or column etc.), which might indicate problems with the selected normalization or hit identification strategy:</p>
+
+<p><img src="/HiTSeekR/images/tutorial/heatmap.png" alt="Whole screen heatmap with hits indicated by arrows." title="Whole screen heatmap with hits indicated by arrows." /></p>
+
+<p>When the user has successfully selected hits we are ready for downstream analysis. Therefore, additional tabs are unlocked as soon as the hit discovery tab is selected.</p>
+
+<h3 id="step-5-downstream-analysis">Step 5: Downstream Analysis</h3>
+
+<p>The hit list in a gene silencing experiment such as RNA interference or CRISPR / CAS9 screens consists of a number of genes that are associated with a studied phenotype. While each of these hits might be
+an interesting gene for follow-up experiments, limited resources usually do not permit to do this. Moreover, effects observed with individual genes might in some cases be attributed to off-target effects etc.
+It is therefore of interest to consider the observed changes in phenotype on the level of systems biology. This provides functional annotation of, for instance, pathways and biological processes involved in these changes. 
+In addition, it allows for new complex hypotheses to be developed and to be tested in future experiments. In HiTSeekR we distinguish two general types of systems biology analysis:</p>
+
+<h4 id="gene-sets">Gene sets</h4>
+
+<p>Gene sets are manually curated collections of genes that are annotated with biological properties. This includes gene ontology terms and pathway sources such as Reactome or KEGG. Two methods are integrated 
+in HiTSeekR to test if a given hit list is significantly associated with given gene sets, namely gene set overrepresentation analysis, which relies on hypergeometric testing, and gene set enrichment analysis, which
+is based on the computation of a running sum statistic and evaluates significance via generating permutations of the ranked genes. The minimum gene set size that can be adjusted here will help to reduce the
+number of tests by ignoring smaller gene sets.</p>
+
+<p><img src="/HiTSeekR/images/tutorial/gene_set_analysis.png" alt="Gene set overrepresentation and enrichment analyses" title="Gene set overrepresentation and enrichment analyses" /></p>
+
+<p>Because a complete list of tested samples together with their achieved scores
+are required for gene set enrichment analysis, this is only supported for gene silencing experiments, where information on all genes is available. Moreover, due to the computational demands of this method,
+the number of permutations in the server is currently limited to 100. The user can select the results of the computed gene sets. Moreover, the results are divided into:</p>
+
+<ul>
+  <li>Hypergeometric test results (gene set overrepresentation analysis)</li>
+  <li>Gene set enrichment analysis </li>
+  <li>Gene sets that achieved a significant (corrected) p-value in both analyses </li>
+</ul>
+
+<h4 id="de-novo-network-enrichment">De novo network enrichment</h4>
+
+<p>In contrast to gene set analysis, which depends on the quality of existing functional annotations, de novo network enrichment operates directly on large interaction networks that are not subject to this bias. 
+The idea is to extract as large as possible sub-networks that are enriched with active genes. These can be the hits of a gene silencing screen or the miRNA or drug target genes, respectively, for the other two types of screens.
+KeyPathwayMiner is a tool that enables efficient extraction of such subnetworks from arbitrary networks. In HiTSeekR, the web version of KeyPathwayMiner was integrated via its webservice API. This
+has the advantage that computations are outsourced and that the user can continue working with HiTSeekR until the results are reported back.</p>
+
+<p>To get started with a KeyPathwayMiner analysis you should first select a network and the number of exception genes you want to allow (between 0 and 3). This corresponds to the number of non-hit genes that 
+KeyPathwayMiner is allowed to add to connect smaller sub-networks into larger ones. This parameter thus enables the user to take direct influence on the network enrichment process through an intuitive parameter.</p>
+
+<p>When computation is complete, KeyPathwayMiner will show a slider that allows you to go through the top 20 subnetworks found. You can also select to draw a union graph composed of all 20 solutions in which
+reoccuring genes are colored in a gradient from grey (appeared once) to bright green (was part in several or all solutions). All solutions can be exported in a cytoscape compatible SIF format and as
+a tab delimited table. </p>
+
+<p>Note that pressing the “Start KeyPathwayMiner Analysis” button again will trigger a new analysis and erase existing results without a warning. </p>
+
+<p><img src="/HiTSeekR/images/tutorial/de_novo_genes.png" alt="De novo network enrichment with gene silencing screens" title="De novo network enrichment with gene silencing screens" /></p>
+
+
+          </div>
+          <div class="col-sm-4">
+            <!-- Feel free to remove this div. Uses purplecoat: http://ellekasai.github.io/purplecoat.js -->
+  <h3 class="section-header">
+    Get started:
+  </h3>
+  <p><a href="http://hitseekr.compbio.sdu.dk" target="_blank" class="btn btn-primary">Switch to HiTSeekR</a></p>
+
+<h3>
+  Tutorial:
+</h3>
+<ul>
+	<li>
+		<a href="/HiTSeekR/tutorial/index.html#Introduction" >Introduction</a>
+	</li>
+	<li>
+		<a href="/HiTSeekR/tutorial/siRNA.html" >Gene silencing screens</a>
+	</li>
+	<li>
+		<a href="/HiTSeekR/tutorial/miRNA.html" >microRNA screens</a>
+	</li>
+	<li>
+		<a href="/HiTSeekR/tutorial/compound.html" >Small compound / drug screens</a>
+	</li>
+</ul>
+
+<h3>
+  Setup your own installation:
+</h3>
+	<p><a href="https://hub.docker.com/r/nanocan/hitseekr/" target="_blank" class="btn btn-primary">Docker Hub</a></p>
+
+<h3>
+  <h3 class="section-header">
+    Get involved:
+  </h3>
+
+  <p><a href="https://github.com/nanocan/HitSeekR" target="_blank" class="btn btn-primary"><i class="fa fa-github fa-lg"></i> View on GitHub &rarr;</a></p>
+
+
+  <h3>
+    Design & Development: 
+  </h3>
+  <h4>Markus List</h4>
+
+  <p><a href="https://twitter.com/itisalist" class="twitter-follow-button" data-show-screen-name="false" data-show-count="true" data-dnt="true" data-size="large">Follow @itisalist</a></p>
+
+<h3>
+	Supported by:
+</h3>          
+	<div><a href='http://nanocan.org'><img width=150 src="/HiTSeekR/images/NanoCAN.png"/></a></div>
+   <div><a href='http://baumbachlab.net'><img width=200 src="/HiTSeekR/images/baumbachlab.png"/></a></div>
+ 
+
+
+          </div>
+        
+      </div>
+      <div class="row footer">
+        <div class="col-sm-12 text-center">
+          <!-- Feel free to remove this div. Uses purplecoat: http://ellekasai.github.io/purplecoat.js -->
+<div data-purplecoat="shiori" data-purplecoat-label="footer.html">
+&copy;2015.
+Built with <a href="http://jekyllrb.com/">Jekyll</a> and
+<a href="https://github.com/ellekasai/shiori">Shiori Theme</a>.
+</div>
+        </div>
+      </div>
+    </div>
+    <script src="/HiTSeekR/javascripts/jquery.min.js"></script>
+    <script src="/HiTSeekR/javascripts/bootstrap.min.js"></script>
+    <script src="/HiTSeekR/javascripts/purplecoat-min.js"></script>
+    <!-- Place your <script> tags here. -->
+
+<!-- Example: Twitter -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+
+  </body>
+</html>

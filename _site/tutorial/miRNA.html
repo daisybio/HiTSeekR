@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/HiTSeekR/stylesheets/shiori.css">
+    <link href='//fonts.googleapis.com/css?family=Montserrat:700,400' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Merriweather:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="canonical" href="http://nanocan.github.io/HiTSeekR/tutorial/miRNA.html">
+    <link rel="shortcut icon" href="/HiTSeekR/favicon.ico">
+    <title>miRNA inhibitor and mimic screens | HiTSeekR</title>
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Additions to <head> tags go here. -->
+
+  </head>
+  <body>
+  
+    <div class="navbar navbar-inverse navbar-static-top">
+  
+      <div class="container">
+        <div class="navbar-header">
+          <div class="navbar-toggle-wrapper visible-xs">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".js-navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+          </div>
+          <a href="/HiTSeekR/" class="navbar-brand" style="margin-bottom:100px;"><img src="/HiTSeekR/images/HiTSeekR.png" alt=""></a>
+        </div>
+        <div class="collapse navbar-collapse js-navbar-collapse">
+          <ul class="navbar-nav nav" data-purplecoat="shiori" data-purplecoat-label="nav.html">
+            <li><a href="/HiTSeekR/archive">Archive</a></li>
+<li><a href="/HiTSeekR/tutorial">Tutorial</a></li>
+
+
+          </ul>
+          <ul class="navbar-nav nav navbar-right" data-purplecoat="shiori" data-purplecoat-label="nav-right.html">
+            <li class="hidden-xs"><iframe src="http://ghbtns.com/github-btn.html?user=nanocan&repo=HiTSeekR&type=watch&count=true&size=large"
+  allowtransparency="true" frameborder="0" scrolling="0" width="170" height="30" style="margin-top: 14px;"></iframe>
+</li>
+
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        
+          <div class="col-sm-8">
+            
+<h2 id="microrna-inhibitor--mimicks-screens">microRNA inhibitor / mimicks screens</h2>
+<p><a name="miRNA"></a></p>
+
+<p>MicroRNAs are a class of RNAs consisting of small approximately 21-25 nucleotide long non-coding RNA molecules. They are synthesized by cells in a complex multi-step process to mature miRNAs, which have
+the ability to bind to mRNA through partial complementarity. Their main function is the down-regulation of gene expression and in contrast to, for example, siRNAs, they can target various genes, making 
+them key suspects in the global regulation of gene expression. miRNAs have been implicated in various diseases and are thus of high interest for systematic research in high-throughput settings. </p>
+
+<p>There are two types of miRNA screens:</p>
+
+<ul>
+  <li>miRNA mimics screens that simulate overexpression of a particular miRNA</li>
+  <li>miRNA inhibitor screens that block miRNA function through perfect complementarity</li>
+</ul>
+
+<p>Both are treated the same way in the analysis in HiTSeekR, which begins with selecting the miRNA screen type. </p>
+
+<p><img src="/HiTSeekR/images/tutorial/select_screen_mirnas.png" alt="The choice of the screen type is always the first step in HiTSeekR" title="The choice of the screen type is always the first step in HiTSeekR" /></p>
+
+<h3 id="steps-1-4">Steps 1-4</h3>
+
+<p>The processing of miRNA screening data is the same as for gene silencing screens. Once hits have been identified, however, the downstream analysis is different due to the nature of miRNAs, which operate through regulating expression of a large number of genes.</p>
+
+<h3 id="step-5-downstream-analysis">Step 5: Downstream Analysis</h3>
+
+<h4 id="microrna-target-genes">microRNA target genes</h4>
+
+<p>Since microRNAs themselves do not offer much information on their biological role it is crucial to learn which genes they regulate. To this end, a large number of predictive algorithms has been proposed. 
+The most common ones are integrated here as databases. In addition, there are databases of experimentally validated miRNA targets like mirtarbase and tarbase. These provide only limited insights into microRNA targets, but 
+on the other hand, they do not suffer from excessive false positive rates as the predictive methods do.</p>
+
+<p><img src="/HiTSeekR/images/tutorial/mirna_targets.png" alt="miRNA target genes are extracted from a selection of data bases" title="miRNA target genes are extracted from a selection of data bases" /></p>
+
+<h4 id="microrna-high-confidence-target-genes">microRNA high confidence target genes</h4>
+
+<p>To deal with the relatively high false positive rate of miRNA prediction methods we sought a method to extract those genes that we believe are targeted with high confidence. For this, we wanted to exploit the fact
+that some miRNAs might cause a phenotype through regulating the same genes. If a gene is thus targeted by multiple hits of a screen this could be relevant. However, depending on the database and chosen 
+thresholds, a gene can be targeted by hundreds of miRNAs. In other words, observing that gene X is targetd by Y different microRNAs active in a screen might be due to chance and a random selection of miRNAs
+might yield the same result. To deal with this effect, we computed p-values based on hypergeometric tests for RNAhybrid and based on permutation tests for all other databases. </p>
+
+<p><img src="/HiTSeekR/images/tutorial/high_conf_mirna.png" alt="miRNA high confidence targets" title="miRNA high confidence targets" /></p>
+
+<h4 id="microrna-families">microRNA families</h4>
+
+<p>MicroRNAs are grouped into families based on their seed sequences. Since the seed sequence has the largest impact on target gene prediction, it can be assumed that several members of the same miRNA family
+might show the same phenotype. In contrast, if only a single member of a family shows an effect, this might very well be an off-target effect. We thus calculate the percentage of family members that appear to be active and show them here.</p>
+
+<p><img src="/HiTSeekR/images/tutorial/mirna_families.png" alt="miRNA families" title="miRNA families" /></p>
+
+<h4 id="mircancer-database">miRcancer database</h4>
+
+<p>Deregulated miRNAs have been implicated in many diseases. miRcancer DB is a literature database that links miRNA identifiers to related publications in PubMed, together with a short description.</p>
+
+<p><img src="/HiTSeekR/images/tutorial/mircancerdb.png" alt="miRcancer DB" title="miRcancer DB" /></p>
+
+<h4 id="gene-sets">Gene sets</h4>
+<p>Same as in gene silencing but without support for gene set enrichment analysis.</p>
+
+<h4 id="de-novo-network-enrichment">De novo network enrichment</h4>
+
+<p>In addition to showing the extracted subnetworks, HiTSeekR will also include promoting and suppressing miRNA samples and connect them appropriately. In addition to selecting the number of exception genes that
+KeyPathwayMiner will be allowed to add, there is now a second parameter that enables the user to influence when a gene is considered active. This threshold is the minimum number of 
+different miRNAs that needs to target a given gene for it to be considered.</p>
+
+<p><img src="/HiTSeekR/images/tutorial/mirna_kpm.png" alt="De novo network enrichment with miRNA screens" title="De novo network enrichment with miRNA screens" /></p>
+
+<h4 id="diana-mirpath">DIANA mirPATH</h4>
+
+<p>DIANA mirPATH is a tool dedicated to identify affected KEGG pathways in various ways, i.e. by building intersections or unions of targeted genes or targeted pathways. For details please refer to http://diana.imis.athena-innovation.gr/DianaTools/index.php?r=mirpath/index
+Since mirPATH offers a webservice it could easily be integrated into HiTSeekR. Please note that long processing times may occur when using this feature due to external network traffic:</p>
+
+<p><img src="/HiTSeekR/images/tutorial/diana_mirpath.png" alt="KEGG pathways targeted by the extracted miRNAs as found by DIANA mirPATH" title="KEGG pathways targeted by the extracted miRNAs as found by DIANA mirPATH" /></p>
+
+
+          </div>
+          <div class="col-sm-4">
+            <!-- Feel free to remove this div. Uses purplecoat: http://ellekasai.github.io/purplecoat.js -->
+  <h3 class="section-header">
+    Get started:
+  </h3>
+  <p><a href="http://hitseekr.compbio.sdu.dk" target="_blank" class="btn btn-primary">Switch to HiTSeekR</a></p>
+
+<h3>
+  Tutorial:
+</h3>
+<ul>
+	<li>
+		<a href="/HiTSeekR/tutorial/index.html#Introduction" >Introduction</a>
+	</li>
+	<li>
+		<a href="/HiTSeekR/tutorial/siRNA.html" >Gene silencing screens</a>
+	</li>
+	<li>
+		<a href="/HiTSeekR/tutorial/miRNA.html" >microRNA screens</a>
+	</li>
+	<li>
+		<a href="/HiTSeekR/tutorial/compound.html" >Small compound / drug screens</a>
+	</li>
+</ul>
+
+<h3>
+  Setup your own installation:
+</h3>
+	<p><a href="https://hub.docker.com/r/nanocan/hitseekr/" target="_blank" class="btn btn-primary">Docker Hub</a></p>
+
+<h3>
+  <h3 class="section-header">
+    Get involved:
+  </h3>
+
+  <p><a href="https://github.com/nanocan/HitSeekR" target="_blank" class="btn btn-primary"><i class="fa fa-github fa-lg"></i> View on GitHub &rarr;</a></p>
+
+
+  <h3>
+    Design & Development: 
+  </h3>
+  <h4>Markus List</h4>
+
+  <p><a href="https://twitter.com/itisalist" class="twitter-follow-button" data-show-screen-name="false" data-show-count="true" data-dnt="true" data-size="large">Follow @itisalist</a></p>
+
+<h3>
+	Supported by:
+</h3>          
+	<div><a href='http://nanocan.org'><img width=150 src="/HiTSeekR/images/NanoCAN.png"/></a></div>
+   <div><a href='http://baumbachlab.net'><img width=200 src="/HiTSeekR/images/baumbachlab.png"/></a></div>
+ 
+
+
+          </div>
+        
+      </div>
+      <div class="row footer">
+        <div class="col-sm-12 text-center">
+          <!-- Feel free to remove this div. Uses purplecoat: http://ellekasai.github.io/purplecoat.js -->
+<div data-purplecoat="shiori" data-purplecoat-label="footer.html">
+&copy;2015.
+Built with <a href="http://jekyllrb.com/">Jekyll</a> and
+<a href="https://github.com/ellekasai/shiori">Shiori Theme</a>.
+</div>
+        </div>
+      </div>
+    </div>
+    <script src="/HiTSeekR/javascripts/jquery.min.js"></script>
+    <script src="/HiTSeekR/javascripts/bootstrap.min.js"></script>
+    <script src="/HiTSeekR/javascripts/purplecoat-min.js"></script>
+    <!-- Place your <script> tags here. -->
+
+<!-- Example: Twitter -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+
+  </body>
+</html>

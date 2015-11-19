@@ -5,9 +5,20 @@
     <description></description>
     <link>http://nanocan.github.io/HiTSeekR/</link>
     <atom:link href="http://nanocan.github.io/HiTSeekR/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Tue, 17 Nov 2015 10:57:08 +0100</pubDate>
-    <lastBuildDate>Tue, 17 Nov 2015 10:57:08 +0100</lastBuildDate>
+    <pubDate>Thu, 19 Nov 2015 14:42:28 +0100</pubDate>
+    <lastBuildDate>Thu, 19 Nov 2015 14:42:28 +0100</lastBuildDate>
     <generator>Jekyll v2.4.0</generator>
+    
+      <item>
+        <title>HiTSeekR tutorial available</title>
+        <description>&lt;p&gt;A comprehensive tutorial explaining the different steps of analysing high-troughput screening data for each type of screen is now available. &lt;/p&gt;
+</description>
+        <pubDate>Thu, 19 Nov 2015 00:00:00 +0100</pubDate>
+        <link>http://nanocan.github.io/HiTSeekR/HiTSeekR-tutorial-finished</link>
+        <guid isPermaLink="true">http://nanocan.github.io/HiTSeekR/HiTSeekR-tutorial-finished</guid>
+        
+        
+      </item>
     
       <item>
         <title>HiTSeekR project page launched</title>
