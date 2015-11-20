@@ -5,9 +5,22 @@
     <description></description>
     <link>http://nanocan.github.io/HiTSeekR/</link>
     <atom:link href="http://nanocan.github.io/HiTSeekR/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 19 Nov 2015 14:42:28 +0100</pubDate>
-    <lastBuildDate>Thu, 19 Nov 2015 14:42:28 +0100</lastBuildDate>
+    <pubDate>Fri, 20 Nov 2015 12:56:42 +0100</pubDate>
+    <lastBuildDate>Fri, 20 Nov 2015 12:56:42 +0100</lastBuildDate>
     <generator>Jekyll v2.4.0</generator>
+    
+      <item>
+        <title>HiTSeekR screencast tutorial available on YouTube</title>
+        <description>&lt;p&gt;A screencast tutorial explaining an exemplary analysis of a microRNA mimics screen in now available on YouTube &lt;/p&gt;
+
+&lt;iframe width=&quot;420&quot; height=&quot;315&quot; src=&quot;https://www.youtube.com/embed/CVElY1us2Mw&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;
+</description>
+        <pubDate>Fri, 20 Nov 2015 00:00:00 +0100</pubDate>
+        <link>http://nanocan.github.io/HiTSeekR/HiTSeekR-screencast</link>
+        <guid isPermaLink="true">http://nanocan.github.io/HiTSeekR/HiTSeekR-screencast</guid>
+        
+        
+      </item>
     
       <item>
         <title>HiTSeekR tutorial available</title>
