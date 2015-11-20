@@ -152,7 +152,7 @@ output$uiOutput_hits <- renderUI({
                                          hitsPlotInfoText,
                                          '</div>', sep="")
                               )
-             ),tags$div(showOutput("scatterPlotHits", "dimple"))),
+             ),showOutput("scatterPlotHits", "dimple")),
     tabPanel("Heatmap", 
              conditionalPanel("input.showHelpText",
                               HTML(paste('<div class="shinyalert alert fade alert-info in">',

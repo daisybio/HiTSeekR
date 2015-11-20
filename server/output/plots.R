@@ -125,9 +125,9 @@ output$scatterPlotHits <- renderChart3({
   outl <- unique(outl)
 
   p1 <- dPlot(y=input$normalization, x=c("Sample", "Plate", "Well.position"), z=paste(input$normalization, "_sd", sep=""), 
-              data=outl, type="bubble", groups="category", height="800", width="100%",
-              bounds = list(x=70, y=30, height="90%", width="90%"))  
-  p1$addParams(dom='scatterPlotHits')
+              data=outl, type="bubble", groups="category", height="600", width="1200",
+              bounds = list(x=70, y=30, height="80%", width="90%"))  
+  p1$addParams(dom='scatterPlotHits3')
 
   p1$legend(
     x = 580,
