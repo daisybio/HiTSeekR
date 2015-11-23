@@ -22,7 +22,7 @@ output$uiOutput_htsanalyzerOptions <- renderUI({
   elements <- list(
      if(input$screenType=="miRNA")
      {
-       selectInput("htsanalyzer.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_permutation")#, "network enrichment genes"="miRNA_KPM"), "miRNA_permutation")
+       selectInput("htsanalyzer.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_targets")#, "network enrichment genes"="miRNA_KPM"), "miRNA_permutation")
      }, 
 #     selectInput("htsanalyzer.species", "Species:", 
 #                 c("Drosophila melanogaster" = "Dm", 

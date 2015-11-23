@@ -108,7 +108,7 @@ withTryCatch <- function(surroundedFunc){
 
 sendToKpmServiceAsync <- function(url, kpmSetup, inputGraph){
   withTryCatch(function(){    
-    url <- paste(url, "requests/kpmAsyncJSON", sep="")    
+    url <- paste(url, "requests/submitAsync", sep="")    
     result <- postForm(url, kpmSettings=kpmSetup[[1]], datasets=kpmSetup[[2]])#, graph=inputGraph)
     
     jsonResult <- fromJSON(result)
@@ -119,7 +119,7 @@ sendToKpmServiceAsync <- function(url, kpmSetup, inputGraph){
 
 getKpmRunStatus <- function(url, questId){
   withTryCatch(function(){
-    url <- paste(url, "requests/kpmRunStatus", sep="")
+    url <- paste(url, "requests/runStatus", sep="")
     print(sprintf("url: %s", url))    
     result <- postForm(url, questID=questId)
     jsonResult <- fromJSON(result)
@@ -139,7 +139,7 @@ getKpmRunStatus <- function(url, questId){
 getKpmResults <- function(url, questId){
   withTryCatch(function(){
     
-    url <- paste(url, "requests/kpmResults", sep="")
+    url <- paste(url, "requests/results", sep="")
     print(sprintf("url: %s", url))
     
     result <- postForm(url, questID=questId)

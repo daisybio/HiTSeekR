@@ -11,7 +11,7 @@ output$uiOutput_mirna_targets <- renderUI({
                #helpText("tarbase is a database of experimentally verified targets. Other DBs deliver prediction based targets.")             
                conditionalPanel(
                  condition = "input.selectedTargetDBs=='RNAhybrid_hsa'",
-                 selectInput("rnah.p.value.threshold", "p-value threshold", c(0.05, 0.01, 0.001, 0.0001), 0.05)
+                 selectInput("rnah.p.value.threshold", "p-value threshold", c(0.05, 0.01, 0.001, 0.0001,0.00001), 0.0001)
                ),
                conditionalPanel(
                  condition = "input.selectedTargetDBs=='DIANA_microT_CDS'",

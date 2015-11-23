@@ -9,7 +9,7 @@ KPM.network.list <- reactive({
   networks <- NULL
   
   tryCatch({
-    kpm.url <- paste(keypathwayminer.url, "requests/graphsAsJSON/", sep="")    
+    kpm.url <- paste(keypathwayminer.url, "rest/availableNetworks/", sep="")    
     result <- getURL(kpm.url)
     jsonResult <- fromJSON(result)
     networks <- foreach(network = jsonResult, .combine=append) %do% {network[[1]]} 
