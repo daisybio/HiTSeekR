@@ -13,7 +13,7 @@ Data generated in HTS are subject to variation caused by different sources and t
 HiTSeekR guides the user through each of these steps and enables well informed decisions based on informative plots and direct method comparisons. 
 One decisive advantage of the HTS technology is its versatility, i.e. almost any kind of cell based assay can in theory be adapted. 
 Since the early days of the technology, where it was mainly used for small molecule screens (drug screens) in pharmaceutical companies, this flexibility has opened up new use cases, such as
-RNA interference (gene silencing) or miRNA screens (inhibitors or mimicks). Each of these screen types demands a different strategy for down-stream analysis. 
+RNA interference (gene silencing) or miRNA screens (inhibitors or mimics). Each of these screen types demands a different strategy for down-stream analysis. 
 All three types of screens are supported in HiTSeekR and due to differences in the downstream analysis, the first step in a HiTSeekR analysis is always to choose a screen type as illustrated here:
 
 

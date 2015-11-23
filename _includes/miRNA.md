@@ -1,4 +1,4 @@
-## microRNA inhibitor / mimicks screens
+## microRNA inhibitor / mimics screens
 <a name="miRNA"></a>
 
 MicroRNAs are a class of RNAs consisting of small approximately 21-25 nucleotide long non-coding RNA molecules. They are synthesized by cells in a complex multi-step process to mature miRNAs, which have
