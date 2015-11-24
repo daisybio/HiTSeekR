@@ -260,14 +260,18 @@ shinyUI(fluidPage(
     HTML('<div id="overlay-shade"></div>
           <div id="overlay-inAbox" class="overlay">
           <div class="wrapper">
-            <div style="float:right;"><img style="height:120px; margin-top: 50px;" src="pipetting.jpg"/></div>
+            <div style="float:right;">
+<!--<img style="height:120px; margin-top: 40px;" src="pipetting.jpg"/>-->
+<iframe style="margin-top:50px;" width="180" height="120" src="https://www.youtube.com/embed/CVElY1us2Mw" frameborder="0" allowfullscreen></iframe>
+</div>
             <div style="float:left;"><img style="height:40px; margin-left: 10px; margin-bottom: 20px;" src="HiTSeekR.png"/>
+
 <p style="width: 300px; text-align:justify;">Welcome to the High-Throughput Screening Kit for R. 
 This web application is dedicated to the analysis of high-throughput screening data of various types. It can accommodate small to ultra-large scale. Start by selecting a screen type below.</p>
           </div></div>
           <div class="toolbar" style="clear:both;">                
          '),
-    HTML('<span style="margin-left:20px;"><a target="_blank" href="http://nanocan.github.io/HiTSeekR/tutorial/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">If you are here the first time, check out the tutorial
+    HTML('<span style="margin-left:20px;"><a target="_blank" href="http://nanocan.github.io/HiTSeekR/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">If you are here the first time, check out the tutorial
     </button></a></span>'),
     br(),
     HTML("<div style='background-color:#ccccff; padding:30px; margin-top:30px; border-radius: 5px; '><h1>Select type of screen</h1>"),
