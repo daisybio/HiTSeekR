@@ -20,6 +20,10 @@ elts <- list(
                         });
                         closeOverlay();
                      });
+                     Shiny.addCustomMessageHandler("disableLoadingScreen", function(empty){
+                        $("#loadingBar").hide();
+                        $("#buttonBar").show();
+                     });
                      Shiny.addCustomMessageHandler("enableNavTab", function(tab){
                       if($(".nav li:nth-child(" + tab + ")").hasClass("disabled")){
                         $(".nav li:nth-child(" + tab + ")").removeClass("disabled");      
@@ -274,13 +278,19 @@ This web application is dedicated to the analysis of high-throughput screening d
     HTML('<span style="margin-left:20px;"><a target="_blank" href="http://nanocan.github.io/HiTSeekR/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">If you are here the first time, check out the tutorial
     </button></a></span>'),
     br(),
-    HTML("<div style='background-color:#ccccff; padding:30px; margin-top:30px; border-radius: 5px; '><h1>Select type of screen</h1>"),
+    HTML("<div id='buttonBar' style='display: none; background-color:#ccccff; padding:30px; margin-top:30px; border-radius: 5px; '><h1>Select type of screen</h1>"),
     br(),
     actionButton("siRNA", "Genes", "primary"),
     actionButton("miRNA", "microRNAs", "primary"),
     actionButton("compound", "Small compounds", "primary"),
-    HTML('</div></div></div>
-         <script>    openOverlay("#overlay-inAbox"); </script>'),
+    HTML('</div>
+         <div id="loadingBar" style="padding:12px; margin-top:30px;">
+            <h3>Loading HiTSeekR</h3><p>Please be patient</p> <img src="loading.gif"/>
+         </div>
+         </div></div>
+         <script>   
+            openOverlay("#overlay-inAbox"); 
+         </script>'),
     do.call(navbarPage, elts)    
   )
 )
