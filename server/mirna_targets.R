@@ -112,18 +112,11 @@ rnah.mirna.count <- reactive({
 })
 
 observe({
-  if(is.null(input$mirna.target.permutation.button)) return(NULL)
-  if(input$selectedTargetDBs != "RNAhybrid_hsa" && input$highConfidenceTargetsMethod == "hypergeometric test")
-  {
-    showshinyalert(session, "mirna_conf_status", "Hypergeometric test is only supported for RNAhybrid.","warning")
+if(is.null(input$selectedTargetDBs)) return(NULL)
+if(grepl("DIANA", input$selectedTargetDBs, ignore.case=TRUE)){
+    showshinyalert(session, "mirna_conf_status", "miRNA target gene specificity can not be computed for web services at the moment.","warning")
   }
-  else if(grepl("DIANA", input$selectedTargetDBs, ignore.case=TRUE)){
-    showshinyalert(session, "mirna_conf_status", "High-confidence miRNA target genes can not be computed with webservices due to excessive querying during the permutation test.","warning")
-  }
-  else if(input$mirna.target.permutations > gsea.max.permutations){
-    showshinyalert(session, "mirna_conf_status", paste("The current configuration of HiTSeekR only allows a maximum of", gsea.max.permutations, " permutations. The selected value will be adjusted accordingly.", sep = ""),"danger")
-  }
-  else{
+else{
     hideshinyalert(session, "mirna_conf_status")
   }
   
@@ -131,20 +124,10 @@ observe({
 
 mirna.target.permutation <- eventReactive(input$mirna.target.permutation.button,{
 
-    if(input$selectedTargetDBs != "RNAhybrid_hsa" && input$highConfidenceTargetsMethod == "hypergeometric test")
-    {
+    if(grepl("DIANA", input$selectedTargetDBs, ignore.case=TRUE)){
       return(NULL)
     }
-    else if(grepl("DIANA", input$selectedTargetDBs, ignore.case=TRUE)){
-      return(NULL)
-    }
-    if(input$mirna.target.permutations > gsea.max.permutations){
-      permutations <- gsea.max.permutations
-    }
-    else{
-      permutations <- input$mirna.target.permutations
-    }
-    
+
     #get hit list and mirna targets
     hit.list <- outliers()
     hit.list <- formattedTable(hit.list, FALSE)
@@ -168,56 +151,30 @@ mirna.target.permutation <- eventReactive(input$mirna.target.permutation.button,
     #prepare progress bar
     progress <- shiny::Progress$new()
     on.exit(progress$close())
+    progress$set(message = "Performing hypergeometric tests")    
     
-    if(input$highConfidenceTargetsMethod == "permutation test")
+    if(input$selectedTargetDBs == "RNAhybrid_hsa")
     {
-      exp.data <- data() %>% filter(!is.na(Accession))
-      exp.data <- as.data.frame(exp.data) 
-      rnah.p.value.threshold <- rnah.p.value.threshold()
-      selectedTargetDBs <- input$selectedTargetDBs
-
-      progress$set(message = "Generating random hit lists")    
-      
-      #randomization loop
-      result <- foreach(i = 1:permutations, .combine=rbind.with.progress(progress, permutations),
-                        .packages=c("dplyr", "RmiR", "foreach"), 
-                        .export=c("generateRandomHitList", "getTargets", "data.folder", "getRNAhybridTargets")) %dopar%
-      {
-        #get a random hit list of equal length
-        test.data <- generateRandomHitList(exp.data, length(unique(hit.list$Accession)))    
-        
-        #get targets of the random hit list
-        mi.targets <- getTargets(test.data, rnah.pvalue.threshold=rnah.p.value.threshold, databases=selectedTargetDBs)      
-        mi.targets <- mi.targets %>% filter(gene_id %in% genes.of.interest)
-        
-        #count for each gene how often it was included
-        result <- mi.targets %>% count(gene_id)    
-        return(result)
-      }
-      #count for all permutations how often a gene was a target,
-      #divide by the number of permutations to get an E-value
-      progress$set(message = "Summarizing results")    
-      
-      result <- result %>% dplyr::group_by(gene_id) %>% dplyr::summarise(n= sum(n)) %>% mutate(n = n / permutations) %>% dplyr::rename(expected = n)              
-      
-      #combine information from the processed hit list with the result
-      mirna.hit.counts <- left_join(target.list.by.gene, result, by="gene_id") %>%
-        dplyr::rename(count=expected)     
-    }
-    else{      
-      progress$set(message = "Performing hypergeometric tests")    
       mirna.hit.counts <- getRNAhybridTargetCounts(genes.of.interest, input$rnah.p.value.threshold)      
+      universe.size <- 1242 #rnah.mirna.count()
       mirna.hit.counts <- left_join(target.list.by.gene, mirna.hit.counts, by=c("gene_id" = "gene"), copy = TRUE)
     }  
-    #universe and number of hits
-    universe.size <- 1242 #rnah.mirna.count()
+    else{
+      
+      mirna.hit.counts <- rmir.counts[[input$selectedTargetDBs]]
+      mirna.hit.counts$gene_id <- as.integer(mirna.hit.counts$gene_id)
+      universe.size <- rmir.universe[[input$selectedTargetDBs]]
+      universe.size <- universe.size[1,1]
+      mirna.hit.counts <- left_join(target.list.by.gene, mirna.hit.counts, by="gene_id", copy = TRUE)
+    }
+    
     hit.list.size <- length(unique(hit.list.targets$mature_miRNA))
     
     #calculate cumulative hypergeometric test, e.g. P(X >= k). We use number_of_miRNAs - 1, because otherwise it would be P(X > k)
     final_result <- mirna.hit.counts %>% mutate(p.value = phyper(number_of_miRNAs-1, count, universe.size - count, hit.list.size, lower.tail=FALSE))          
     progress$set(message = "Ajusting p-values (BH)")
     final_result$p.adj <- p.adjust(final_result$p.value, method="BH")
-                                            
+    final_result <- final_result %>% dplyr::rename(total_number_of_miRNAs = count)                                        
     return(final_result)
   })
 
@@ -249,11 +206,11 @@ targets.indicator.matrix <- reactive({
   if(input$KPM.miRNA.list != "miRNA_targets")
   { 
     if(input$mirna.target.permutation.button == 0){
-      showshinyalert(session, "kpm_status", "You need to determine high confidence miRNA target genes first. Go to the microRNA tab.", "danger")   
+      showshinyalert(session, "kpm_status", "You need to determine effect specific miRNA target genes first. Go to the microRNA tab.", "danger")   
       return(NULL)
     } 
     else if(nrow(filtered.mirna.target.permutation()) == 0){
-      showshinyalert(session, "kpm_status", "No high confidence miRNA target genes were found with the selected settings. You need to change these settings before you can continue here.", "danger")   
+      showshinyalert(session, "kpm_status", "No effect specific miRNA target genes were found with the selected settings. You need to change these settings before you can continue here.", "danger")   
       return(NULL)
     }
     confidence.genes <- filtered.mirna.target.permutation()

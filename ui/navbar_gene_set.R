@@ -22,7 +22,7 @@ output$uiOutput_htsanalyzerOptions <- renderUI({
   elements <- list(
      if(input$screenType=="miRNA")
      {
-       selectInput("htsanalyzer.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_targets")#, "network enrichment genes"="miRNA_KPM"), "miRNA_permutation")
+       selectInput("htsanalyzer.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "effect specific miRNA target genes"="miRNA_permutation"), "miRNA_targets")#, "network enrichment genes"="miRNA_KPM"), "miRNA_permutation")
      }, 
 #     selectInput("htsanalyzer.species", "Species:", 
 #                 c("Drosophila melanogaster" = "Dm", 
@@ -126,13 +126,17 @@ output$uiOutput_kpm_plot <- renderUI({
   elements <- list(
     wellPanel(
       checkboxInput("kpm_union_graph", "Show union graph of top 20 extracted key pathways?", value = FALSE),
+      checkboxInput("kpm_forceDirected_graph", "Show dynamic graph", value = FALSE),
       conditionalPanel(condition = '!input.kpm_union_graph',
         sliderInput("kpm_selected_solution", "Select which of the top 20 key pathways to display", min=1, max=20, value=1)
       )
     ),
     tabsetPanel(
       tabPanel("Graph",
-        plotOutput("KPM.plot.igraph", height=800, width=900),
+              conditionalPanel("input.kpm_forceDirected_graph",
+                               forceNetworkOutput("KPM.plot.d3")),
+              conditionalPanel("!input.kpm_forceDirected_graph",
+                               plotOutput("KPM.plot.igraph", height=800, width=900)),
         downloadButton('download_kpm_SIF', 'Download this graph as Cytoscape compatible SIF file')
       ),  
       tabPanel("Table", 
@@ -156,7 +160,7 @@ output$uiOutput_KPM <- renderUI({
     ),
     if(input$screenType=="miRNA")
     {
-      selectInput("KPM.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "high confidence target genes"="miRNA_permutation"), "miRNA_targets")
+      selectInput("KPM.miRNA.list", "Select miRNA target gene list", c("miRNA target gene list"="miRNA_targets", "effect specific miRNA target genes"="miRNA_permutation"), "miRNA_targets")
     },
     #selectInput("kpm_strategy", "Strategy:", c("GLONE", "INES"), value="INES"),    
     #selectInput("kpm_algorithm", "Algorithm:", list("Greedy"="Greedy", "Exact (FPT)"="Exact", "Ant Colony Optimization" = "ACO")),

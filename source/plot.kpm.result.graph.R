@@ -61,7 +61,7 @@ prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.li
   return(list(edges.df, node.ids))
 }
 
-plot.kpm.d3 <- function(kpm.data, hit.list, highlight=1, screenType)
+plot.kpm.d3 <- function(kpm.data, hit.list, screenType)
 {
   edges.df.mirna <- kpm.data[[1]]
   
@@ -82,26 +82,33 @@ plot.kpm.d3 <- function(kpm.data, hit.list, highlight=1, screenType)
     #color miRNAs according to suppressors / promoters
     categories <- left_join(node.ids, hit.list, by=c("id"="mature_name")) %>% group_by(id) %>% summarise(category=unique(category))
     node.ids <- left_join(node.ids, categories,by="id")
-    node.ids[is.na(node.ids$category),"category"] <- "NA"
+  }
+  else if(screenType == "siRNA")
+  {
+    #color siRNAs according to suppressors / promoters
+    categories <- left_join(node.ids, hit.list, by=c("id"="gene_id")) %>% group_by(id) %>% summarise(category=unique(category))
+    node.ids <- left_join(node.ids, categories,by="id")
+    node.ids[is.na(node.ids$category),"category"] <- ""
   }
   else if(screenType == "compound"){
-    browser()
-    categories <- left_join(node.ids, hit.list, by=c("id"="Pubchem_CID")) %>% group_by(id) %>% summarise(category=unique(category))
+    #color compounds according to suppressors / promoters
+    categories <- left_join(node.ids, hit.list, by=c("id"="PubChem_CID")) %>% group_by(id) %>% summarise(category=unique(category))
     node.ids <- left_join(node.ids, categories,by="id")
-    node.ids[is.na(node.ids$category),"category"] <- "NA"
   }
-  #node.ids$category <- as.integer(factor(node.ids$category, levels=c("promotor", "included", "gene", "suppressor")))
   
   #color genes found multiple times
-  overlap <- left_join(node.ids, kpm.data[[2]], by="id") 
+  overlap <- kpm.data[[2]] %>% group_by(id) %>% summarise(overlapCount = max(overlapCount))
+  node.ids <- left_join(node.ids, overlap, by="id") 
   
-  node.ids[which(node.ids$id %in% unique(overlap[which(overlap$overlapCount > highlight), "id"])), "category"] <- "multiple"
   #add gene symbols
   symbols <- left_join(node.ids, as.data.frame(org.Hs.egSYMBOL), by=c("id" = "gene_id"))$symbol
   node.ids[!is.na(symbols), "id"] <- symbols[!is.na(symbols)]
-  forceNetwork(Links = edges.df.mirna, Nodes = node.ids, Source="source.id", 
-               Target="target.id", Value="value", NodeID = "id", Group="category",
-               colourScale="d3.scale.ordinal().range(['#1f77b4', '#ff7f0e', '#2ca02c','#9b9e9b', '#d62728']).domain(['promotor', 'included', 'multiple', 'NA', 'suppressor']);")
+  node.ids[which(node.ids$category == ""), "category"] <- "gene"
+  
+  forceNetwork(Links = edges.df.mirna, Nodes = node.ids, Nodesize="overlapCount", 
+               Source="source.id", opacity=0.9,legend = TRUE, opacityNoHover=0.8,
+               Target="target.id", Value="value", NodeID = "id", Group="category", zoom = TRUE,
+               colourScale="d3.scale.ordinal().range(['#1f77b4', '#ff7f0e', '#9b9e9b', '#d62728']).domain(['promotor', 'included', 'gene', 'suppressor']);")
 }
 
 plot.kpm.igraph <- function(kpm.data, hit.list, screenType){

@@ -28,7 +28,10 @@ output$uiOutput_mirna_targets <- renderUI({
                #actionButton("updateTargets", "Update miRNA target list")
              ),mainPanel(
              conditionalPanel("input.showHelpText",
-                    miRNAtargetInfoText          
+                              HTML(paste('<div class="shinyalert alert fade alert-info in">',
+                                         miRNAtargetInfoText,
+                                         '</div>', sep="")
+                              )
              ),
              dataTableOutput("mirna.targets.table"),
              downloadButton('downloadTargets', 'Download miRNA target list')#,
@@ -38,7 +41,10 @@ output$uiOutput_mirna_targets <- renderUI({
     tabPanel("miRNA family coverage", 
              shinyalert("miRNA_family_info", click.hide = TRUE),
              conditionalPanel("input.showHelpText",
-                              miRNAfamilyInfoText          
+                              HTML(paste('<div class="shinyalert alert fade alert-info in">',
+                                         miRNAfamilyInfoText,
+                                         '</div>', sep="")
+                              )
              ),
              wellPanel(fluidRow(
                column(6, sliderInput("family_size_cutoff", "Family size cutoff:", min=0, max=20, value=0)),
@@ -46,17 +52,15 @@ output$uiOutput_mirna_targets <- renderUI({
              )),
              dataTableOutput("family.hitrate")
   ),  
-  tabPanel("miRNA high confidence targets", 
+  tabPanel("effect specific miRNA target genes", 
     shinyalert("mirna_conf_status"), 
     conditionalPanel("input.showHelpText",
-                     miRNAhighConfInfoText          
+                     HTML(paste('<div class="shinyalert alert fade alert-info in">',
+                                miRNAhighConfInfoText,
+                                '</div>', sep="")
+                     )
     ),
     sidebarPanel(
-    selectInput("highConfidenceTargetsMethod", "Method:", c("permutation test", "hypergeometric test"), "hypergeometric test"),    
-    conditionalPanel(
-      condition = "input.highConfidenceTargetsMethod == 'permutation test'",
-      numericInput("mirna.target.permutations", "Number of permutations", value=100, min=10, max=gsea.max.permutations)
-    ),
     sliderInput("mirna.target.permutation.num.of.mirnas.cutoff", "Minimal number of miRNAs from hit list targeting a gene", value=1, min = 0, max=100, step=1),
     numericInput("mirna.target.permutation.padj.cutoff", "adjusted p-value threshold", min=0, max=1, value=0.05),
     actionButton("mirna.target.permutation.button", "Start test", style="primary")

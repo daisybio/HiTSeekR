@@ -434,7 +434,7 @@ output$rowAndColumn <- renderPlot({
 output$KPM.plot.d3 <- renderForceNetwork({
   graph.data <- kpm.graph.data()
   if(is.null(graph.data)) return(NULL)
-  plot.kpm.d3(graph.data, KPM.modify.hits(), input$screenType)
+  plot.kpm.d3(graph.data, KPM.modify.hits(), screenType=input$screenType)
 })
 
 #interactive using igraph

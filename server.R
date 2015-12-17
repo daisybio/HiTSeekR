@@ -65,6 +65,9 @@ mircancer.database <- read.table(paste(data.folder, "miRCancerSeptember2015.txt"
 ### Load miRNA aliases. First try to read the most up to date version from mirbase website, use local copy as a fallback only ###
 mirna.aliases <- NULL
 
+### Load miRNA gene target significance counts for RmiR ###
+load("data/rmir.counts.RData")
+
 tryCatch({
   con <- gzcon(url(paste("ftp://mirbase.org/pub/mirbase/CURRENT/aliases.txt.gz", sep="")))
   txt <- readLines(con)
@@ -78,8 +81,6 @@ shinyServer(function(input, output, session) {
   
   ### Start page ###
   source("ui/frontpage.R", local = TRUE)
-  
-  
   
   screenType <- reactiveValues(type = NULL)  
   

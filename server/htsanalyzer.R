@@ -19,13 +19,14 @@ htsanalyzer <- reactive({
       if(input$screenType == "miRNA")              
       {                     
           #get potential target genes from RNAhybrid. remove first entry (NA)
-          if(input$selectedTargetDBs == "RNAhybrid_hsa")
-          pot.targets <- getRNAhybridTargetCounts(pval.threshold = input$rnah.p.value.threshold)
-          else{
-            showshinyalert(session, "htsanalyzer_status", "only RNAhybrid_hsa is currently supported", "danger")
-            return(NULL)
+          if(input$selectedTargetDBs == "RNAhybrid_hsa"){
+            pot.targets <- getRNAhybridTargetCounts(pval.threshold = input$rnah.p.value.threshold)
+            gene.ids <- collect(pot.targets)$gene[-1]
           }
-          gene.ids <- collect(pot.targets)$gene[-1]
+          else{
+            pot.targets <- rmir.counts[[input$selectedTargetDBs]]
+            gene.ids <- pot.targets$gene_id
+          }
           all.samples.vector <- rep(1, length(gene.ids))
           names(all.samples.vector) <- gene.ids          
         if(input$htsanalyzer.miRNA.list == "miRNA_targets"){
@@ -34,7 +35,7 @@ htsanalyzer <- reactive({
         }else if(input$htsanalyzer.miRNA.list == "miRNA_permutation")
         {
           if(input$mirna.target.permutation.button == 0){
-            showshinyalert(session, "htsanalyzer_status", "You need to compute high confidence miRNA targets first.", "danger")
+            showshinyalert(session, "htsanalyzer_status", "You need to compute miRNA target gene significance first.", "danger")
             return(NULL)
           } 
           hit.list <- filtered.mirna.target.permutation()
