@@ -27,7 +27,6 @@ library(tidyr)
 library(org.Hs.eg.db)
 library(HTSanalyzeR)
 library(GSEABase)
-#library(org.Dm.eg.db)
 library(GO.db)
 library(KEGG.db)
 library(RCurl)
@@ -55,6 +54,7 @@ source("source/ggplot_smooth_func.R")
 source("source/DIANAtools_webservices.R")
 source("source/RNAhybrid.R")
 source("source/RmiR.R")
+devtools::source_url("https://raw.githubusercontent.com/NanoCAN/SAVANAH/master/R/import.R")
 
 ### Additional shiny options ###
 options(shiny.maxRequestSize=30*1024^2)
@@ -78,6 +78,41 @@ error = function(e) { mirna.aliases = read.delim(paste(data.folder, "aliases.txt
 
 ### Shiny server ###
 shinyServer(function(input, output, session) {
+  
+  ### Check if we are called by SAVANAH ###
+  # Parse the GET query string
+  output$queryText <- renderText({
+    query <- parseQueryString(session$clientData$url_search)
+    
+    # Return a string with key-value pairs
+    paste(names(query), query, sep = "=", collapse=", ")
+  })
+  
+  isRemoteCall <- reactive({
+    query <- parseQueryString(session$clientData$url_search)
+    if(is.null(query$plateSecurityTokens) || is.null(query$screenType)) return(FALSE)
+    else return(TRUE)
+  })
+  
+  getBaseUrl <- reactive({
+    query <- parseQueryString(session$clientData$url_search)
+    if(length(query$baseUrl > 0)) baseUrl <- query$baseUrl
+    else baseUrl <- "http://localhost:8080/SAVANAH/readoutExport/"
+    return(baseUrl)
+  })
+  
+  loadAllReadouts <- reactive({ 
+    baseUrl <- getBaseUrl()
+
+    query <- parseQueryString(session$clientData$url_search)    
+    if(query$plateSecurityTokens != ""){
+      plateTokens <- str_split(query$plateSecurityTokens, "\\|")[[1]]
+    } 
+    else return(NULL)
+    
+    batch.import.readouts(plateSecurityTokens=plateTokens,baseUrl = baseUrl)
+  })
+  
   
   ### Start page ###
   source("ui/frontpage.R", local = TRUE)
@@ -104,13 +139,29 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$screenType, {
     session$sendCustomMessage(type = "disableLoadingScreen", message=list(empty=""))
+    
+    if(isRemoteCall()){
+      query <- parseQueryString(session$clientData$url_search)
+      updateSelectInput(session, "screenType", "Type of screen", c("Gene silencing" = "siRNA", "miRNA inhibitor / mimics" = "miRNA", "Compound screen" = "compound"), query$screenType)
+      updateSelectInput(session, "dataset", "Select a demo dataset", choices = c("none selected" = "none selected", demo.data.sets[c(1,3)]), "none selected")
+      session$sendCustomMessage(type = "disableScreenType", message=list(empty=""))
+      #session$sendCustomMessage(type = "disableInputTab", message=list(empty=""))
+      session$sendCustomMessage(type = "disableNavTab", "1")
+      session$sendCustomMessage(type = "enableNavTab", "2")
+      session$sendCustomMessage(type = "enableNavTab", "3")
+      session$sendCustomMessage(type = "enableNavTab", "4")
+      #get processedData filled up correctly
+    }
   })
   
   output$uiOutput_frontpage <- renderUI({ 
     #prepare progress bar
     progress <- shiny::Progress$new()
-    progress$set(message = "Loading HiTSeekR...")    
-    if(!is.null(screenType)) do.call(navbarPage, elts)
+    progress$set(message = "Loading HiTSeekR...")   
+    
+    if(!is.null(screenType)){
+      do.call(navbarPage, elts)
+    }
     else return(NULL)
   })  
   

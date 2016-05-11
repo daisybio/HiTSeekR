@@ -248,11 +248,20 @@ elts <- list(
                 <p><a href='https://github.com/nanocan/HiTSeekR' target='_blank' class='btn btn-primary'>View on GitHub &rarr;</a></p>
                 <p><a href='https://nanocan.github.io/HiTSeekR' target='_blank' class='btn btn-primary'>Project page with tutorial &rarr;</a></p>
                 <br/><br/><hr>
-                <div id='aboutdbs'><h4>In addition to a great many R packages from CRAN, bioconductor and github, the following databases and external resources are used in HiTSeekR:</h4>
+                <div id='aboutdbs'><h4>The following is a list of R packages used in HiTSeekR for annotation and systems biology analysis:</h4>
                 <ul>
-                  <li><a href='http://diana.imis.athena-innovation.gr/DianaTools/index.php?r=site/page&view=software' target='_blank' class='btn btn-primary'>DIANA tools</a> &rarr; microRNA target and pathway prediction</li>
-                  <li><a href='http://stitch.embl.de/'target='_blank' class='btn btn-primary'>STITCH</a> &rarr; interaction between proteins and chemicals</li>
-                  <li><a href='http://keypathwayminer.compbio.sdu.dk/'target='_blank' class='btn btn-primary'>KeyPathwayMiner</a> &rarr; de novo network enrichment</li>
+                <li> reactome.db v. 1.54.1 </li>
+                <li> KEGG.db v. 3.2.2 </li>
+                <li> GO.db v. 3.2.2</li>
+                <li> HTSanalyzeR v. 2.22.0</li>
+                <li> mirbase.db v. 1.2.0</li>
+                <li> RmiR v. 1.26.0</li>
+                </ul>
+                <h4>In addition, HiTSeekR integrates the following external resources:</h4>
+                <ul>
+                  <li><a href='http://diana.imis.athena-innovation.gr/DianaTools/index.php?r=site/page&view=software' target='_blank' class='btn btn-primary'>DIANA tools (web service)</a> &rarr; microRNA target and pathway prediction</li>
+                  <li><a href='http://stitch.embl.de/'target='_blank' class='btn btn-primary'>STITCH (v.4.0)</a> &rarr; interaction between proteins and chemicals</li>
+                  <li><a href='http://keypathwayminer.compbio.sdu.dk/'target='_blank' class='btn btn-primary'>KeyPathwayMinerWeb</a> &rarr; de novo network enrichment</li>
                 </ul>
                 </div>
                 </div>
