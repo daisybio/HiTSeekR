@@ -7,7 +7,7 @@ my.heatmap <- function(plates, signalType, margin, method, outliers, ncol=3, tit
   require(grid)
   #title <- paste(title, signalType ,": Heatmaps (labels for +-", margin, method, ")")
   p2 <- qplot(Column, Row, data=plates, xlab="Column", ylab="Row")
-  p2 <- p2 + geom_tile(line=0, aes_string(fill = signalColumn));
+  p2 <- p2 + geom_raster(aes_string(fill = signalColumn));
   p2 <- p2 + scale_fill_gradient2(midpoint=mean(plates[,signalColumn], na.rm=T), mid="#FFFFCC")
   #p2 <- p2 + scale_fill_gradient(low = colorA, high = colorB, name=paste(signalType));
   p2 <- p2 + facet_wrap(~Plate, ncol=ncol);
