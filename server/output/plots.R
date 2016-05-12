@@ -253,7 +253,15 @@ output$scatterPlot <- renderPlot({
   
   if(is.null(input$dataSelectedNormalization)) sel.normalization <- "Raw"
   else sel.normalization <- input$dataSelectedNormalization
-  q <- ggplot(exp.data, aes_string(x="wellCount", y=sel.normalization, color="Plate", shape="Replicate")) + geom_point() + geom_line(stat="hline", yintercept="mean", color="black", aes(group=interaction(Plate, Replicate))) 
+  exp.data$signal <- exp.data[[sel.normalization]]
+  mean.data <- exp.data %>% 
+    group_by(Experiment, Plate, Replicate) %>% 
+    mutate(mean_signal = mean(signal, na.rm=T), minX = min(wellCount), maxX = max(wellCount))
+  q <- ggplot(mean.data, aes_string(x="wellCount", y=sel.normalization, color="Plate", shape="Replicate")) + 
+      geom_point() +
+      geom_segment(aes(x = minX, xend = maxX, y = mean_signal, yend = mean_signal, group = interaction(Plate, Replicate)), colour = "black")
+  
+    #geom_line(stat="summary", fun.y="mean", color="black", aes(group=interaction(Plate, Replicate))) 
   q <- q + theme_bw()
   q <- q + facet_grid(Readout~Experiment, scales="free")
   q <- q + guides(color=guide_legend(nrow=10, byrow=TRUE))
@@ -421,9 +429,14 @@ output$rowAndColumn <- renderPlot({
   if(is.null(exp.data)) stop("Please process the input data first")
   progress <- dummyProgressBar()
   on.exit(progress$close())
-
-  p1 <- qplot(x=Row, y=centered, data=exp.data, geom="bar", stat="summary", fun.y="mean", fill=Replicate, position="dodge", main="Row Mean") + scale_y_continuous(labels=percent)
-  p2 <- qplot(x=Column, y=centered, data=exp.data, geom="bar", stat="summary", fun.y="mean", fill=Replicate, position="dodge", main="Column Mean") + scale_y_continuous(labels=percent)
+  p1 <- ggplot(aes(x=Row, y=centered), data=exp.data) + 
+    labs(title="Row Mean") + 
+    geom_bar(stat="summary", aes(fill=Replicate), fun.y="mean", position="dodge") + 
+    scale_y_continuous(labels=percent)
+  p2 <- ggplot(aes(x=Column, y=centered), data=exp.data) +
+    labs(title="Column Mean") +
+    geom_bar(stat="summary", fun.y="mean", aes(fill=Replicate), position="dodge") + 
+    scale_y_continuous(labels=percent)
   p1 <- p1 + theme_bw() + facet_grid(Readout~Experiment) + scale_fill_brewer(palette="Accent")
   p2 <- p2 + theme_bw() + facet_grid(Readout~Experiment) + scale_fill_brewer(palette="Accent")
   print(grid.arrange(p1,p2))
