@@ -15,8 +15,9 @@ biocLite("org.Hs.eg.db", ask=F)
 biocLite("RmiR", ask=F)
 biocLite("RTCA", ask=F)
 biocLite("KEGG.db", ask=F)
-biocLite("mirbase.db")
-biocLite("reactome.db")
+biocLite("mirbase.db", ask=F)
+biocLite("reactome.db", ask=F)
+biocLite("GO.db", ask=F)
 
 #github packages
 library(devtools)
