@@ -280,7 +280,8 @@ shinyUI(fluidPage(
             <div style="float:left;"><img style="height:40px; margin-left: 10px; margin-bottom: 20px;" src="HiTSeekR.png"/>
 
 <p style="width: 300px; text-align:justify;">Welcome to the High-Throughput Screening Kit for R. 
-This web application is dedicated to the analysis of high-throughput screening data of various types. It can accommodate small to ultra-large scale. Start by selecting a screen type below.</p>
+This web application is dedicated to the analysis of high-throughput screening data of various types. It can accommodate small to ultra-large scale. 
+Note that uploaded screening data is only saved transiently during the analysis and will not be disclosed. Start by selecting a screen type below.</p>
           </div></div>
           <div class="toolbar" style="clear:both;">                
          '),
