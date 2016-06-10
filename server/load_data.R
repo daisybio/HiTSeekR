@@ -15,10 +15,24 @@ rawData <- reactive({
       }
       data <- read.csv(text = raw)
     }, 
-    warning = function(w){ showshinyalert(session, "general_status", paste("potential problem when reading file:", w$message), "warning")},
     error = function(e){ showshinyalert(session, "general_status", paste("error reading file:", e$message), "danger") })
   }
-  if(is.null(input$file)){
+  else if(isRemoteCall() && existsFunction("batch.import.readouts")){
+    baseUrl <- getBaseUrl()
+    
+    query <- parseQueryString(session$clientData$url_search)    
+    if(query$plateSecurityTokens != ""){
+      plateTokens <- str_split(query$plateSecurityTokens, "\\|")[[1]]
+    } 
+    else return(NULL)
+    progress$set(message = paste("Importing data from", baseUrl), value=0)
+    tryCatch({
+      data <- batch.import.readouts(plateSecurityTokens=plateTokens,baseUrl = baseUrl) 
+      data <- as.data.frame(data)
+    },
+    error = function(e){ showshinyalert(session, "general_status", paste("error during data import:", e$message), "danger") })
+  }
+  else if(is.null(input$file)){
     if(input$dataset != "none selected") progress$set(message = paste("Loading demo data set", input$dataset), value=0)
     if(input$dataset == "BCSC")
       data <- read.delim(paste(data.folder, "BCSC.txt", sep=""), header=T)
@@ -61,10 +75,10 @@ rawData <- reactive({
     tryCatch({
     data <- read.table(file$datapath, header=T, sep=input$fileSeparator, fill=T)
     }, 
-    warning = function(w){ showshinyalert(session, "general_status", paste("potential problem when reading file:", w$message), "warning")},
     error = function(e){ showshinyalert(session, "general_status", paste("error reading file:", e$message), "danger") })
   }
   progress$set(message =  "Loading complete", value=1)
+  
   return(data)
 })
 
@@ -76,9 +90,25 @@ output$fileUploaded <- reactive({
 outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
 
 datasetName <- reactive({
-  if(!is.null(input$file) || input$getFromPubChemButton > 0){
+  if(!is.null(input$file) || input$getFromPubChemButton > 0 || isRemoteCall()){
     updateSelectInput(session, "dataset", c(demo.data.sets, "CUSTOM"="CUSTOM"), "CUSTOM")
     return("CUSTOM")
   } 
   else return(input$dataset)
 })
+
+observeEvent(rawData(), {
+  if(isRemoteCall()){
+    updateSelectInput(session, "dataset", c("IMPORTED"="IMPORTED"), "IMPORTED")
+    
+    updateSelectInput(session, "sampleCol", "Sample Name Column", dataColumns(), "Sample")
+    updateSelectInput(session, "plateCol", "Plate Column", dataColumns(), "Plate")
+    updateSelectInput(session, "positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol"), "rowcol")
+    updateSelectInput(session, "rowCol", "Row Column", dataColumns(), "PlateRow")
+    updateSelectInput(session, "colCol", "Column Column", dataColumns(), "PlateCol")
+    updateSelectInput(session, "accessionCol", "Accession Column", dataColumns(), "Accession")
+    updateSelectInput(session, "measurementCol", "Measurement Column", dataColumns(), "PlateReadout")
+    updateSelectInput(session, "replicateCol", "Replicate Column", dataColumns(), "Replicate")
+    updateSelectInput(session, "experimentCol", "Experiment Column", dataColumns(), "AssayType")
+  }
+}, priority = -20)

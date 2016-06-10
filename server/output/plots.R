@@ -73,11 +73,9 @@ output$heatmapPlot <- renderPlot({
   plot.data <- data()
   progress <- dummyProgressBar()
   on.exit(progress$close())
-  
   ncol <- length(unique(plot.data$Plate))
   plot.data <- dplyr::filter(plot.data, Experiment == input$heatmapExperimentSelected, Readout == input$heatmapReadoutSelected)
   hits <- outliers()
-  
   my.heatmap(plot.data, input$normalization, input$margin, input$method, hits, 
              showSampleLabels=input$showLabelsOnHeatmap, 
              signalColumn=input$normalization, 
@@ -121,7 +119,9 @@ renderChart3 <- function( expr, env = parent.frame(), quoted = FALSE ){
 
 # Interactive plots for screen hits #
 output$scatterPlotHits <- renderChart3({
-  outl <- outliers() %>% dplyr::select_("Sample", "Plate", "Well.position", "category", input$normalization, paste(input$normalization, "_sd", sep=""))
+  outl <- outliers()
+  if(is.null(outl)) stop("Nothing to plot")
+  outl <- outl %>% dplyr::select_("Sample", "Plate", "Well.position", "category", input$normalization, paste(input$normalization, "_sd", sep=""))
   outl <- unique(outl)
 
   p1 <- dPlot(y=input$normalization, x=c("Sample", "Plate", "Well.position"), z=paste(input$normalization, "_sd", sep=""), 

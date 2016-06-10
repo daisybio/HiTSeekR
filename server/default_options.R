@@ -1,5 +1,6 @@
 #data option default
 dataOptionDefaults <- reactive({     
+  
   if(datasetName() == "TNFa_Casp4"){
     return(list("screenType" = "siRNA",
                 "sampleCol" = "Target.gene.symbol", 
@@ -145,6 +146,25 @@ dataOptionDefaults <- reactive({
              "rowCol" = "",
              "colCol" = "",
              "hasCtrls" = "TRUE"
+    ))
+  }
+  else if(datasetName() == "SAVANAH"){
+    return(c("screenType" = "",
+             "sampleCol" = "Sample", 
+             "posColType" = "rowcol",
+             "posCol" = "",
+             "accColType" = "",
+             "accCol" = "Accession",
+             "measurementCol" = "PlateReadout",
+             "replicateCol" = "Replicate",
+             "plateCol" = "Plate",
+             "expCol" = "AssayName",
+             "ctrlCol" = "",
+             "posCtrls" = "",
+             "negCtrls" = "",
+             "rowCol" = "PlateRow",
+             "colCol" = "PlateCol",
+             "hasCtrls" = "FALSE"
     ))
   }
   else return(c("screenType" = "",

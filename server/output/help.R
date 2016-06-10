@@ -3,6 +3,7 @@ observeEvent(input$dataset,{
   if(is.null(input$dataset)) return(NULL)
   else if(input$dataset == "none selected") return(NULL)
   else if(input$dataset == "CUSTOM") return(NULL)
+  else if(input$dataset == "IMPORTED") return(NULL)
     
   message <- switch(input$dataset,
                     TNFa_Casp4 = "<a href='http://doi.org/10.1128/MCB.06739-11' target='_blank'>Nickles, D., Falschlehner, C., Metzig, M., & Boutros, M. (2012). A Genome-Wide RNA Interference Screen Identifies Caspase 4 as a Factor Required for Tumor Necrosis Factor Alpha Signaling. Molecular and Cellular Biology, 32(17), 3372–3381.</a>",
