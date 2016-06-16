@@ -1,7 +1,7 @@
 #identifier column types
 accTypes <- reactive({
   if(is.null(input$screenType)) return(NULL)
-  else if(input$screenType == "siRNA") return(c("Entrez", "GeneSymbol"))
+  else if(input$screenType == "siRNA") return(c("Entrez", "GeneSymbol", "RefSeq", "Ensembl"))
   else if(input$screenType == "miRNA") return(c("MI", "MIMAT", "mature_name"))
   else if(input$screenType == "compound") return(c("PubChem_SID", "PubChem_CID", "Chembank"))
   #return(c("RefSeq", "Entrez", "MIMAT", "MI"))
@@ -25,7 +25,9 @@ ctrlTypes <- reactive({
 #     ctrlCol <- exp.data[,dataOptionDefaults()[["ctrlCol"]]]
 #   }
   
-  unique(as.character(ctrlCol))
+  all.unique.ctrls <- unique(as.character(ctrlCol))
+  if(length(all.unique.ctrls > 100)) return(NULL)
+  else return(all.unique.ctrls)
 })
 
 #select a negative control

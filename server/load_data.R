@@ -102,6 +102,7 @@ observeEvent(rawData(), {
     updateSelectInput(session, "dataset", c("IMPORTED"="IMPORTED"), "IMPORTED")
     
     updateSelectInput(session, "sampleCol", "Sample Name Column", dataColumns(), "Sample")
+    updateSelectInput(session, "ctrlCol", "Control Column", dataColumns(), "Control")
     updateSelectInput(session, "plateCol", "Plate Column", dataColumns(), "Plate")
     updateSelectInput(session, "positionColType", "Position Column Type", c("Alpha well names" = "alpha", "Numeric" = "numeric", "Row / Column" = "rowcol"), "rowcol")
     updateSelectInput(session, "rowCol", "Row Column", dataColumns(), "PlateRow")
