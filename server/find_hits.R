@@ -71,6 +71,39 @@ outliers <- reactive({
     }
   }
   
+  #check how many of the hits are not mapped to an unambigious identifier
+  if(input$screenType == 'siRNA')
+  {
+    na.count <- length(which(is.na(outl$gene_id)))
+    possible_reason <- "Gene symbols not accepted by HUGO are sometimes ambigious or do not match to an entrez gene id. Typical examples are hypothetical genes starting with LOC."
+  }
+  else if(input$screenType == 'miRNA')
+  {
+    na.count <- length(which(is.na(outl$mirna_id)))
+    possible_reason <- "miRNA names other than MI or MIMAT are often outdated. This is not necessarily a problem, but for some miR identifiers it is not clear whether the 3p or 5p strand is meant. Moreover, some hits are ignored because they belong to dead miRNA entries."
+  }
+  else if(input$screenType == 'compound')
+  {
+    #convert ids to pubchem compound ids (CID) as used in STITCH
+    hits <- convertToCid(outl, input$accessionColType)
+    
+    #add CID prefix and leading zeros for STITCH db
+    hits[!is.na(hits$PubChem_CID), "PubChem_CID"] <- paste("CID", formatC(as.integer(hits[!is.na(hits$PubChem_CID), "PubChem_CID"]), width=9, flag="0"), sep="")
+    
+    outl <- hits[,c(1:(ncol(hits)-2), ncol(hits), ncol(hits) -1)]
+    na.count <- length(which(is.na(outl$PubChem_CID)))
+    
+    possible_reason <- "Some of the identifiers used here have no known match to a PubChem compound id (CID)."
+  }
+  
+  if(na.count > 0){
+    errors.log <-  paste(errors.log, "Warning: ", na.count, " of the selected hits could not be mapped to a suitable identifier and will thus be ignored in subsequent analyses. Possible reason: ", possible_reason, sep="")
+  }
+  
+  #output errors and warnings
+  if(errors.log != "") showshinyalert(session, "hits_error", errors.log, "danger")
+  else hideshinyalert(session, "hits_error")
+  
   #return results
   return(as.data.frame(outl))
 })
@@ -155,39 +188,6 @@ hit.detect <- reactive({
       return(result)
     }
   }
-  
-  #check how many of the hits are not mapped to an unambigious identifier
-  if(input$screenType == 'siRNA')
-  {
-    na.count <- length(which(is.na(outl$gene_id)))
-    possible_reason <- "Gene symbols not accepted by HUGO are sometimes ambigious or do not match to an entrez gene id. Typical examples are hypothetical genes starting with LOC."
-  }
-  else if(input$screenType == 'miRNA')
-  {
-    na.count <- length(which(is.na(outl$mirna_id)))
-    possible_reason <- "miRNA names other than MI or MIMAT are often outdated. This is not necessarily a problem, but for some miR identifiers it is not clear whether the 3p or 5p strand is meant. Moreover, some hits are ignored because they belong to dead miRNA entries."
-  }
-  else if(input$screenType == 'compound')
-  {
-    #convert ids to pubchem compound ids (CID) as used in STITCH
-    hits <- convertToCid(outl, input$accessionColType)
-    
-    #add CID prefix and leading zeros for STITCH db
-    hits[!is.na(hits$PubChem_CID), "PubChem_CID"] <- paste("CID", formatC(as.integer(hits[!is.na(hits$PubChem_CID), "PubChem_CID"]), width=9, flag="0"), sep="")
-    
-    outl <- hits[,c(1:(ncol(hits)-2), ncol(hits), ncol(hits) -1)]
-    na.count <- length(which(is.na(outl$PubChem_CID)))
-    
-    possible_reason <- "Some of the identifiers used here have no known match to a PubChem compound id (CID)."
-  }
-  
-  if(na.count > 0){
-    errors.log <-  paste(errors.log, "Warning: ", na.count, " of the selected hits could not be mapped to a suitable identifier and will thus be ignored in subsequent analyses. Possible reason: ", possible_reason, sep="")
-  }
-  
-  #output errors and warnings
-  if(errors.log != "") showshinyalert(session, "hits_error", errors.log, "danger")
-  else hideshinyalert(session, "hits_error")
   
   #return results    
   return(outl)
