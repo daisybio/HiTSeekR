@@ -21,12 +21,9 @@ ctrlTypes <- reactive({
   if(is.null(input$controlCol)) return(NULL)
   else if(input$controlCol == "") return(NULL)
   else if(input$controlCol %in% colnames(exp.data)) ctrlCol <- exp.data[,input$controlCol]
-#   else{
-#     ctrlCol <- exp.data[,dataOptionDefaults()[["ctrlCol"]]]
-#   }
-  
+
   all.unique.ctrls <- unique(as.character(ctrlCol))
-  if(length(all.unique.ctrls > 100)) return(NULL)
+  if(length(all.unique.ctrls) > 1000) return(NULL)
   else return(all.unique.ctrls)
 })
 

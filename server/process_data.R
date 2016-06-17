@@ -18,6 +18,13 @@ processedData <- reactive({
   input$startButton
 
   isolate({
+  if(!is.null(input$hasControls)){
+    if(input$hasControls && is.null(input$negCtrl)){
+      showshinyalert(session, "data_processing_status", "You have to select at least one negative control when controls are enabled.","danger")
+      return(NULL)
+    }
+  }
+  
   hideshinyalert(session, "general_status")
   result <- NULL
   tryCatch({

@@ -49,8 +49,13 @@ normalizationChoices <- reactive({
   if(input$computeBscore){
     methods <- c(methods, Bscore)
   }
-  if(input$hasControls)    
-    return(c(methods, controlBasedMethods))
+  if(input$hasControls){
+    if(!is.null(input$posCtrl))
+      return(c(methods, controlBasedMethods))
+    else{
+      return(c(methods, controlBasedMethods[1])) 
+    }
+  }
   else return(methods)
 })
 
