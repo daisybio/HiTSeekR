@@ -6,7 +6,7 @@
 install.packages(c("shiny", "plyr", "dplyr", "ggplot2", 
                    "gplots", "scales", "gridExtra", "lazyeval",
                    "reshape2", "stringr", "VennDiagram", "qgraph",
-                   "iterators", "foreach", "htmlwidgets", 
+                   "iterators", "foreach", "htmlwidgets", "DBI",
                    "networkD3", "tidyr", "devtools", "XML", "R.utils"))
 
 #bioconductor packages

@@ -87,12 +87,25 @@ processedData <- reactive({
       data <- gather_(data, "experimentCol", "measurementCol", input$experimentCol)
     }
     
+    #check how many experiments we have
+    if(length(unique(data$experimentCol)) > 10) {
+        showshinyalert(session, "data_processing_status", "More than 10 different experiments found in the selected columns. It seems like an inappropriate column was selected. Is this a measurement column?","danger")
+        return(NULL)
+    }
+    
     if(numberOfReplicates == 0) data$replicateCol <- 1
     else if(numberOfReplicates == 1) data$replicateCol <- data[,input$replicateCol]
     else{
       data <- gather_(data, "replicateCol", "measurementCol", input$replicateCol)
     }
     
+    #check how many replicates we have
+    if(length(unique(data$replicateCol)) > 10){
+      showshinyalert(session, "data_processing_status", "More than 10 different replicates found in the selected columns. It seems like an inappropriate column was selected. Is this a measurement column?","danger")
+      return(NULL)
+      
+    }
+      
     sampleCol <- data[,input$sampleCol]  
     
     if(input$positionColType == "alpha")

@@ -32,6 +32,7 @@ library(KEGG.db)
 library(RCurl)
 library(lazyeval)
 library(XML)
+library(DBI)
 
 ### Load all non-shiny source files ###
 source("source/wellPositionToAlphaName.R")
