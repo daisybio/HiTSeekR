@@ -1,9 +1,12 @@
 FROM rocker/shiny:latest
-MAINTAINER Markus List <mlist@health.sdu.dk>
+MAINTAINER Markus List <markus.list@mpi-inf.mpg.de>
 
 #install system packages
-RUN apt-get update
-RUN apt-get install -y libxml2-dev redis-server libcurl4-gnutls-dev libssl-dev 
+RUN apt-get update && apt-get install -y \
+libxml2-dev \ 
+redis-server \
+libcurl4-gnutls-dev \
+libssl-dev 
 
 #install R packages
 ADD install.R install.R
@@ -18,6 +21,9 @@ ADD . hitseekr
 RUN sed -i 's/site_dir \/srv\/shiny-server;/app_dir \/srv\/hitseekr;/g' /etc/shiny-server/shiny-server.conf
 
 #download additional database files if needed
-#RUN wget https://www.dropbox.com/s/rr432s5tbc1gsby/compound.mapping.sqlite3?dl=0
-#RUN wget https://www.dropbox.com/s/e19hjwqdpt3ajva/rnahybrid.sqlite3?dl=0
-#RUN wget https://www.dropbox.com/s/2ip1awimawovt4r/stitch_hsa_protein_chemical_links_v4.0.sqlite3?dl=0
+WORKDIR /srv/hitseekr/
+RUN mkdir data && \
+cd $_ && \
+wget https://www.dropbox.com/s/to4zfhetkdofzsk/hitseekr_data.tar.gz?dl=0 && \
+tar -xzf hitseekr_data.tar.gz && \
+rm hitseekr_data.tar.gz
