@@ -89,7 +89,9 @@ output$uiOutput_data <- renderUI({
                                            replicateCorrInfoText,
                                            '</div>', sep="")
                                 )
-               ), plotOutput("replicateCorrPlot2"))
+               ), 
+               checkboxInput("show.replicate.correlation.data", label = "Show correlation in plot", TRUE),
+               plotOutput("replicateCorrPlot2"))
     ))
   }
   do.call(tabsetPanel, elements)

@@ -326,7 +326,7 @@ output$controlPerformancePlot <- renderPlot({
 
 #plot for correlation of replicates
 
-correlationPlot <- function(exp.data, signalCol){
+correlationPlot <- function(exp.data, signalCol, show.replicate.correlation){
   exp.data$Replicate <- as.character(exp.data$Replicate)
   if(length(unique(exp.data$Replicate)) < 2) stop("No replicates have been found with the selected input settings.")
   
@@ -344,7 +344,10 @@ correlationPlot <- function(exp.data, signalCol){
     
     p <- qplot(data=plot.data, x=repA, y=repB, xlab=reps[1], ylab=reps[2], color=Plate)
     p <- p + facet_grid(Experiment ~ Readout)
-    p <- p + stat_smooth_func(geom="text",method="lm",hjust=0,parse=TRUE, aes(color=NULL), show_guide=F) 
+    
+    if(show.replicate.correlation)
+      p <- p + stat_smooth_func(geom="text",method="lm",hjust=0,parse=TRUE, aes(color=NULL), show_guide=F) 
+    
     p <- p + geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) 
     p <- p + geom_abline(intercept=0, slope=1, color="grey")    
     p <- p + guides(color=guide_legend(nrow=10, byrow=TRUE))+ theme_bw()
@@ -360,7 +363,7 @@ output$replicateCorrPlot <- renderPlot({
   exp.data <- processedData()
   progress <- dummyProgressBar()
   on.exit(progress$close())
-  list.of.plots <- correlationPlot(exp.data, "Raw")
+  list.of.plots <- correlationPlot(exp.data, "Raw", input$show.replicate.correlation)
   do.call(grid.arrange, list.of.plots)
 }, height=600)
 
@@ -369,7 +372,7 @@ output$replicateCorrPlot2 <- renderPlot({
   exp.data <- processedData()
   progress <- dummyProgressBar()
   on.exit(progress$close())
-  list.of.plots <- correlationPlot(exp.data, input$dataSelectedNormalization)
+  list.of.plots <- correlationPlot(exp.data, input$dataSelectedNormalization, input$show.replicate.correlation.data)
   do.call(grid.arrange, list.of.plots)
 }, height=600)
 

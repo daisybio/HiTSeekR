@@ -52,6 +52,7 @@ output$uiOutput_quality_control <- renderUI({
                                            '</div>', sep="")
                                 )
                ),
+               checkboxInput("show.replicate.correlation", label = "Show correlation in plot", TRUE),
                plotOutput("replicateCorrPlot", height="auto")
     )))
   }
