@@ -1,4 +1,4 @@
-find.mimat <- function(namesToParse){
+find.mimat <- function(namesToParse, mirna.aliases){
 
 #we only want to look at mature ids
 aliases.mimat <- mirna.aliases[grep("MIMAT", mirna.aliases[,1]),]

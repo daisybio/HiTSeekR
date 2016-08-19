@@ -65,7 +65,7 @@ data <- reactive({
     if(input$accessionColType=="mature_name")
     {
       updateProgress(detail = "Replace alias with MIMAT", value=0.7)
-      data$Accession <- find.mimat(data$Accession)
+      data$Accession <- find.mimat(data$Accession, mirna.aliases)
     }
     if(input$accessionColType %in% c("MIMAT", "mature_name"))
     {
