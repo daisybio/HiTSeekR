@@ -23,7 +23,9 @@ RUN sed -i 's/site_dir \/srv\/shiny-server;/app_dir \/srv\/hitseekr;/g' /etc/shi
 #download additional database files if needed
 WORKDIR /srv/hitseekr/
 RUN mkdir data && \
-cd $_ && \
+cd data && \
 wget https://www.dropbox.com/s/to4zfhetkdofzsk/hitseekr_data.tar.gz?dl=0 && \
-tar -xzf hitseekr_data.tar.gz && \
-rm hitseekr_data.tar.gz
+tar -xzf hitseekr_data.tar.gz?dl=0 && \
+rm hitseekr_data.tar.gz?dl=0 && \ 
+cd .. && \
+chown -R shiny data
