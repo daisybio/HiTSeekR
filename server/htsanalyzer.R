@@ -17,11 +17,15 @@ htsanalyzer <- reactive({
         return(NULL)
       }
       if(input$screenType == "miRNA")              
-      {                     
+      {        
           #get potential target genes from RNAhybrid. remove first entry (NA)
           if(input$selectedTargetDBs == "RNAhybrid_hsa"){
             pot.targets <- getRNAhybridTargetCounts(pval.threshold = input$rnah.p.value.threshold)
             gene.ids <- collect(pot.targets)$gene[-1]
+          }
+          else if(grepl("DIANA", input$selectedTargetDBs)){
+            showshinyalert(session, "htsanalyzer_status", paste("Gene set analysis is not supported for DIANA miRNA targets since we do not know the universe size (number of potential targets)."), "danger")
+            return(NULL)
           }
           else{
             pot.targets <- rmir.counts[[input$selectedTargetDBs]]

@@ -3,7 +3,12 @@ get_DIANA_tarbase6_targets <- function(miRNAs)
   #read for each microRNA targets as XML from DIANA web service
   result <- foreach(miRNA = miRNAs, .combine=rbind) %do%
   {
-    xmlDOC <- xmlTreeParse(getURL(paste("http://62.217.127.8/DianaTools/tarbaseApi?mirnas=", miRNA, sep="")))
+    url_content <- getURL(paste("http://62.217.127.8/DianaTools/tarbaseApi?mirnas=", miRNA, sep=""))
+    
+    #check if request was accepted
+    if(grepl("400 Bad Request", url_content)) return(NULL)
+      
+    xmlDOC <- xmlTreeParse(url_content)
     xmlDOM <- xmlRoot(xmlDOC)
     
     #check if there are results
@@ -33,7 +38,12 @@ get_DIANA_microT_targets <- function(miRNAs, threshold = 0.8)
   #read for each microRNA targets as XML from DIANA web service
   result <- foreach(miRNA = miRNAs, .combine=rbind) %do%
   {
-    xmlDOC <- xmlTreeParse(getURL(paste("http://62.217.127.8/DianaTools/microT_CDSApi?mirnas=", miRNA, "&threshold=", threshold, sep="")))
+    url_content <- getURL(paste("http://62.217.127.8/DianaTools/microT_CDSApi?mirnas=", miRNA, "&threshold=", threshold, sep=""))
+    
+    #check if request was accepted
+    if(grepl("400 Bad Request", url_content)) return(NULL)
+    
+    xmlDOC <- xmlTreeParse(url_content)
     xmlDOM <- xmlRoot(xmlDOC)
     
     #extract target genes from XML
@@ -59,11 +69,17 @@ get_DIANA_mirPath <- function(miRNAs, threshold = 0.8, geneIntersectionCutoff=2,
   if(is.null(miRNAs)) return(NULL)
   miRNAs <- paste(na.omit(miRNAs$mature_name), collapse=" ")
   miRNAs.encoded <- str_replace_all(miRNAs, " ", "%20")
-  xmlDOC <- xmlTreeParse(getURL(paste("http://62.217.127.8/DianaTools/mirpathApi?mirnas=", miRNAs.encoded, 
-                                      "&methods=microT-CDS&stats=", conservative, 
-                                      "&species=human",
-                                      "&false_rate=", fdr, "&selection=", selection, "&inter_mir=", geneIntersectionCutoff, 
-                                      "&threshold=", threshold, sep="")))
+  
+  url_content <- getURL(paste("http://62.217.127.8/DianaTools/mirpathApi?mirnas=", miRNAs.encoded, 
+                              "&methods=microT-CDS&stats=", conservative, 
+                              "&species=human",
+                              "&false_rate=", fdr, "&selection=", selection, "&inter_mir=", geneIntersectionCutoff, 
+                              "&threshold=", threshold, sep=""))
+  
+  #check if request was accepted
+  if(grepl("400 Bad Request", url_content)) return(NULL)
+  
+  xmlDOC <- xmlTreeParse(url_content)
   xmlDOM <- xmlRoot(xmlDOC)
   
   #extract kegg pathways from XML
