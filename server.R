@@ -1,6 +1,9 @@
 ### Configuration ###
 source("config.R")
 
+### Enable error dump ###
+options(shiny.sanitize.errors = FALSE)
+
 ### Load required packages ###
 library(shiny)
 library(plyr)
