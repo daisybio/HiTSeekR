@@ -66,7 +66,22 @@ output$mirna.target.permutation.table <- renderDataTable({
   }, escape=FALSE)
 
 # Family hit rate # 
-output$family.hitrate <- renderDataTable(family.hitrate(), escape=FALSE)
+output$family.hitrate <- renderDataTable({
+  
+  final_result <- family.hitrate()
+  
+  family_coverage <- as.numeric(final_result$family_coverage)
+  
+  #add color code for <0.33, 0.33-0.66, >0.66.
+  final_result$family_coverage <- paste("<div style='background:#FDB462; text-align:center; border-radius: 15px; width:50px; height:25px;'>", 
+                                        round(100*family_coverage, 0), "%",
+                                        "</div>", sep="")
+  final_result[family_coverage < 0.33, "family_coverage"] <-  sub("#FDB462", "#FF0000", final_result[family_coverage < 0.33, "family_coverage"])
+  final_result[family_coverage > 0.66, "family_coverage"] <-  sub("#FDB462", "#40FF00", final_result[family_coverage > 0.66, "family_coverage"])
+  final_result <- na.omit(final_result)
+  
+  return(final_result)
+}, escape=FALSE)
 
 # HTSAnalyzer results #
 output$htsanalyzer.results.table.GO_CC <- renderDataTable(htsanalyzer.results()[["GO_CC"]], escape=FALSE)

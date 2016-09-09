@@ -50,7 +50,8 @@ output$uiOutput_mirna_targets <- renderUI({
                column(6, sliderInput("family_size_cutoff", "Family size cutoff:", min=0, max=20, value=0)),
                column(6, sliderInput("family_coverage_cutoff", "Family coverage cutoff:", min=0, max=100, value=0))
              )),
-             dataTableOutput("family.hitrate")
+             dataTableOutput("family.hitrate"),
+             downloadButton("downloadMirFamilyResult", "Download")
   ),  
   tabPanel("effect specific miRNA target genes", 
     shinyalert("mirna_conf_status"), 
@@ -70,7 +71,9 @@ output$uiOutput_mirna_targets <- renderUI({
     )
   ),
   #tabPanel("Interaction Graph", plotOutput("interactionGraph")),
-  tabPanel("miRcancer DB", shinyalert("mircancer_status"), dataTableOutput("mircancer.table"))
+  tabPanel("miRcancer DB", shinyalert("mircancer_status"), 
+           dataTableOutput("mircancer.table"),
+           downloadButton("downloadMirCancerDbResult", "Download"))
 )
 
 do.call(tabsetPanel, elements)

@@ -11,19 +11,6 @@ output$downloadHits <- downloadHandler(
   }
 )
 
-# Consensus hit list #
-# output$downloadConsensusHits <- downloadHandler(
-#   filename = function() { paste('consensus', 'hits', input$margin, input$method, '.csv', sep='_') },
-#   content = function(file) {
-#     data <- consensusHitList()
-#     data$miRBase.url <- gsub("'", "", str_extract(data$Accession, "'http://.*?'"))
-#     data$Accession <- gsub("<|>", "", str_extract(data$Accession, ">.*?<"))
-#     data$signal <- NULL
-#     data$signal.sem <- NULL
-#     write.table(data, file, row.names=F, sep=",", quote=F)
-#   }
-# )
-
 # miRNA targets #
 output$downloadTargets <- downloadHandler(
   filename = function() { paste('mirna', 'target','genes', paste(input$selectedTargetDBs, collapse="_"), input$margin, input$method, input$normalization, '.txt', sep='_') },
@@ -65,6 +52,39 @@ output$downloadTargetPermutationTestResult <- downloadHandler(
     write.table(data, file, row.names=F, sep="\t", quote=F)
   }  
 )
+
+# mircancer results
+output$downloadMirCancerDbResult <- downloadHandler(
+  filename = function() { paste('mircancerdb', 'result', 
+                                input$margin, 
+                                input$method, 
+                                input$normalization, '.txt', sep='_') 
+  },
+  content = function(file) {
+    data <- hits.mircancer()
+    write.table(data, file, row.names=F, sep="\t", quote=F)
+  }  
+)
+
+
+# mir family results
+output$downloadMirFamilyResult <- downloadHandler(
+  filename = function() { paste('mirfamilies', 'result', 
+                                input$margin, 
+                                input$method, 
+                                input$normalization, '.txt', sep='_') 
+  },
+  content = function(file) {
+    data <- family.hitrate()
+    
+    data$samples <- str_replace_all(data$samples, "<div.+?>S</div> ", "(S)")
+    data$samples <- str_replace_all(data$samples, "<div.+?>P</div> ", "(P)")
+    data$samples <- str_replace_all(data$samples, "<div.+?>I</div> ", "(I)")
+    
+    write.table(data, file, row.names=F, sep="\t", quote=F)
+  }  
+)
+
 
 #hotnet2 heat file
 output$downloadHotnetGeneList <- downloadHandler(

@@ -60,13 +60,21 @@ source("source/RNAhybrid.R")
 source("source/RmiR.R")
 tryCatch({
   devtools::source_url("https://raw.githubusercontent.com/NanoCAN/SAVANAH/master/R/import.R")
+}, error = function(e){
+  return(NULL)
 })
 
 ### Additional shiny options ###
 options(shiny.maxRequestSize=30*1024^2)
 
 ### Load mircancer database ###
-mircancer.database <- read.table(paste(data.folder, "miRCancerSeptember2015.txt", sep=""), sep="\t", header=T, quote="\"")
+mircancer.database <- tryCatch({
+  mircancer.version <- "June 2016"
+  read.table("http://mircancer.ecu.edu/downloads/miRCancerJune2016.txt", sep="\t", header=T, quote="\"")
+}, error = function(e){
+  mircancer.version <- "September 2015"
+  read.table(paste(data.folder, "miRCancerSeptember2015.txt", sep=""), sep="\t", header=T, quote="\"")
+})
 
 ### Load miRNA aliases. First try to read the most up to date version from mirbase website, use local copy as a fallback only ###
 mirna.aliases <- NULL
