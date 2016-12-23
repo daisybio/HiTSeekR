@@ -20,11 +20,13 @@ ctrlTypes <- reactive({
   
   if(is.null(input$controlCol)) return(NULL)
   else if(input$controlCol == "") return(NULL)
-  else if(input$controlCol %in% colnames(exp.data)) ctrlCol <- exp.data[,input$controlCol]
-
-  all.unique.ctrls <- unique(as.character(ctrlCol))
-  if(length(all.unique.ctrls) > 1000) return(NULL)
-  else return(all.unique.ctrls)
+  else if(input$controlCol %in% colnames(exp.data)){
+    ctrlCol <- exp.data[,input$controlCol]
+    all.unique.ctrls <- unique(as.character(ctrlCol))
+    if(length(all.unique.ctrls) > 1000) return(NULL)
+    else return(all.unique.ctrls)
+  }
+  else return(NULL)
 })
 
 #select a negative control
@@ -91,6 +93,7 @@ output$uiOutput_data_options <- renderUI({
 #make an update of the data import options if necessary
 dataUpdateObserver <- observe({
   datasetName()  
+  input$fileSeparator
   isolate({
     updateSelectInput(session, "sampleCol", "Sample Name Column", dataColumns(), dataOptionDefaults()[["sampleCol"]])
     updateSelectInput(session, "plateCol", "Plate Column", dataColumns(), dataOptionDefaults()[["plateCol"]])
@@ -140,6 +143,8 @@ dataChangeObserver <- observe({
 
 accessionColTypeObserver <- observe({
   input$isHitList
+  input$fileSeparator
+  
   default <- dataOptionDefaults()[["accColType"]]
   if(default == "") default <- accTypes()[1]
   updateSelectInput(session, "accessionColType", "Accession Column Type", accTypes(), default)
