@@ -4,6 +4,9 @@ source("config.R")
 ### Enable error dump ###
 options(shiny.sanitize.errors = FALSE)
 
+#use old progress bar
+shinyOptions(progress.style = "old") 
+
 ### Load required packages ###
 library(shiny)
 library(plyr)
