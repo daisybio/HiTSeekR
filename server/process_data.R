@@ -133,6 +133,7 @@ processedData <- reactive({
     if(input$hasControls) controlCol <- data[,input$controlCol]
     else controlCol <- NA
     
+    if(is.null(data$readoutCol)) data$readoutCol <- "CUSTOM"
     processedData <- data.frame(data$experimentCol, sampleCol, accessionCol, plateCol, wellAlpha, rowCol, data$replicateCol, controlCol, data$readoutCol, data$measurementCol)
     colnames(processedData) <- c("Experiment", "Sample", "Accession", "Plate", "Well.position", "Row", "Column", "Replicate", "Control", "Readout", "Raw")
     
