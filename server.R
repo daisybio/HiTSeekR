@@ -4,6 +4,9 @@ source("config.R")
 ### Enable error dump ###
 options(shiny.sanitize.errors = FALSE)
 
+### connection timeout after 10s ###
+options(timeout = 5)
+
 #use old progress bar
 shinyOptions(progress.style = "old") 
 
@@ -62,6 +65,7 @@ source("source/DIANAtools_webservices.R")
 source("source/RNAhybrid.R")
 source("source/RmiR.R")
 tryCatch({
+  message("Loading SAVANAH API code")
   devtools::source_url("https://raw.githubusercontent.com/NanoCAN/SAVANAH/master/R/import.R")
 }, error = function(e){
   return(NULL)
@@ -72,9 +76,11 @@ options(shiny.maxRequestSize=30*1024^2)
 
 ### Load mircancer database ###
 mircancer.database <- tryCatch({
-  mircancer.version <- "June 2016"
-  read.table("http://mircancer.ecu.edu/downloads/miRCancerJune2016.txt", sep="\t", header=T, quote="\"")
+  message("Downloading mircancer db")
+  mircancer.version <- "September 2016"
+  read.table("http://mircancer.ecu.edu/downloads/miRCancerSeptember2016.txt", sep="\t", header=T, quote="\"")
 }, error = function(e){
+  message("Using local fallback version of mircancer db")
   mircancer.version <- "September 2015"
   read.table(paste(data.folder, "miRCancerSeptember2015.txt", sep=""), sep="\t", header=T, quote="\"")
 })
@@ -83,14 +89,20 @@ mircancer.database <- tryCatch({
 mirna.aliases <- NULL
 
 ### Load miRNA gene target significance counts for RmiR ###
+message("Loading RNAhybrid database")
 load("data/rmir.counts.RData")
 
 tryCatch({
+  message("Downloading miRBase aliases")
+  curl <- curlSetOpt(.opts = list(timeout = 5))
+  getURL("ftp://mirbase.org", curl = curl)
   con <- gzcon(url(paste("ftp://mirbase.org/pub/mirbase/CURRENT/aliases.txt.gz", sep="")))
   txt <- readLines(con)
   mirna.aliases <-  read.delim(textConnection(txt), header=F)
 },
-error = function(e) { mirna.aliases = read.delim(paste(data.folder, "aliases.txt", sep=""), header=F)
+error = function(e) { 
+  message("Loading local fallback version of miRBase aliases")
+  mirna.aliases = read.delim(paste(data.folder, "aliases.txt", sep=""), header=F)
 })
 
 ### Shiny server ###
