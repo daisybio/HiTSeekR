@@ -3,7 +3,7 @@ accTypes <- reactive({
   if(is.null(input$screenType)) return(NULL)
   else if(input$screenType == "siRNA") return(c("Entrez", "GeneSymbol", "RefSeq", "Ensembl"))
   else if(input$screenType == "miRNA") return(c("MI", "MIMAT", "mature_name"))
-  else if(input$screenType == "compound") return(c("PubChem_SID", "PubChem_CID", "Chembank"))
+  else if(input$screenType == "compound") return(c("PubChem_SID", "PubChem_CID", "Chembank", "Other"))
   #return(c("RefSeq", "Entrez", "MIMAT", "MI"))
 })
 
@@ -36,6 +36,16 @@ negCtrl <- reactive({
   }
   else{
     input$negCtrl
+  }
+})
+
+#select a negative control
+sampleCtrl <- reactive({
+  if(is.null(input$sampleCtrl)){
+    return(dataOptionDefaults()[["sampleCtrls"]])
+  }
+  else{
+    input$sampleCtrl
   }
 })
 
@@ -112,6 +122,7 @@ dataUpdateObserver <- observe({
       updateSelectInput(session, "controlCol", "Control Column", dataColumns(), dataOptionDefaults()[["ctrlCol"]])
       updateSelectInput(session, "posCtrl", "Positive Control", ctrlTypes(), dataOptionDefaults()[["posCtrls"]])
       updateSelectInput(session, "negCtrl", "Negative Control", ctrlTypes(), dataOptionDefaults()[["negCtrls"]])
+      updateSelectInput(session, "sampleCtrl", "Sample", ctrlTypes(), dataOptionDefaults()[["sampleCtrls"]])
     }
   })
 }, priority=1000)
@@ -135,6 +146,7 @@ dataChangeObserver <- observe({
     input$controlCol
     input$posCtrl
     input$negCtrl
+    input$sampleCtrl
     isolate({
       if(input$startButton != 0)
       showshinyalert(session, "general_status", "Input has changed. You need to process the data again for the changes to take effect", "danger")  
@@ -154,7 +166,8 @@ accessionColTypeObserver <- observe({
 output$uiOutput_controls <- renderUI({    
   ctrlSelects <- list(
     selectInput("posCtrl", "Positive Control", ctrlTypes(), dataOptionDefaults()[["posCtrls"]], multiple=T),
-    selectInput("negCtrl", "Negative Control", ctrlTypes(), dataOptionDefaults()[["negCtrls"]], multiple=T)
+    selectInput("negCtrl", "Negative Control", ctrlTypes(), dataOptionDefaults()[["negCtrls"]], multiple=T),
+    selectInput("sampleCtrl", "Sample", ctrlTypes(), dataOptionDefaults()[["sampleCtrls"]], multiple=T)
   )
   do.call(wellPanel, ctrlSelects)
 })

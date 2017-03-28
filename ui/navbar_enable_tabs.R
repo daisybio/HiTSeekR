@@ -89,7 +89,8 @@ observe({
       session$sendCustomMessage(type = "enableNavTab", "5")  
     }
     else if(input$screenType == "compound"){
-      session$sendCustomMessage(type = "enableNavTab", "6")  
+      if(input$accessionColType != "Other")
+        session$sendCustomMessage(type = "enableNavTab", "6")  
     }   
     else{
       session$sendCustomMessage(type = "enableNavTab", "7")  

@@ -15,6 +15,7 @@ dataOptionDefaults <- reactive({
                 "ctrlCol" = "Silencing.RNA.reagent.identifier",
                 "posCtrls" = c("rela", "tnfr1"),
                 "negCtrls" = c("sicon", "lrp5"),
+                "sampleCtrls" = c("sample"),
                 "rowCol" = "",
                 "colCol" = "",
                 "hasCtrls" = "TRUE"
@@ -40,6 +41,7 @@ dataOptionDefaults <- reactive({
              "expCol" = "",
              "ctrlCol" = "",
              "posCtrls" = "",
+             "sampleCtrls" = "",
              "negCtrls" = "",
              "rowCol" = "",
              "colCol" = "",
@@ -67,6 +69,7 @@ dataOptionDefaults <- reactive({
                 "ctrlCol" = "",
                 "posCtrls" = "",
                 "negCtrls" = "",
+                "sampleCtrls" = "",
                 "rowCol" = "",
                 "colCol" = "",
                 "hasCtrls" = "FALSE"
@@ -86,6 +89,7 @@ dataOptionDefaults <- reactive({
              "ctrlCol" = "Control",
              "posCtrls" = "POS",
              "negCtrls" = "NEG",
+             "sampleCtrls" = "",
              "rowCol" = "",
              "colCol" = "",
              "hasCtrls" = "TRUE"
@@ -105,6 +109,7 @@ dataOptionDefaults <- reactive({
              "ctrlCol" = "",
              "posCtrls" = "",
              "negCtrls" = "",
+             "sampleCtrls" = "",
              "rowCol" = "Row",
              "colCol" = "Column",
              "hasCtrls" = "FALSE"
@@ -124,6 +129,7 @@ dataOptionDefaults <- reactive({
              "ctrlCol" = "",
              "posCtrls" = "",
              "negCtrls" = "",
+             "sampleCtrls" = "",
              "rowCol" = "",
              "colCol" = "",
              "hasCtrls" = "FALSE"
@@ -143,6 +149,7 @@ dataOptionDefaults <- reactive({
              "ctrlCol" = "controlStatus",
              "posCtrls" = "pos",
              "negCtrls" = "neg",
+             "sampleCtrls" = "",
              "rowCol" = "",
              "colCol" = "",
              "hasCtrls" = "TRUE"
@@ -162,6 +169,7 @@ dataOptionDefaults <- reactive({
              "ctrlCol" = "",
              "posCtrls" = "",
              "negCtrls" = "",
+             "sampleCtrls" = "",
              "rowCol" = "PlateRow",
              "colCol" = "PlateCol",
              "hasCtrls" = "FALSE"
@@ -180,6 +188,7 @@ dataOptionDefaults <- reactive({
                     "ctrlCol" = "",
                     "posCtrls" = "",
                     "negCtrls" = "",
+                    "sampleCtrls" = "",
                     "rowCol" = "",
                     "colCol" = "",
                     "hasCtrls" = "FALSE"

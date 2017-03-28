@@ -123,9 +123,8 @@ processedData <- reactive({
       rows <- data[,input$rowCol]
       cols <- data[,input$colCol]
       rowCol <- cbind(rows, cols)
-      wellAlpha <- foreach(row = iter(data, "row"), .inorder = TRUE, .combine=c) %do% {
-        paste(LETTERS[row[,input$colCol]], row[,input$rowCol], sep="")
-      }
+      
+      wellAlpha <- apply(rowCol, 1, function(elt) paste0(LETTERS[elt[1]], elt[2]))
     }
     accessionCol <- data[,input$accessionCol]
     plateCol <- data[,input$plateCol]

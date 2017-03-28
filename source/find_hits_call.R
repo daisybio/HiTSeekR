@@ -1,5 +1,5 @@
 #In this function the actual hit detection is done.
-find.hits.call <- function(exp.data, rep.data, method, margin, neg.ctrl, signalColumn, updateProgress, upperCutoff, lowerCutoff){
+find.hits.call <- function(exp.data, rep.data, method, margin, neg.ctrl, signalColumn, updateProgress, upperCutoff, lowerCutoff, sampleCtrl){
   #percentage cutoff is the simples method
   if(method == "cutoff")
   {
@@ -23,7 +23,7 @@ find.hits.call <- function(exp.data, rep.data, method, margin, neg.ctrl, signalC
     outl <- outl %>% dplyr::filter(abs(SSMD) >= margin)    
   }
   else{ #for all other methods, e.g. SD, MD and quartile
-    outl <- find.hits(exp.data, method, margin, signalColumn=signalColumn, updateProgress=updateProgress)    
+    outl <- find.hits(exp.data, method, margin, signalColumn=signalColumn, updateProgress=updateProgress, sampleCtrl = sampleCtrl)    
   }  
   
   outl <- as.data.frame(outl)

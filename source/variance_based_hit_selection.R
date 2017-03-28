@@ -1,5 +1,5 @@
 #hit detection
-find.hits <- function(plates, method, margin=2, withControls=F, signalColumn="Raw", updateProgress=NULL)
+find.hits <- function(plates, method, margin=2, withControls=F, signalColumn="Raw", updateProgress=NULL, sampleCtrl = "sample")
 { 
   library(dplyr)
   
@@ -13,7 +13,7 @@ find.hits <- function(plates, method, margin=2, withControls=F, signalColumn="Ra
   }
   else
   {    
-    data <- filter(plates, tolower(Control) == "sample" | is.na(Control))
+    data <- filter(plates, Control %in% c("",sampleCtrl) | is.na(Control))
   }
   if(method=="SD")
   {

@@ -179,7 +179,7 @@ hit.detect <- reactive({
       result <- NULL
       
       tryCatch({
-        result <- find.hits.call(m.data, it.data, input$method, margin, negCtrl(), input$normalization, updateProgress, upperCutoff=input$upperCutoff, lowerCutoff=input$lowerCutoff)
+        result <- find.hits.call(m.data, it.data, input$method, margin, negCtrl(), input$normalization, updateProgress, upperCutoff=input$upperCutoff, lowerCutoff=input$lowerCutoff, sampleCtrl = input$sampleCtrl)
       },
       error = function(e) { 
           errors.log <<- paste(errors.log, "For experiment ", exp, " and readout ", rdt, e$message, "<br/>")        
