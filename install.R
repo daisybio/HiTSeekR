@@ -7,7 +7,7 @@ install.packages(c("shiny", "plyr", "dplyr", "ggplot2",
                    "gplots", "scales", "gridExtra", "lazyeval",
                    "reshape2", "stringr", "VennDiagram", "qgraph",
                    "iterators", "foreach", "htmlwidgets", "DBI",
-                   "networkD3", "tidyr", "devtools", "XML", "R.utils"))
+                   "networkD3", "tidyr", "devtools", "XML", "R.utils", "BiocManager"))
 
 #bioconductor packages
 BiocManager::install(c("org.Hs.eg.db", "RmiR", "RTCA", "KEGG.db", "mirbase.db", "reactome.db", "GO.db"))
