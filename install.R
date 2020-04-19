@@ -10,14 +10,7 @@ install.packages(c("shiny", "plyr", "dplyr", "ggplot2",
                    "networkD3", "tidyr", "devtools", "XML", "R.utils"))
 
 #bioconductor packages
-source("http://bioconductor.org/biocLite.R")
-biocLite("org.Hs.eg.db", ask=F)
-biocLite("RmiR", ask=F)
-biocLite("RTCA", ask=F)
-biocLite("KEGG.db", ask=F)
-biocLite("mirbase.db", ask=F)
-biocLite("reactome.db", ask=F)
-biocLite("GO.db", ask=F)
+BiocManager::install(c("org.Hs.eg.db", "RmiR", "RTCA", "KEGG.db", "mirbase.db", "reactome.db", "GO.db"))
 
 #github packages
 library(devtools)
