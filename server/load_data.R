@@ -9,7 +9,12 @@ rawData <- reactive({
     progress$set(message = "Downloading data from PubChem...", value=0)
     tryCatch({
       library(RCurl)
-      raw <- getURL(paste("https://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid=", input$pubchem_aid, "&q=expdata_csvsave", sep=""))
+      # update url from 
+      # https://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid=743456&q=expdata_csvsave to
+      # https://pubchem.ncbi.nlm.nih.gov/rest/pug/assay/aid/743456/record/CSV
+      # since BioAssay Tools are legacy https://pubchemdocs.ncbi.nlm.nih.gov/legacy-bioassay-tools
+      # and we should use PUG REST https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest$_Toc494865555
+      raw <- getURL(sprintf("https://pubchem.ncbi.nlm.nih.gov/rest/pug/assay/aid/%s/record/CSV", input$pubchem_aid))
       if(grepl("err message:", raw)){
         stop(raw)
       }
