@@ -155,7 +155,7 @@ elts <- list(
                      checkboxInput("log2normalize", "Log2 transform signal data", TRUE),
                      checkboxInput("computeBscore", "Compute B-score", FALSE)
     ),
-    checkboxInput("showColOptions", "Show file input options", TRUE),
+    checkboxInput("showColOptions", "Show file input options", FALSE),
     conditionalPanel("!input.isHitList", fluidRow(
       tags$style(type="text/css", '#loadButtonsPanel { max-width:400px;}'),
       id="loadButtonsPanel",
@@ -245,8 +245,8 @@ elts <- list(
                 <a href='http://baumbachlab.net'><img width=200 src='baumbachlab.png'/></a>
                 <div style='clear: both; padding-top:50px;'>
                 Contact: Markus List &lt;markus.list=.AT.=mpi-inf.mpg.de&gt;<br/><br/>
-                <p><a href='https://github.com/nanocan/HiTSeekR' target='_blank' class='btn btn-primary'>View on GitHub &rarr;</a></p>
-                <p><a href='https://nanocan.github.io/HiTSeekR' target='_blank' class='btn btn-primary'>Project page with tutorial &rarr;</a></p>
+                <p><a href='https://github.com/biomedbigdata/HiTSeekR' target='_blank' class='btn btn-primary'>View on GitHub &rarr;</a></p>
+                <p><a href='https://biomedical-big-data.de/HiTSeekR/' target='_blank' class='btn btn-primary'>Project page with tutorial &rarr;</a></p>
                 <br/><br/><hr>
                 <div id='aboutdbs'><h4>The following is a list of R packages used in HiTSeekR for annotation and systems biology analysis:</h4>
                 <ul>
@@ -260,7 +260,7 @@ elts <- list(
                 <h4>In addition, HiTSeekR integrates the following external resources:</h4>
                 <ul>
                   <li><a href='http://diana.imis.athena-innovation.gr/DianaTools/index.php?r=site/page&view=software' target='_blank' class='btn btn-primary'>DIANA tools (web service)</a> &rarr; microRNA target and pathway prediction</li>
-                  <li><a href='http://stitch.embl.de/'target='_blank' class='btn btn-primary'>STITCH (v.4.0)</a> &rarr; interaction between proteins and chemicals</li>
+                  <li><a href='http://stitch.embl.de/'target='_blank' class='btn btn-primary'>STITCH (v.5.0)</a> &rarr; interaction between proteins and chemicals</li>
                   <li><a href='http://keypathwayminer.compbio.sdu.dk/'target='_blank' class='btn btn-primary'>KeyPathwayMinerWeb</a> &rarr; de novo network enrichment</li>
                 </ul>
                 </div>
@@ -285,7 +285,7 @@ Note that uploaded screening data is only saved transiently during the analysis 
           </div></div>
           <div class="toolbar" style="clear:both;">                
          '),
-    HTML('<span style="margin-left:20px;"><a target="_blank" href="http://nanocan.github.io/HiTSeekR/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">If you are here the first time, check out the tutorial
+    HTML('<span style="margin-left:20px;"><a target="_blank" href="https://biomedical-big-data.de/HiTSeekR/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">If you are here the first time, check out the tutorial
     </button></a></span>'),
     br(),
     HTML("<div id='buttonBar' style='display: none; background-color:#ccccff; padding:30px; margin-top:30px; border-radius: 5px; '><h1>Select type of screen</h1>"),

@@ -9,6 +9,7 @@ libcurl4-gnutls-dev \
 libssl-dev \
 libgmp3-dev \
 libmpfr-dev \
+libjpeg-dev \
 libhiredis-dev
 
 #copy shiny app to work-dir
