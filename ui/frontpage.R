@@ -46,7 +46,7 @@ elts <- list(
              actionButton("getFromPubChemButton", "Download from PubChem", styleclass="primary")      
       )
     )),                     
-    checkboxInput("showColOptions", "Show file input options", FALSE),
+    checkboxInput("showColOptions", "Show file input options", TRUE),
     actionButton("startButton", "Start Analysis", styleclass="primary"),    
     hr(),
     conditionalPanel(condition="input.showColOptions", 

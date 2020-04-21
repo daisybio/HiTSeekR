@@ -155,7 +155,7 @@ elts <- list(
                      checkboxInput("log2normalize", "Log2 transform signal data", TRUE),
                      checkboxInput("computeBscore", "Compute B-score", FALSE)
     ),
-    checkboxInput("showColOptions", "Show file input options", FALSE),
+    checkboxInput("showColOptions", "Show file input options", TRUE),
     conditionalPanel("!input.isHitList", fluidRow(
       tags$style(type="text/css", '#loadButtonsPanel { max-width:400px;}'),
       id="loadButtonsPanel",

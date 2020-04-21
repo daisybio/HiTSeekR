@@ -77,12 +77,12 @@ options(shiny.maxRequestSize=30*1024^2)
 ### Load mircancer database ###
 mircancer.database <- tryCatch({
   message("Downloading mircancer db")
-  mircancer.version <- "September 2016"
-  read.table("http://mircancer.ecu.edu/downloads/miRCancerSeptember2016.txt", sep="\t", header=T, quote="\"")
+  mircancer.version <- "October 2019"
+  read.table("http://mircancer.ecu.edu/downloads/miRCancerOctober2019.txt", sep="\t", header=T, quote="\"")
 }, error = function(e){
   message("Using local fallback version of mircancer db")
-  mircancer.version <- "September 2015"
-  read.table(paste(data.folder, "miRCancerSeptember2015.txt", sep=""), sep="\t", header=T, quote="\"")
+  mircancer.version <- "October 2019"
+  read.table(paste(data.folder, "data/miRCancerOctober2019.txt", sep=""), sep="\t", header=T, quote="\"")
 })
 
 ### Load miRNA aliases. First try to read the most up to date version from mirbase website, use local copy as a fallback only ###

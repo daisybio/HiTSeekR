@@ -3,6 +3,7 @@ config.R
 *.Rproj
 .Rhistory
 .RData
+.Rprofile
 data
 raw_data
 

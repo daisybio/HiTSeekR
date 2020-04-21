@@ -36,7 +36,7 @@ convertToCid <- function(data, type){
   stop("Do not know how to handle unknown compound / drug ID type.")
 }
 
-stitch.db <- src_sqlite(paste(data.folder, "stitch_hsa_protein_chemical_links_v4.0.sqlite3", sep=""))
+stitch.db <- src_sqlite(paste(data.folder, "stitch_hsa_protein_chemical_links_v5.0.sqlite3", sep=""))
 
 drug.targets <- reactive({
   
