@@ -239,12 +239,15 @@ elts <- list(
            uiOutput("uiOutput_gene_set_analysis")
   ),
   tabPanel("About",
-           fluidRow(column(width=4, HTML("The High-Throughput Screening kit for R (HiTSeekR) was developed as a joint project between<br/><br/>
+           fluidRow(column(width=8, HTML("The High-Throughput Screening kit for R (HiTSeekR) was developed as a joint project between<br/><br/>
                 <a href='http://nanocan.org'><img width=150 src='NanoCAN.png'/></a>
                 <a href='https://exbio.de'><img width=200 src='baumbachlab.png'/></a>
                 <a href='https://biomedical-big-data.de'><img width=300 src='biomedbigdata_logo.png'/></a>
                 <div style='clear: both; padding-top:50px;'>
                 Contact: Markus List &lt;markus.list=.AT.=wzw.tum.de&gt;<br/><br/>
+                <p><b>If you find HiTSeekR useful in your research please cite:</b></p>
+                <p>List, M., Schmidt, S., Christiansen, H., Rehmsmeier, M., Tan, Q., Mollenhauer, J., & Baumbach, J. (2016). Comprehensive analysis of high-throughput screens with HiTSeekR. Nucleic acids research, 44(14), 6639-6648.</a></p>
+                <p><a href='https://doi.org/10.1093/nar/gkw554' target='_blank' class='btn btn-primary'>Read the paper &rarr;</a></p>
                 <p><a href='https://github.com/biomedbigdata/HiTSeekR' target='_blank' class='btn btn-primary'>View on GitHub &rarr;</a></p>
                 <p><a href='https://biomedical-big-data.de/HiTSeekR/' target='_blank' class='btn btn-primary'>Project page with tutorial &rarr;</a></p>
                 <br/><br/><hr>
