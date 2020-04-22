@@ -4,7 +4,6 @@ library(ggplot2)
 library(grid)
 library(gridExtra)
 library(scales)
-library(RmiR)
 library(shinysky)
 
 elts <- list(
@@ -242,9 +241,10 @@ elts <- list(
   tabPanel("About",
            fluidRow(column(width=4, HTML("The High-Throughput Screening kit for R (HiTSeekR) was developed as a joint project between<br/><br/>
                 <a href='http://nanocan.org'><img width=150 src='NanoCAN.png'/></a>
-                <a href='http://baumbachlab.net'><img width=200 src='baumbachlab.png'/></a>
+                <a href='https://exbio.de'><img width=200 src='baumbachlab.png'/></a>
+                <a href='https://biomedical-big-data.de'><img width=300 src='biomedbigdata_logo.png'/></a>
                 <div style='clear: both; padding-top:50px;'>
-                Contact: Markus List &lt;markus.list=.AT.=mpi-inf.mpg.de&gt;<br/><br/>
+                Contact: Markus List &lt;markus.list=.AT.=wzw.tum.de&gt;<br/><br/>
                 <p><a href='https://github.com/biomedbigdata/HiTSeekR' target='_blank' class='btn btn-primary'>View on GitHub &rarr;</a></p>
                 <p><a href='https://biomedical-big-data.de/HiTSeekR/' target='_blank' class='btn btn-primary'>Project page with tutorial &rarr;</a></p>
                 <br/><br/><hr>

@@ -72,7 +72,7 @@ output$uiOutput_data <- renderUI({
                selectInput("heatmapExperimentSelected", "Select an experiment:", experiments(), experiments()[1]),
                selectInput("heatmapReadoutSelected", "Select a readout:", readouts(), readouts()[1])             
              ),mainPanel(
-               tags$script(src = "http://code.highcharts.com/4.2.3/modules/heatmap.js"),
+               tags$script(src = "https://code.highcharts.com/4.2.3/modules/heatmap.js"),
                showOutput("intHeatmapPlot", "highcharts"),
                showOutput("intPlateScatterPlot", "highcharts")
              )
