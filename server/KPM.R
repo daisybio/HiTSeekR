@@ -172,7 +172,7 @@ currentQuest <- reactive({
 })
 
 KPM.result <- reactive({
-  if(input$startKPMButton == 0){
+  if(is.null(input$startKPMButton) || input$startKPMButton == 0){
     showshinyalert(session, "kpm_status", "Press the start button to initiate a remote KeyPathwayMiner analysis", "info") 
     return(NULL)
   } 

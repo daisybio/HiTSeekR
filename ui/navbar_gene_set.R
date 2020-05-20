@@ -5,7 +5,7 @@ gene.sets <- c("GO cellular compartment" = "GO_CC",
                "REACTOME pathways" = "REACTOME")
 
 output$uiOutput_htsanalyzer <- renderUI({
-  if(input$startHTSanalyzer == 0) return(NULL)
+  if(is.null(input$startHTSanalyzer) || input$startHTSanalyzer == 0) return(NULL)
   
   isolate({
     elements <- foreach(geneset.type = input$htsanalyzer.geneset.types) %do%
@@ -156,7 +156,7 @@ output$uiOutput_KPM <- renderUI({
     HTML('<img src="KPM_banner.png"/><br/><br/>'),
     #textInput("kpm_URL", "KPM-Web URL:", "http://localhost:8080/kpm-web/"),  
     conditionalPanel("input.showHelpText",
-    HTML('<div class="shinyalert alert fade alert-info in">For details regarding KeyPathwayMiner and the settings shown below click <a href=\'http://tomcat.compbio.sdu.dk/keypathwayminer/\' target=\'_blank\'><u>here</u></a>.</div>')
+    HTML('<div class="shinyalert alert fade alert-info in">For details regarding KeyPathwayMiner and the settings shown below click <a href=\'https://exbio.wzw.tum.de/keypathwayminer/\' target=\'_blank\'><u>here</u></a>.</div>')
     ),
     if(input$screenType=="miRNA")
     {

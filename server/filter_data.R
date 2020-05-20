@@ -103,7 +103,6 @@ data <- reactive({
       data <- dplyr::left_join(data, ensembl, by=c("Accession" = "ensembl_id")) %>% dplyr::rename(gene_symbol=alias_symbol)      
     }
     else if(input$accessionColType == "RefSeq"){
-      browser()
       refseq <- as.data.frame(org.Hs.egREFSEQ2EG)
       data <- dplyr::left_join(data, refseq, by=c("Accession" = "accession")) %>% dplyr::rename(gene_symbol=alias_symbol)      
     }

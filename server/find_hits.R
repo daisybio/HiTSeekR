@@ -34,8 +34,8 @@ outliers <- reactive({
   }
   else{ #filter all other methods for effect category and prepare exp.data based on all sample values
     exp.data <- data()    
-    exp.data <- dplyr::filter(exp.data, Experiment %in% input$experimentSelected, 
-                              Readout %in% input$readoutSelected)
+    exp.data <- dplyr::filter(exp.data, Experiment %in% !!input$experimentSelected, 
+                              Readout %in% !!input$readoutSelected)
     if(input$effect != "effect") outl <- dplyr::filter(outl, category == input$effect)
   }
   

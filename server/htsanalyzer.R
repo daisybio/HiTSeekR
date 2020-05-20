@@ -64,7 +64,7 @@ htsanalyzer <- reactive({
       }
       else{        
         all.samples <- data()
-        all.samples <- all.samples %>% dplyr::filter(Experiment %in% input$experimentSelected, Readout %in% input$readoutSelected)
+        all.samples <- all.samples %>% dplyr::filter(Experiment %in% !!input$experimentSelected, Readout %in% !!input$readoutSelected)
                 
         hit.list <- outliers()
         hit.list <- na.omit(hit.list$gene_id)

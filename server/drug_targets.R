@@ -15,7 +15,7 @@ convertToCid <- function(data, type){
   if(type == "Chembank")
   {
       compound.mapping <- tbl(compound.mapping.db, "chembank_to_cid")
-      result <- dplyr::filter(compound.mapping, Chembank_ID %in% data$Accession)
+      result <- dplyr::filter(compound.mapping, Chembank_ID %in% !!data$Accession)
       result <- as.data.frame(result) %>% dplyr::filter(complete.cases(.))
       result <- dplyr::left_join(data, result, by=c("Accession" = "ChemBank_ID"))
       return(result)
@@ -23,7 +23,7 @@ convertToCid <- function(data, type){
   else if(type == "PubChem_SID")
   {
       compound.mapping <- tbl(compound.mapping.db, "chembank_to_sid_cid")
-      result <- dplyr::filter(compound.mapping, PubChem_SID %in% data$Accession)
+      result <- dplyr::filter(compound.mapping, PubChem_SID %in% !!data$Accession)
       result <- as.data.frame(result) %>% dplyr::filter(complete.cases(.)) %>% dplyr::select(-ChemBank_ID)
       result <- dplyr::left_join(data, result, by=c("Accession" = "PubChem_SID"))    
       return(result)
@@ -45,7 +45,7 @@ drug.targets <- reactive({
   tryCatch({
     hits.wo.nas <- na.omit(hits$PubChem_CID)
     targets <- tbl(stitch.db, "hs")
-    targets <- dplyr::filter(targets, PubChemID %in% hits.wo.nas)
+    targets <- dplyr::filter(targets, PubChemID %in% !!hits.wo.nas)
     hits <- hits %>% dplyr::select(Sample, PubChem_CID) 
     hits <- dplyr::inner_join(hits, targets, by=c("PubChem_CID" = "PubChemID"), copy=T)
   }, error = function(e){ showshinyalert(session, "general_status", paste("error:", e$message), "danger") })
