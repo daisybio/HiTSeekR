@@ -1,5 +1,5 @@
-FROM rocker/shiny:latest
-MAINTAINER Markus List <markus.list@mpi-inf.mpg.de>
+FROM rocker/shiny:3.6.3
+MAINTAINER Markus List <markus.list@wzw.tum.de>
 
 #install system packages
 RUN apt-get update && apt-get install -y \
