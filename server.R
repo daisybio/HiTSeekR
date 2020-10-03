@@ -12,6 +12,7 @@ shinyOptions(progress.style = "old")
 
 ### Load required packages ###
 library(shiny)
+library(readxl)
 library(plyr)
 library(dplyr)
 library(rCharts)

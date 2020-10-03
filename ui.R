@@ -112,7 +112,7 @@ elts <- list(
   tabPanel("Input",
      conditionalPanel("input.dataset == 'none selected'",
        conditionalPanel("input.showHelpText",                      
-        HTML('<div class="shinyalert alert fade alert-info in">Before you can start your analysis you have to select or upload a dataset:</div>')
+        HTML('<div class="shinyalert alert fade alert-info in">Before you can start your analysis you have to upload a dataset (in csv or excel format) or select a demo dataset.</div>')
        ),
         fluidRow(
           tags$style(type="text/css", '#loadOptionsPanel { max-width:800px;}'),
@@ -135,7 +135,7 @@ elts <- list(
         )),   
     conditionalPanel("input.dataset != 'none selected'",
     conditionalPanel("input.showHelpText",                     
-    HTML('<div class="shinyalert alert fade alert-info in">In the next step you can customize how the data set is processed. Note:
+    HTML('<div class="shinyalert alert fade alert-info in">In the next step you can customize how the data set is processed. If questions arise check <a href="https://biomedical-big-data.de/HiTSeekR/tutorial/">tutorial</a>. Note:
          <ul>
           <li>In particular for uploaded data sets you need to select which type of information is found in which column. Check "show fileinput options".</li>
           <li>log2 transformation is typically recommended for signal data</li>

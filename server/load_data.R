@@ -76,14 +76,16 @@ rawData <- reactive({
   else{
     progress$set(message = "Uploading and processing custom data set...", value=0)
     file <- input$file
-    
     tryCatch({
-    data <- read.table(file$datapath, header=T, sep=input$fileSeparator, fill=T)
+      if (is.na(excel_format(path = file$datapath, guess = TRUE))) {
+        data <- read.table(file$datapath, header=T, sep=input$fileSeparator, fill=T)
+      } else {
+        data <- read_excel(file$datapath)
+      }
     }, 
     error = function(e){ showshinyalert(session, "general_status", paste("error reading file:", e$message), "danger") })
   }
   progress$set(message =  "Loading complete", value=1)
-  
   return(data)
 })
 
