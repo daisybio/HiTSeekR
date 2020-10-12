@@ -88,7 +88,16 @@ outliers <- reactive({
     hits <- convertToCid(outl, input$accessionColType)
     
     #add CID prefix and leading zeros for STITCH db
-    hits[!is.na(hits$PubChem_CID), "PubChem_CID"] <- paste("CID", formatC(as.integer(hits[!is.na(hits$PubChem_CID), "PubChem_CID"]), width=9, flag="0"), sep="")
+    if (is.factor(hits$PubChem_CID)) {
+      hits$PubChem_CID <- stringr::str_trim(as.character(hits$PubChem_CID))
+      if (any(startsWith(hits$PubChem_CID, "CID"), na.rm = T)) {
+        hits[!grepl("CID\\d{9}", hits$PubChem_CID), "PubChem_CID"] <- NA
+      } else {
+        hits[!is.na(hits$PubChem_CID), "PubChem_CID"] <- paste("CID", formatC(as.integer(hits[!is.na(hits$PubChem_CID), "PubChem_CID"]), width=9, flag="0"), sep="")
+      }
+    } else { #is numeric
+      hits[!is.na(hits$PubChem_CID), "PubChem_CID"] <- paste("CID", formatC(as.integer(hits[!is.na(hits$PubChem_CID), "PubChem_CID"]), width=9, flag="0"), sep="")
+    }
     
     outl <- hits[,c(1:(ncol(hits)-2), ncol(hits), ncol(hits) -1)]
     na.count <- length(which(is.na(outl$PubChem_CID)))
