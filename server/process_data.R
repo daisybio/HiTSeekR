@@ -76,8 +76,7 @@ processedData <- reactive({
     if(numberOfReadouts  == 1){
       data$readoutCol <- input$measurementCol
       data$measurementCol  <- data[,input$measurementCol]  
-    }
-    else{
+    } else if (numberOfReadouts > 1) {
       data <- gather_(data, "readoutCol", "measurementCol", input$measurementCol) 
     }
       
@@ -109,8 +108,9 @@ processedData <- reactive({
     sampleCol <- data[,input$sampleCol]  
     
     if(input$positionColType == "alpha")
-    {
-      wellAlpha <- repairAlphaName(data[,input$positionCol])
+    { 
+      cleanAlpha <- gsub("[^[:alnum:]]", "", data[,input$positionCol]) # remove non characters and non numbers
+      wellAlpha <- repairAlphaName(cleanAlpha)
       rowCol <- alphaNames2Pos(wellAlpha)
     }
     else if(input$positionColType == "numeric")
