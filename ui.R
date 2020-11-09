@@ -290,7 +290,10 @@ Note that uploaded screening data is only saved transiently during the analysis 
           <div class="toolbar" style="clear:both;">                
          '),
     HTML('<span style="margin-left:20px;"><a target="_blank" href="https://biomedical-big-data.de/HiTSeekR/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">If you are here the first time, check out the tutorial
-    </button></a></span>'),
+         </button></a></span>'),
+    br(),
+    HTML('<span style="margin-top:2px;"><a target="_blank" href="https://doi.org/10.1093/nar/gkw554"><button style="margin-top: 2px;" type="button" class="btn action-button btn-info shiny-bound-input">or read the paper
+         </button></a></span>'),
     br(),
     HTML("<div id='buttonBar' style='display: none; background-color:#ccccff; padding:30px; margin-top:30px; border-radius: 5px; '><h1>Select type of screen</h1>"),
     br(),
