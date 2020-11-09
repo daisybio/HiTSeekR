@@ -33,13 +33,25 @@ output$uiOutput_quality_control <- renderUI({
       plotOutput("controlPlot", height="auto")
     ),
     tabPanel("Control Separability",
-      conditionalPanel("input.showHelpText",
-                       HTML(paste('<div class="shinyalert alert fade alert-info in">',
-                                  controlPerformancePlotInfoText,
-                                  '</div>', sep="")
-                       )
+      checkboxInput("zfactor", label = "Use Z-factor instead of SSMD", FALSE),
+      conditionalPanel("!input.zfactor",
+                       conditionalPanel("input.showHelpText",
+                                        HTML(paste('<div class="shinyalert alert fade alert-info in">',
+                                                   controlPerformancePlotInfoText,
+                                                   '</div>', sep="")
+                           )
+                      ),
+                      plotOutput("controlPerformancePlot", height="auto")
       ),
-      plotOutput("controlPerformancePlot", height="auto")
+      conditionalPanel("input.zfactor",
+                       conditionalPanel("input.showHelpText",
+                                        HTML(paste('<div class="shinyalert alert fade alert-info in">',
+                                                   zScoreControlPerformancePlotInfoText,
+                                                   '</div>', sep="")
+                                        )
+                       ),
+                       plotOutput("zFactorControlPerformancePlot", height="auto")
+      )
     )))
   }
   if(!is.null(input$replicateCol)) 

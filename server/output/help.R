@@ -26,6 +26,9 @@ controlPlotInfoText <- readChar(controlPlotInfoFileName, file.info(controlPlotIn
 controlPerformancePlotInfoFileName <- "help/controlPerformancePlotInfo.html"
 controlPerformancePlotInfoText <- readChar(controlPerformancePlotInfoFileName, file.info(controlPerformancePlotInfoFileName)$size)
 
+zScoreControlPerformancePlotInfoFileName <- "help/zScoreControlPerformancePlotInfo.html"
+zScoreControlPerformancePlotInfoText <- readChar(zScoreControlPerformancePlotInfoFileName, file.info(zScoreControlPerformancePlotInfoFileName)$size)
+
 replicateCorrInfoFileName <- "help/replicateCorrInfo.html"
 replicateCorrInfoText <- readChar(replicateCorrInfoFileName, file.info(replicateCorrInfoFileName)$size)
 

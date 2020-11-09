@@ -324,6 +324,47 @@ output$controlPerformancePlot <- renderPlot({
   return(p)
 }, height=600)
 
+#control plot showing the separability of the positive and negative controls via zfactor
+output$zFactorControlPerformancePlot <- renderPlot({
+  progress <- shiny::Progress$new()
+  on.exit(progress$close())
+  
+  updateProgress <- function(value = NULL, detail = NULL) {
+    if (is.null(value)) {
+      value <- progress$getValue()
+      value <- value + (progress$getMax() - value) / 5
+    }
+    progress$set(value = value, detail = detail)
+  } 
+  
+  progress$set(message = "Generating plot...", value=0)
+  
+  exp.data <- processedData()    
+  negCtrls <- negCtrl()
+  posCtrls <- posCtrl()
+  ctrls <- c(negCtrls, posCtrls)
+  ctrl.data <- exp.data %>% filter(Control %in% ctrls)
+  if(is.na(unique(ctrl.data$Sample))) ctrl.data$Sample <- ctrl.data$Control
+  ctrl.data <- ungroup(ctrl.data)
+  result <- ctrl.data %>% dplyr::group_by(Experiment, Readout, Plate, Replicate) 
+  
+  ssmdPlateCounter <<- 0
+  ssmdPlateMax <<- length(dplyr::group_size(result))
+  
+  result <- result %>% do(ssmd(., negCtrls, "Raw", summarise.results=FALSE, updateProgress = updateProgress, use.zfactor = TRUE))    
+  result <- as.data.frame(result)
+  result <- result %>% filter(Sample != NEG.CTRL)
+  
+  p <- qplot(data=result, x=Plate, y=SSMD, size=I(3), color=Sample, shape=Replicate)  
+  p <- p + facet_grid(Experiment + Readout ~ NEG.CTRL) + theme_bw()
+  p <- p + ylim(c(-0.5, 1))
+  p <- p + guides(color=guide_legend(title="Positive", nrow=10, byrow=TRUE))    
+  p <- p + annotate("rect", xmin=0, xmax=length(unique(result$Plate))+1, ymin=-Inf, ymax=0, alpha=0.2, fill="red") 
+  p <- p + annotate("rect", xmin=0, xmax=length(unique(result$Plate))+1, ymin=0, ymax=0.5, alpha=0.2, fill="orange")
+  p <- p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  return(p)
+}, height=600)
+
 #plot for correlation of replicates
 
 correlationPlot <- function(exp.data, signalCol, show.replicate.correlation){
