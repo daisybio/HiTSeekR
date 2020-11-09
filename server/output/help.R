@@ -47,6 +47,9 @@ qqPlotInfoText <- readChar(qqPlotInfoFileName, file.info(qqPlotInfoFileName)$siz
 plateViewerInfoFileName <- "help/plateViewerInfo.html"
 plateViewerInfoText <- readChar(plateViewerInfoFileName, file.info(plateViewerInfoFileName)$size)
 
+hitsSignalDistributionInfoFileName <- "help/hitsSignalDistributionInfo.html"
+hitsSignalDistributionInfoText <- readChar(hitsSignalDistributionInfoFileName, file.info(hitsSignalDistributionInfoFileName)$size)
+
 hitsTableInfoFileName <- "help/hitsTableInfo.html"
 hitsTableInfoText <- readChar(hitsTableInfoFileName, file.info(hitsTableInfoFileName)$size)
 

@@ -141,6 +141,13 @@ output$uiOutput_hits <- renderUI({
   
   elements <- list(    
     #tabPanel("Scatter Plots", uiOutput("scatterPlotTagList")),
+    tabPanel("Signal Distribution", 
+             conditionalPanel("input.showHelpText",
+                              HTML(paste('<div class="shinyalert alert fade alert-info in">',
+                                         hitsSignalDistributionInfoText,
+                                         '</div>', sep="")
+                              )
+             ), plotOutput("hitsSignalDistPlot", height="auto")),
     tabPanel("Hits List", 
              conditionalPanel("input.showHelpText",
                               HTML(paste('<div class="shinyalert alert fade alert-info in">',
@@ -157,7 +164,8 @@ output$uiOutput_hits <- renderUI({
                                          hitsPlotInfoText,
                                          '</div>', sep="")
                               )
-             ),showOutput("scatterPlotHits", "dimple")),
+             ),
+             showOutput("scatterPlotHits", "dimple")),
     tabPanel("Heatmap", 
              conditionalPanel("input.showHelpText",
                               HTML(paste('<div class="shinyalert alert fade alert-info in">',
@@ -171,6 +179,6 @@ output$uiOutput_hits <- renderUI({
                checkboxInput("showLabelsOnHeatmap", "Show sample labels in heatmap", FALSE)
              ),
              plotOutput("heatmapPlot", height=800)
-    ))                 
+    ))
   do.call(tabsetPanel, elements)
 })

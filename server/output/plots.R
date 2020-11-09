@@ -117,6 +117,20 @@ renderChart3 <- function( expr, env = parent.frame(), quoted = FALSE ){
   }
 }
 
+# density plot to check threshold for normalization method
+output$hitsSignalDistPlot <- renderPlot({
+  plot.data <- processedData()
+  progress <- dummyProgressBar()
+  on.exit(progress$close())
+  
+  plot.data.filtered <- dplyr::filter(plot.data, Readout%in%input$readoutSelected, Experiment%in%input$experimentSelected)
+  
+  p <- ggplot(plot.data.filtered, aes_string(x=input$normalization, fill="Replicate")) 
+  p <- p + geom_density(alpha=.3)
+  p <- p + theme_bw() + facet_grid(Experiment ~ Readout)
+  return(p)  
+}, height=600)
+
 # Interactive plots for screen hits #
 output$scatterPlotHits <- renderChart3({
   outl <- outliers()
