@@ -8,7 +8,7 @@ prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.li
   #kpm.res <<- kpm.result
   #ind.m <<- indicator.matrix
   #hit.l <<- hit.list
-  #browser()
+  
   #get list of edges
   edges <- lapply(kpm.result$resultGraphs, function(x){return(lapply(x$edges, function(y){c(as.numeric(y$source), as.numeric(y$target))}))})
   
@@ -61,7 +61,7 @@ prepare.kpm.output.for.plotting <- function(kpm.result, indicator.matrix, hit.li
   return(list(edges.df, node.ids))
 }
 
-plot.kpm.d3 <- function(kpm.data, hit.list, screenType)
+prepare.kpm.dynamic <- function(kpm.data, hit.list, screenType)
 {
   edges.df.mirna <- kpm.data[[1]]
   
@@ -104,8 +104,39 @@ plot.kpm.d3 <- function(kpm.data, hit.list, screenType)
   symbols <- left_join(node.ids, as.data.frame(org.Hs.egSYMBOL), by=c("id" = "gene_id"))$symbol
   node.ids[!is.na(symbols), "id"] <- symbols[!is.na(symbols)]
   node.ids[which(node.ids$category == ""), "category"] <- "gene"
+  return(list(nodes = node.ids, edges = edges.df.mirna))
+}
+
+
+plot.kpm.drugst.one <- function(kpm.data, hit.list, screenType)
+{
+  plot_data <- prepare.kpm.dynamic(kpm.data, hit.list, screenType)
   
-  forceNetwork(Links = edges.df.mirna, Nodes = node.ids, Nodesize="overlapCount", 
+  edges <- data.frame(from = plot_data$nodes[plot_data$edges$source.id + 1, 'id'],
+                      to = plot_data$nodes[plot_data$edges$target.id + 1, 'id'])
+  plot_data$edges <- edges
+  plot_data$nodes <- S4Vectors::rename(plot_data$nodes, category = 'group')
+  plot_data$nodes$overlapCount <- NULL
+  nodeGroups <- list(promotor = list(groupName = 'promotor', color = '#1f77b4', shape = 'circle', type = 'promotor'),
+                     included = list(groupName = 'included', color = '#ff7f0e', shape = 'circle', type = 'included'),
+                     gene = list(groupName = 'gene', color = '#9b9e9b', shape = 'circle', type = 'gene'),
+                     suppressor = list(groupName = 'suppressor', color = '#d62728', shape = 'circle', type = 'suppressor'))
+  config <- list(identifier = "symbol", nodeShadow = FALSE, edgeShadow = FALSE, nodeGroups = nodeGroups)
+  HTML(sprintf('<network-expander
+          id=\'drugstone-component-id\'
+          config=\'%s\'
+          network=\'%s\'>
+        </network-expander>', 
+               jsonlite::toJSON(config, auto_unbox = TRUE),
+               jsonlite::toJSON(plot_data)))
+}
+
+
+plot.kpm.d3 <- function(kpm.data, hit.list, screenType)
+{
+  plot_data <- prepare.kpm.dynamic(kpm.data, hit.list, screenType)
+  
+  forceNetwork(Links = plot_data$edges, Nodes = plot_data$nodes, Nodesize="overlapCount", 
                Source="source.id", opacity=0.9,legend = TRUE, opacityNoHover=0.8,
                Target="target.id", Value="value", NodeID = "id", Group="category", zoom = TRUE,
                colourScale="d3.scale.ordinal().range(['#1f77b4', '#ff7f0e', '#9b9e9b', '#d62728']).domain(['promotor', 'included', 'gene', 'suppressor']);")

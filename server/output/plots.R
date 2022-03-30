@@ -501,6 +501,14 @@ output$rowAndColumn <- renderPlot({
 }, height=600)
 
 #KPM miRNA target enrichment plot
+
+#using drugst.one
+output$KPM.plot.drugst.one <- renderUI({
+  graph.data <- kpm.graph.data()
+  if(is.null(graph.data)) return(NULL)
+  plot.kpm.drugst.one(graph.data, KPM.modify.hits(), screenType=input$screenType)
+})
+
 #using d3
 output$KPM.plot.d3 <- renderForceNetwork({
   graph.data <- kpm.graph.data()

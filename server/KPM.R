@@ -14,7 +14,7 @@ KPM.network.list <- reactive({
     jsonResult <- fromJSON(result)
     networks <- foreach(network = jsonResult, .combine=append) %do% {network[[1]]} 
     names(networks) <- foreach(network = jsonResult, .combine=append) %do% {network[[2]]} 
-    return(networks)
+    return(networks[order(names(networks))])
   }, error = function(e) {
       showshinyalert(session, "kpm_status", "Could not connect to KeyPathwayMiner Web", "danger")   
     })
@@ -128,12 +128,12 @@ output$KPM.test <- renderPrint({
 
 quest.progress.url <- function(){
   kpm.url <- paste(keypathwayminer.url, "requests/quests?attachedToId=", sep="")
-  paste("Click <a target='_blank' href='", kpm.url, ATTACHED_TO_ID, "&hideTitle=false", "'><u>here</u></a> to follow the progress of your run in KeyPathwayMiner web", sep="")
+  paste("Click <a target='_blank' href='", kpm.url, ATTACHED_TO_ID, "&hideTitle=false", "'><u>here</u></a> to follow the progress of your run in KeyPathwayMiner web.", sep="")
 }
 
 quest.result.url <- function(){
   kpm.url <- paste(keypathwayminer.url, "requests/quests?attachedToId=", sep="")
-  paste("Click <a target='_blank' href='", kpm.url, ATTACHED_TO_ID, "&hideTitle=false", "'><u>here</u></a> to see the results of your run in KeyPathwayMiner web", sep="")  
+  paste("Click <a target='_blank' href='", kpm.url, ATTACHED_TO_ID, "&hideTitle=false", "'><u>here</u></a> to see the results of your run in KeyPathwayMiner web.", sep="")  
 }
 
 check.KPM.result <- function(){
@@ -153,7 +153,7 @@ check.KPM.result <- function(){
   
   if(quest.status[["completed"]] == TRUE){
     #update quest.completed to avoid unneccessary polling    
-    showshinyalert(session, "kpm_status", paste("KeyPathwayMiner run finished", quest.result.url()), "success")  
+    showshinyalert(session, "kpm_status", paste("KeyPathwayMiner run finished", quest.result.url(), "The results are currently being retrieved. Please be patient."), "success")  
     
     return(quest.status[["completed"]])  
   }
@@ -179,7 +179,7 @@ KPM.result <- reactive({
   KPM.finished <- check.KPM.result()
   if(KPM.finished) return(get.KPM.result())
   else{
-    invalidateLater(5000, session)
+    invalidateLater(2000, session)
     return(NULL)
   }
 })
