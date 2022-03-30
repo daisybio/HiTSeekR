@@ -196,7 +196,7 @@ output$uiOutput_KPM <- renderUI({
     actionButton("startKPMButton", "Start KeyPathwayMiner Analysis", styleclass="primary"), 
     hr(),
     conditionalPanel("input.showHelpText",
-      HTML('<div class="shinyalert alert fade alert-info in">Alternatively, you can also download the indicator matrix needed as input for KeyPathwayMiner and perform the analysis directly in <a href=\'http://tomcat.compbio.sdu.dk/keypathwayminer/\' target=\'_blank\'><u>KeyPathwayMiner Web</u></a> or using the <a href="http://apps.cytoscape.org/apps/keypathwayminer" target="_blank"><u>Cytoscape app</u></a>.</div>')
+      HTML('<div class="shinyalert alert fade alert-info in">Alternatively, you can also download the indicator matrix needed as input for KeyPathwayMiner and perform the analysis directly in <a href=\'https://exbio.wzw.tum.de/keypathwayminer/\' target=\'_blank\'><u>KeyPathwayMiner Web</u></a> or using the <a href="http://apps.cytoscape.org/apps/keypathwayminer" target="_blank"><u>Cytoscape app</u></a>.</div>')
     ),
     downloadButton('downloadIndicatorMatrix', 'Download indicator matrix')
   )

@@ -2,6 +2,7 @@ number.of.cores <- 2
 keypathwayminer.url <- "http://10.149.64.25:8080/KeyPathwayMiner/"
 #keypathwayminer.url <- "http://localhost:8080/kpm-web/"
 keypathwayminer.url <- "http://tomcat.compbio.sdu.dk/keypathwayminer/"
+keypathwayminer.url <- "https://exbio.wzw.tum.de/keypathwayminer/"
 use.redis <- FALSE
 redis.host <- "localhost"
 data.folder <- "data/"
