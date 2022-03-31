@@ -506,7 +506,11 @@ output$rowAndColumn <- renderPlot({
 output$KPM.plot.drugst.one <- renderUI({
   graph.data <- kpm.graph.data()
   if(is.null(graph.data)) return(NULL)
-  plot.kpm.drugst.one(graph.data, KPM.modify.hits(), screenType=input$screenType)
+  list(
+    conditionalPanel(
+      "input.showHelpText",
+      HTML('<div class="shinyalert alert fade alert-info in">For information about <a href=\'https://drugst.one/\' target=\'_blank\'><u>drugst.one</u></a>, please visit their website.</div>')),
+    plot.kpm.drugst.one(graph.data, KPM.modify.hits(), screenType=input$screenType))
 })
 
 #using d3
