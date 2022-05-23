@@ -130,15 +130,16 @@ output$uiOutput_kpm_plot <- renderUI({
       conditionalPanel(condition = '!input.kpm_union_graph',
         sliderInput("kpm_selected_solution", "Select which of the top 20 key pathways to display", min=1, max=20, value=1)
       ),
-      conditionalPanel(condition = 'input.kpm_forceDirected_graph',
-                       checkboxInput("kpm_use_drugstone", "Use drugst.one plugin (otherwise a d3 graph is rendered)", value = TRUE)
-      )
+      # conditionalPanel(condition = 'input.kpm_forceDirected_graph',
+      #                  checkboxInput("kpm_use_drugstone", "Use drugst.one plugin (otherwise a d3 graph is rendered)", value = TRUE)
+      # )
     ),
     tabsetPanel(
       tabPanel("Graph",
               conditionalPanel("input.kpm_forceDirected_graph",
-                               conditionalPanel("input.kpm_use_drugstone", uiOutput("KPM.plot.drugst.one", height=800)),
-                               conditionalPanel("!input.kpm_use_drugstone", forceNetworkOutput("KPM.plot.d3", height=800))),
+                               # conditionalPanel("input.kpm_use_drugstone", 
+                                                uiOutput("KPM.plot.drugst.one", height=800)),
+                               # conditionalPanel("!input.kpm_use_drugstone", forceNetworkOutput("KPM.plot.d3", height=800))),
               conditionalPanel("!input.kpm_forceDirected_graph",
                                plotOutput("KPM.plot.igraph", height=800)),
         downloadButton('download_kpm_SIF', 'Download this graph as Cytoscape compatible SIF file')

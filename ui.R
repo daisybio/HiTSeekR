@@ -106,8 +106,8 @@ elts <- list(
     tags$link(rel = "stylesheet", type = "text/css", href = "HiTSeekR.css"),
     shinyalert("general_status"), fluidRow(id='helpCheckBox', tags$style(type="text/css", "#helpCheckBox { margin-left:50px;}"), checkboxInput("showHelpText", "Show help", FALSE)),
     HTML('<link rel="stylesheet" type="text/css" href="cookieconsent.min.css"/><script src="cookieconsent.min.js"></script><script>window.addEventListener("load", function(){window.wpcc.init({"colors":{"popup":{"background":"#cff5ff","text":"#000000","border":"#5e99c2"},"button":{"background":"#5e99c2","text":"#ffffff"}}, "padding":"none","margin":"none","fontsize":"tiny","content":{"href":"https://www.learn-about-cookies.com/"},"position":"bottom-right"})});</script>'),
-    HTML('<script src="https://drugst.one/cdn/latest/drugsTone.js"></script>'),
-    HTML('<link rel="stylesheet" href="https://drugst.one/cdn/latest/styles.css">')
+    HTML('<script src="https://cdn.drugst.one/v0.9.5/prod/drugsTone.js"></script>'),
+    HTML('<link rel="stylesheet" href="https://cdn.drugst.one/v0.9.5/prod/styles.css">')
   ),
   id="mainNavbar",  
   position="fixed-top",  
@@ -139,7 +139,7 @@ elts <- list(
     conditionalPanel("input.showHelpText",                     
     HTML('<div class="shinyalert alert fade alert-info in">In the next step you can customize how the data set is processed. If questions arise check <a href="https://biomedical-big-data.de/HiTSeekR/tutorial/">tutorial</a>. Note:
          <ul>
-          <li>In particular for uploaded data sets you need to select which type of information is found in which column. Check "show fileinput options".</li>
+          <li>In particular for uploaded data sets you need to select which type of information is found in which column. Check "show fileinput options". Please note that the "Replicate Column" refers to repeated measurements of the entire plate.</li>
           <li>log2 transformation is typically recommended for signal data</li>
           <li>The B-score normalization is ideally suited to address position bias in the data, but is computationally expensive and not selected by default.</li>
           <li>If you would like to analyze a different data set just click on the HiTSeekR logo in the top left corner to get back to the start.</li>

@@ -121,12 +121,12 @@ plot.kpm.drugst.one <- function(kpm.data, hit.list, screenType)
                      included = list(groupName = 'included', color = '#ff7f0e', shape = 'circle', type = 'included'),
                      gene = list(groupName = 'gene', color = '#9b9e9b', shape = 'circle', type = 'gene'),
                      suppressor = list(groupName = 'suppressor', color = '#d62728', shape = 'circle', type = 'suppressor'))
-  config <- list(identifier = "symbol", nodeShadow = FALSE, edgeShadow = FALSE, nodeGroups = nodeGroups)
-  HTML(sprintf('<network-expander
+  config <- list(identifier = "symbol", nodeShadow = FALSE, edgeShadow = FALSE, physicsOn = TRUE, nodeGroups = nodeGroups)
+  HTML(sprintf('<drugst-one
           id=\'drugstone-component-id\'
           config=\'%s\'
           network=\'%s\'>
-        </network-expander>', 
+        </drugst-one>', 
                jsonlite::toJSON(config, auto_unbox = TRUE),
                jsonlite::toJSON(plot_data)))
 }
