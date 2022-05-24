@@ -2,7 +2,7 @@ FROM rocker/shiny:3.6.3
 MAINTAINER Markus List <markus.list@wzw.tum.de>
 
 #install system packages
-RUN apt-get update && apt-get install -y \
+RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
 libxml2-dev \ 
 redis-server \
 libcurl4-gnutls-dev \
