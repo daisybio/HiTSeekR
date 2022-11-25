@@ -107,7 +107,8 @@ elts <- list(
     shinyalert("general_status"), fluidRow(id='helpCheckBox', tags$style(type="text/css", "#helpCheckBox { margin-left:50px;}"), checkboxInput("showHelpText", "Show help", FALSE)),
     HTML('<link rel="stylesheet" type="text/css" href="cookieconsent.min.css"/><script src="cookieconsent.min.js"></script><script>window.addEventListener("load", function(){window.wpcc.init({"colors":{"popup":{"background":"#cff5ff","text":"#000000","border":"#5e99c2"},"button":{"background":"#5e99c2","text":"#ffffff"}}, "padding":"none","margin":"none","fontsize":"tiny","content":{"href":"https://www.learn-about-cookies.com/"},"position":"bottom-right"})});</script>'),
     HTML('<script src="https://cdn.drugst.one/latest/drugstone.js"></script>'),
-    HTML('<link rel="stylesheet" href="https://cdn.drugst.one/latest/styles.css">')
+    HTML('<link rel="stylesheet" href="https://cdn.drugst.one/latest/styles.css">'),
+    HTML('<link rel="icon" href="favicon.ico" type="image/x-icon">') 
   ),
   id="mainNavbar",  
   position="fixed-top",  
