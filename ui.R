@@ -138,7 +138,7 @@ elts <- list(
         )),   
     conditionalPanel("input.dataset != 'none selected'",
     conditionalPanel("input.showHelpText",                     
-    HTML('<div class="shinyalert alert fade alert-info in">In the next step you can customize how the data set is processed. If questions arise check <a href="https://biomedical-big-data.de/HiTSeekR/tutorial/">tutorial</a>. Note:
+    HTML('<div class="shinyalert alert fade alert-info in">In the next step you can customize how the data set is processed. If questions arise check <a href=" http://daisybio.github.io/HiTSeekR/tutorial/">tutorial</a>. Note:
          <ul>
           <li>In particular for uploaded data sets you need to select which type of information is found in which column. Check "show fileinput options". Please note that the "Replicate Column" refers to repeated measurements of the entire plate.</li>
           <li>log2 transformation is typically recommended for signal data</li>
@@ -253,7 +253,7 @@ elts <- list(
                 <p>List, M., Schmidt, S., Christiansen, H., Rehmsmeier, M., Tan, Q., Mollenhauer, J., & Baumbach, J. (2016). Comprehensive analysis of high-throughput screens with HiTSeekR. Nucleic acids research, 44(14), 6639-6648.</a></p>
                 <p><a href='https://doi.org/10.1093/nar/gkw554' target='_blank' class='btn btn-primary'>Read the paper &rarr;</a></p>
                 <p><a href='https://github.com/biomedbigdata/HiTSeekR' target='_blank' class='btn btn-primary'>View on GitHub &rarr;</a></p>
-                <p><a href='https://biomedical-big-data.de/HiTSeekR/' target='_blank' class='btn btn-primary'>Project page with tutorial &rarr;</a></p>
+                <p><a href=' http://daisybio.github.io/HiTSeekR/' target='_blank' class='btn btn-primary'>Project page with tutorial &rarr;</a></p>
                 <br/><br/><hr>
                 <div id='aboutdbs'><h4>The following is a list of R packages used in HiTSeekR for annotation and systems biology analysis:</h4>
                 <ul>
@@ -292,7 +292,7 @@ Note that uploaded screening data is only saved transiently during the analysis 
           </div></div>
           <div class="toolbar" style="clear:both;">                
          '),
-    HTML('<span style="margin-left:20px;"><a target="_blank" href="https://biomedical-big-data.de/HiTSeekR/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">If you are here the first time, check out the tutorial
+    HTML('<span style="margin-left:20px;"><a target="_blank" href=" http://daisybio.github.io/HiTSeekR/"><button id="tutorial" type="button" class="btn action-button btn-info shiny-bound-input">If you are here the first time, check out the tutorial
          </button></a></span>'),
     br(),
     HTML('<span style="margin-top:2px;"><a target="_blank" href="https://doi.org/10.1093/nar/gkw554"><button style="margin-top: 2px;" type="button" class="btn action-button btn-info shiny-bound-input">or read the paper
